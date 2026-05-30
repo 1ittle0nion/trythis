@@ -70,7 +70,8 @@
   .hand-rank{font-family:"Noto Serif SC";font-size:11px;color:var(--gold-bright);min-height:14px;}
   .rebuy{font-size:11px;padding:5px 12px;border-radius:14px;margin-top:2px;}
 
-  .card{width:54px;height:76px;border-radius:7px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.1,.2,1);}
+  .card-wrap{width:54px;height:76px;position:relative;display:inline-block;}
+  .card{width:100%;height:100%;border-radius:7px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.1,.2,1);}
   .card .face{position:absolute;inset:0;border-radius:7px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
   .card .front{background:linear-gradient(155deg,#fffdf6,#f1e9d6);box-shadow:0 4px 12px rgba(0,0,0,.4), inset 0 0 0 1px rgba(0,0,0,.08);padding:5px 6px;}
   .card .back{transform:rotateY(180deg);background:repeating-linear-gradient(45deg,#7d1f27 0 8px,#6a1a21 8px 16px),var(--card-red);box-shadow:0 4px 12px rgba(0,0,0,.4), inset 0 0 0 3px rgba(216,179,112,.7), inset 0 0 0 5px #5a161c;display:flex;align-items:center;justify-content:center;}
@@ -83,9 +84,9 @@
   .card.red{color:var(--card-red);} .card.black{color:var(--card-black);}
   .card.empty{background:transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.12);}
   .card.empty .face{display:none;}
-  .hole .card{cursor:pointer;}
-  @keyframes deal{0%{transform:translate(0,-180px) rotate(-25deg) scale(.7);opacity:0;}100%{transform:none;opacity:1;}}
-  .card.dealing{animation:deal .45s cubic-bezier(.2,.7,.3,1) backwards;}
+  .hole .card-wrap{cursor:pointer;}
+  @keyframes deal{0%{transform:translateY(-180px) rotate(-14deg) scale(.72);opacity:0;}100%{transform:none;opacity:1;}}
+  .card-wrap.dealing{animation:deal .45s cubic-bezier(.2,.7,.3,1) backwards;}
 
   /* action bar */
   .actionbar{z-index:2;width:100%;max-width:720px;margin-top:18px;background:linear-gradient(160deg,rgba(40,28,14,.95),rgba(20,14,7,.97));
@@ -198,11 +199,14 @@ function blankPlayer(i){return{name:'玩家 '+(i+1),chips:0,buyIn:0,hole:[],bet:
 
 /* ---------- card DOM ---------- */
 function cardEl(card,down,anim){
+  const wrap=document.createElement('div');
+  wrap.className='card-wrap'+(anim?' dealing':'');
   const el=document.createElement('div');
-  if(!card){el.className='card empty';return el;}
-  el.className='card '+card.color+(down?' flipped':'')+(anim?' dealing':'');
+  if(!card){el.className='card empty';wrap.appendChild(el);return wrap;}
+  el.className='card '+card.color+(down?' flipped':'');
   el.innerHTML=`<div class="face front"><div class="corner tl"><span>${card.label}</span><span class="s">${card.suit}</span></div><div class="pip">${card.suit}</div><div class="corner br"><span>${card.label}</span><span class="s">${card.suit}</span></div></div><div class="face back"></div>`;
-  return el;
+  wrap.appendChild(el);
+  return wrap;
 }
 
 /* ---------- render ---------- */
