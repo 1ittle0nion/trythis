@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>德州扑克 · Texas Hold'em</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Serif+SC:wght@400;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#d8b370; --gold-bright:#f0d49a; --gold-deep:#9c7c3c;
+    --felt-1:#2f8f5f; --felt-2:#176440; --felt-3:#0a3a25;
+    --wood:#3a2415; --wood-2:#23150c;
+    --card-red:#c12a37; --card-black:#16213a; --ink:#f4ead2;
+    --win:#5ec27a; --lose:#e0716c;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Outfit","Noto Serif SC",sans-serif;color:var(--ink);
+    background:radial-gradient(ellipse at 50% -10%, #4a3320 0%, #1d120a 55%, #100a05 100%);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px 12px 60px;overflow-x:hidden;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");mix-blend-mode:overlay;}
+  header{text-align:center;z-index:1;margin-bottom:12px;}
+  header h1{font-family:"Cinzel",serif;font-weight:700;letter-spacing:.18em;font-size:clamp(22px,5vw,36px);
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold),var(--gold-deep));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  header .sub{font-family:"Noto Serif SC",serif;letter-spacing:.5em;font-size:11px;color:var(--gold-deep);margin-top:3px;padding-left:.5em;}
+
+  .panel{z-index:1;background:rgba(0,0,0,.3);border:1px solid rgba(216,179,112,.3);border-radius:16px;padding:14px 16px;margin-bottom:14px;width:100%;max-width:760px;}
+  .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;}
+  .fld{display:flex;align-items:center;gap:8px;}
+  .fld label{font-family:"Cinzel",serif;font-size:12px;letter-spacing:.08em;color:var(--gold);}
+  .fld input{width:74px;background:rgba(0,0,0,.35);border:1px solid rgba(216,179,112,.35);border-radius:8px;color:var(--gold-bright);font-family:"Outfit";font-size:15px;padding:7px 8px;text-align:center;outline:none;}
+  .fld input:focus{border-color:var(--gold-bright);}
+  .step{width:32px;height:32px;border-radius:50%;font-size:19px;padding:0;display:flex;align-items:center;justify-content:center;}
+  .cnt{font-family:"Cinzel";font-size:19px;min-width:26px;text-align:center;color:var(--gold-bright);}
+
+  .table-wrap{z-index:1;width:100%;max-width:720px;border-radius:200px/110px;padding:14px;
+    background:linear-gradient(145deg,var(--wood),var(--wood-2));box-shadow:0 24px 60px rgba(0,0,0,.6), inset 0 0 0 2px rgba(216,179,112,.25);}
+  .felt{position:relative;border-radius:190px/100px;
+    background:radial-gradient(ellipse at 50% 45%, var(--felt-1) 0%, var(--felt-2) 50%, var(--felt-3) 100%);
+    box-shadow:inset 0 0 50px rgba(0,0,0,.55), inset 0 0 0 6px rgba(216,179,112,.4), inset 0 0 0 8px rgba(0,0,0,.3);
+    padding:26px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:190px;justify-content:center;}
+  .felt::after{content:"♠";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:140px;color:rgba(255,255,255,.04);pointer-events:none;}
+  .stage-pill{font-family:"Cinzel";letter-spacing:.2em;font-size:11px;color:var(--felt-3);background:var(--gold);padding:4px 16px;border-radius:20px;font-weight:700;z-index:2;}
+  .pot-line{font-family:"Noto Serif SC";font-size:13px;color:var(--gold-bright);z-index:2;letter-spacing:.05em;}
+  .cards-row{display:flex;gap:7px;justify-content:center;perspective:1000px;z-index:2;flex-wrap:wrap;min-height:82px;align-items:center;}
+
+  .players{z-index:1;width:100%;max-width:1040px;margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(174px,1fr));gap:12px;}
+  .seat{position:relative;background:linear-gradient(160deg,rgba(20,40,28,.85),rgba(10,25,17,.92));
+    border:1px solid rgba(216,179,112,.22);border-radius:16px;padding:30px 10px 12px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;transition:.3s;}
+  .seat.acting{border-color:var(--gold-bright);box-shadow:0 0 20px rgba(240,212,154,.5);}
+  .seat.winner{border-color:var(--win);box-shadow:0 0 22px rgba(94,194,122,.5);background:linear-gradient(160deg,rgba(30,60,38,.9),rgba(15,35,22,.95));}
+  .seat.folded{opacity:.45;}
+  .seat .badges{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;}
+  .badge{font-family:"Cinzel";font-size:9px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border-radius:8px;}
+  .badge.d{background:#e9e2cf;color:#23150c;}
+  .badge.sb{background:#7fa8d8;color:#0a1322;}
+  .badge.bb{background:#d8b370;color:#23150c;}
+  .badge.act{background:var(--gold-bright);color:#23150c;}
+  .badge.allin{background:#c12a37;color:#fff;}
+  .badge.fold{background:#444;color:#bbb;}
+  .seat .name-in{font-family:"Cinzel";font-size:13px;letter-spacing:.05em;color:var(--gold);background:transparent;border:none;border-bottom:1px dashed rgba(216,179,112,.4);text-align:center;width:118px;padding:2px 0;outline:none;}
+  .seat .name-in:focus{border-bottom-color:var(--gold-bright);color:var(--gold-bright);}
+  .seat.winner .name-in{color:var(--win);}
+  .chips{font-family:"Outfit";font-size:14px;font-weight:600;color:var(--gold-bright);display:flex;align-items:center;gap:5px;}
+  .chips::before{content:"";width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f2d79b,#caa14e);box-shadow:0 0 0 2px #8c6c2e, inset 0 0 0 2px rgba(255,255,255,.3);}
+  .bet-tag{font-family:"Outfit";font-size:11px;color:#fff;background:rgba(193,42,55,.85);padding:2px 9px;border-radius:12px;min-height:0;}
+  .hand-rank{font-family:"Noto Serif SC";font-size:11px;color:var(--gold-bright);min-height:14px;}
+  .rebuy{font-size:11px;padding:5px 12px;border-radius:14px;margin-top:2px;}
+
+  .card{width:54px;height:76px;border-radius:7px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.1,.2,1);}
+  .card .face{position:absolute;inset:0;border-radius:7px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
+  .card .front{background:linear-gradient(155deg,#fffdf6,#f1e9d6);box-shadow:0 4px 12px rgba(0,0,0,.4), inset 0 0 0 1px rgba(0,0,0,.08);padding:5px 6px;}
+  .card .back{transform:rotateY(180deg);background:repeating-linear-gradient(45deg,#7d1f27 0 8px,#6a1a21 8px 16px),var(--card-red);box-shadow:0 4px 12px rgba(0,0,0,.4), inset 0 0 0 3px rgba(216,179,112,.7), inset 0 0 0 5px #5a161c;display:flex;align-items:center;justify-content:center;}
+  .card .back::after{content:"♦";color:rgba(216,179,112,.85);font-size:22px;}
+  .card.flipped{transform:rotateY(180deg);}
+  .card .corner{font-family:"Outfit";font-weight:700;line-height:.9;font-size:13px;display:flex;flex-direction:column;align-items:center;width:fit-content;}
+  .card .corner.br{align-self:flex-end;transform:rotate(180deg);}
+  .card .corner .s{font-size:11px;}
+  .card .pip{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:29px;}
+  .card.red{color:var(--card-red);} .card.black{color:var(--card-black);}
+  .card.empty{background:transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.12);}
+  .card.empty .face{display:none;}
+  .hole .card{cursor:pointer;}
+  @keyframes deal{0%{transform:translate(0,-180px) rotate(-25deg) scale(.7);opacity:0;}100%{transform:none;opacity:1;}}
+  .card.dealing{animation:deal .45s cubic-bezier(.2,.7,.3,1) backwards;}
+
+  /* action bar */
+  .actionbar{z-index:2;width:100%;max-width:720px;margin-top:18px;background:linear-gradient(160deg,rgba(40,28,14,.95),rgba(20,14,7,.97));
+    border:1px solid rgba(216,179,112,.4);border-radius:18px;padding:14px 16px;display:none;flex-direction:column;gap:12px;box-shadow:0 12px 30px rgba(0,0,0,.5);}
+  .actionbar.show{display:flex;}
+  .ab-head{text-align:center;font-family:"Noto Serif SC";font-size:14px;color:var(--gold-bright);}
+  .ab-head b{color:var(--gold-bright);}
+  .ab-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .ab-raise{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;}
+  .ab-raise input{width:90px;background:rgba(0,0,0,.4);border:1px solid rgba(216,179,112,.4);border-radius:10px;color:var(--gold-bright);font-family:"Outfit";font-size:16px;padding:8px;text-align:center;outline:none;}
+  .mini{font-size:12px;padding:8px 12px;border-radius:14px;}
+  .danger{background:linear-gradient(180deg,#e0716c,#b03a36)!important;color:#fff!important;}
+  .neutral{background:transparent!important;color:var(--gold)!important;border:1px solid rgba(216,179,112,.5)!important;box-shadow:none!important;}
+
+  .controls{z-index:1;margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
+  button{font-family:"Cinzel";font-weight:600;letter-spacing:.06em;font-size:14px;color:var(--wood-2);cursor:pointer;border:none;padding:12px 24px;border-radius:28px;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold) 55%,var(--gold-deep));box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5);transition:.16s;}
+  button:hover:not(:disabled){transform:translateY(-2px);}
+  button:active:not(:disabled){transform:translateY(0);}
+  button.ghost{background:transparent;color:var(--gold);border:1px solid rgba(216,179,112,.5);box-shadow:none;}
+  button:disabled{opacity:.35;cursor:not-allowed;}
+  .msg{z-index:1;margin-top:14px;min-height:22px;font-family:"Noto Serif SC";font-size:15px;color:var(--gold-bright);text-align:center;letter-spacing:.04em;max-width:680px;}
+
+  /* ledger */
+  .ledger{z-index:1;width:100%;max-width:760px;margin-top:22px;background:rgba(0,0,0,.32);border:1px solid rgba(216,179,112,.28);border-radius:16px;padding:14px 16px;}
+  .ledger h3{font-family:"Cinzel";font-size:14px;letter-spacing:.12em;color:var(--gold);text-align:center;margin-bottom:10px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:7px 6px;text-align:center;border-bottom:1px solid rgba(216,179,112,.15);}
+  th{font-family:"Cinzel";font-size:11px;letter-spacing:.06em;color:var(--gold-deep);font-weight:600;}
+  td.pos{color:var(--win);} td.neg{color:var(--lose);}
+  .log{margin-top:12px;max-height:130px;overflow-y:auto;font-size:12px;color:rgba(244,234,210,.7);line-height:1.7;font-family:"Noto Serif SC";}
+  .log div{border-bottom:1px dotted rgba(216,179,112,.12);padding:2px 0;}
+  .footnote{z-index:1;margin-top:16px;font-size:11px;color:rgba(216,179,112,.4);text-align:center;line-height:1.7;max-width:620px;}
+</style>
+</head>
+<body>
+  <header><h1>TEXAS HOLD'EM</h1><div class="sub">德 州 扑 克</div></header>
+
+  <div class="panel" id="setup">
+    <div class="row">
+      <div class="fld"><label>玩家人数</label>
+        <button class="step" id="minus">−</button><span class="cnt" id="count">2</span><button class="step" id="plus">＋</button>
+      </div>
+      <div class="fld"><label>初始买入</label><input id="buyin" type="number" value="1000" min="1"></div>
+      <div class="fld"><label>小盲</label><input id="sb" type="number" value="10" min="1"></div>
+      <div class="fld"><label>大盲</label><input id="bb" type="number" value="20" min="2"></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="felt">
+      <div class="stage-pill" id="stage">等待开始</div>
+      <div class="cards-row" id="community"></div>
+      <div class="pot-line" id="pot">底池 0</div>
+    </div>
+  </div>
+
+  <div class="players" id="players"></div>
+
+  <div class="actionbar" id="actionbar">
+    <div class="ab-head" id="abhead"></div>
+    <div class="ab-btns" id="abbtns"></div>
+    <div class="ab-raise" id="abraise"></div>
+  </div>
+
+  <div class="msg" id="msg">设置人数、买入与盲注，点「开始游戏」给每人发筹码并开局。</div>
+
+  <div class="controls">
+    <button id="btn-start">开始游戏</button>
+    <button id="btn-next" class="ghost" disabled>下一局</button>
+    <button id="btn-restart" class="ghost" disabled>重开（清账）</button>
+  </div>
+
+  <div class="ledger">
+    <h3>账 本 LEDGER</h3>
+    <table><thead><tr><th>玩家</th><th>累计买入</th><th>当前筹码</th><th>盈亏</th></tr></thead><tbody id="ledger-body"></tbody></table>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="footnote">
+    单机多人 · 纯前端。轮到谁，先点自己底牌偷看，再用下方按钮行动：弃牌 / 过牌 / 跟注 / 加注 / 全下。<br>
+    筹码归零的玩家在每局之间可点座位上的「买入」补充筹码，所有买入与盈亏都会记进账本（含全下边池结算）。
+  </div>
+
+<script>
+const SUITS=[{s:'♠',color:'black'},{s:'♥',color:'red'},{s:'♦',color:'red'},{s:'♣',color:'black'}];
+const RANKS=[2,3,4,5,6,7,8,9,10,11,12,13,14];
+const LBL={11:'J',12:'Q',13:'K',14:'A'};
+const lbl=v=>LBL[v]||(''+v);
+const CAT=['高牌','一对','两对','三条','顺子','同花','葫芦','四条','同花顺'];
+const $=id=>document.getElementById(id);
+
+let numPlayers=2, BUYIN=1000, SB=10, BB=20;
+let players=[];            // {name,chips,buyIn,hole,bet,committed,folded,allIn,need,inHand}
+let deck=[], community=[], stage='idle';
+let pot=0, currentBet=0, minRaiseSize=BB, toAct=-1, dealer=-1;
+let prevReveal=0, handActive=false, awaiting=false;
+let logs=[];
+
+/* ---------- deck ---------- */
+function buildDeck(){const d=[];for(const su of SUITS)for(const v of RANKS)d.push({rank:v,label:lbl(v),suit:su.s,color:su.color});return d;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ---------- setup players ---------- */
+function ensurePlayers(){
+  while(players.length<numPlayers)players.push(blankPlayer(players.length));
+  players.length=numPlayers;
+}
+function blankPlayer(i){return{name:'玩家 '+(i+1),chips:0,buyIn:0,hole:[],bet:0,committed:0,folded:false,allIn:false,need:false,inHand:false,winner:false};}
+
+/* ---------- card DOM ---------- */
+function cardEl(card,down,anim){
+  const el=document.createElement('div');
+  if(!card){el.className='card empty';return el;}
+  el.className='card '+card.color+(down?' flipped':'')+(anim?' dealing':'');
+  el.innerHTML=`<div class="face front"><div class="corner tl"><span>${card.label}</span><span class="s">${card.suit}</span></div><div class="pip">${card.suit}</div><div class="corner br"><span>${card.label}</span><span class="s">${card.suit}</span></div></div><div class="face back"></div>`;
+  return el;
+}
+
+/* ---------- render ---------- */
+let peeked=[];
+function render(animDeal){
+  // community
+  const crow=$('community');crow.innerHTML='';
+  const rev={idle:0,preflop:0,flop:3,turn:4,river:5,showdown:5}[stage];
+  for(let i=0;i<5;i++){
+    if(i<rev){const el=cardEl(community[i],false,i>=prevReveal);el.style.animationDelay=((i-prevReveal)*0.1)+'s';crow.appendChild(el);}
+    else if(stage!=='idle')crow.appendChild(cardEl(null));
+  }
+  prevReveal=rev;
+  $('pot').textContent='底池 '+pot+(currentBet>0?'　·　当前注 '+currentBet:'');
+  $('stage').textContent={idle:'等待开始',preflop:'翻牌前 PRE-FLOP',flop:'翻牌 FLOP',turn:'转牌 TURN',river:'河牌 RIVER',showdown:'摊牌 SHOWDOWN'}[stage];
+
+  // seats
+  const wrap=$('players');wrap.innerHTML='';
+  players.forEach((p,i)=>{
+    const seat=document.createElement('div');
+    seat.className='seat'+(i===toAct&&handActive?' acting':'')+(p.winner?' winner':'')+(p.folded?' folded':'');
+    // badges
+    const badges=document.createElement('div');badges.className='badges';
+    const add=(t,c)=>{const b=document.createElement('span');b.className='badge '+c;b.textContent=t;badges.appendChild(b);};
+    if(p.inHand){
+      if(i===dealer)add('D','d');
+      if(i===sbSeat)add('SB','sb');
+      if(i===bbSeat)add('BB','bb');
+      if(p.allIn)add('全下','allin');
+      if(p.folded)add('弃牌','fold');
+      if(i===toAct&&handActive&&!p.folded&&!p.allIn)add('行动','act');
+    }
+    seat.appendChild(badges);
+    const name=document.createElement('input');name.className='name-in';name.value=p.name;name.maxLength=10;
+    name.disabled=handActive;
+    name.addEventListener('input',e=>{p.name=e.target.value;renderLedger();});
+    seat.appendChild(name);
+    const chips=document.createElement('div');chips.className='chips';chips.textContent=p.chips;seat.appendChild(chips);
+    if(p.inHand&&p.bet>0){const bt=document.createElement('div');bt.className='bet-tag';bt.textContent='下注 '+p.bet;seat.appendChild(bt);}
+    const hrow=document.createElement('div');hrow.className='cards-row hole';hrow.id='hole-'+i;seat.appendChild(hrow);
+    const rk=document.createElement('div');rk.className='hand-rank';rk.id='rank-'+i;seat.appendChild(rk);
+    // rebuy between hands
+    if(!handActive&&gameStarted){
+      const rb=document.createElement('button');rb.className='rebuy';rb.textContent='买入 +'+BUYIN;
+      rb.addEventListener('click',()=>rebuy(i));seat.appendChild(rb);
+    }
+    wrap.appendChild(seat);
+    if(p.inHand)renderHole(i,animDeal);
+  });
+  renderLedger();
+}
+function renderHole(i,anim){
+  const row=$('hole-'+i);if(!row)return;row.innerHTML='';
+  const p=players[i];if(!p.hole.length)return;
+  const show=(stage==='showdown'&&!p.folded)||peeked[i];
+  p.hole.forEach((c,k)=>{
+    const el=cardEl(c,!show,anim&&stage==='preflop');
+    el.style.animationDelay=(k*0.07)+'s';
+    if(stage!=='showdown')el.addEventListener('click',()=>{peeked[i]=!peeked[i];renderHole(i,false);});
+    row.appendChild(el);
+  });
+}
+function renderLedger(){
+  const body=$('ledger-body');body.innerHTML='';
+  players.forEach(p=>{
+    const net=p.chips-p.buyIn;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${p.name}</td><td>${p.buyIn}</td><td>${p.chips}</td><td class="${net>0?'pos':net<0?'neg':''}">${net>0?'+':''}${net}</td>`;
+    body.appendChild(tr);
+  });
+  $('log').innerHTML=logs.slice().reverse().map(l=>'<div>'+l+'</div>').join('');
+}
+function log(s){logs.push(s);}
+
+/* ---------- evaluation ---------- */
+function score5(cards){
+  const ranks=cards.map(c=>c.rank).sort((a,b)=>b-a);
+  const suits=cards.map(c=>c.suit);
+  const isFlush=suits.every(s=>s===suits[0]);
+  const counts={};ranks.forEach(r=>counts[r]=(counts[r]||0)+1);
+  const uniq=[...new Set(ranks)].sort((a,b)=>b-a);
+  let st=false,high=0;
+  if(uniq.length===5){if(uniq[0]-uniq[4]===4){st=true;high=uniq[0];}else if(uniq[0]===14&&uniq[1]===5&&uniq[2]===4&&uniq[3]===3&&uniq[4]===2){st=true;high=5;}}
+  const g=Object.entries(counts).map(([r,c])=>[c,+r]).sort((a,b)=>b[0]-a[0]||b[1]-a[1]);
+  const cnt=g.map(x=>x[0]),gr=g.map(x=>x[1]);
+  if(st&&isFlush)return[8,high];
+  if(cnt[0]===4)return[7,gr[0],gr[1]];
+  if(cnt[0]===3&&cnt[1]===2)return[6,gr[0],gr[1]];
+  if(isFlush)return[5,...ranks];
+  if(st)return[4,high];
+  if(cnt[0]===3)return[3,gr[0],...gr.slice(1)];
+  if(cnt[0]===2&&cnt[1]===2)return[2,gr[0],gr[1],gr[2]];
+  if(cnt[0]===2)return[1,gr[0],...gr.slice(1)];
+  return[0,...ranks];
+}
+function best7(seven){let best=null;for(let a=0;a<3;a++)for(let b=a+1;b<4;b++)for(let c=b+1;c<5;c++)for(let d=c+1;d<6;d++)for(let e=d+1;e<7;e++){const sc=score5([seven[a],seven[b],seven[c],seven[d],seven[e]]);if(!best||cmp(sc,best)>0)best=sc;}return best;}
+function cmp(x,y){const n=Math.max(x.length,y.length);for(let i=0;i<n;i++){const a=x[i]||0,b=y[i]||0;if(a!==b)return a-b;}return 0;}
+
+/* ---------- seat helpers ---------- */
+let sbSeat=-1,bbSeat=-1,gameStarted=false;
+function nextSeat(from,pred){for(let k=1;k<=numPlayers;k++){const i=(from+k)%numPlayers;if(pred(i,players[i]))return i;}return -1;}
+function withChips(i,p){return p.chips>0;}
+function inHandSeat(i,p){return p.inHand;}
+function canAct(p){return p.inHand&&!p.folded&&!p.allIn;}
+function nextActor(from){return nextSeat(from,(i,p)=>p.inHand&&!p.folded&&!p.allIn&&p.need);}
+
+/* ---------- game flow ---------- */
+function startGame(){
+  numPlayers=clamp(numPlayers,2,9);
+  BUYIN=Math.max(1,+$('buyin').value||1000);
+  SB=Math.max(1,+$('sb').value||10);
+  BB=Math.max(SB+1,+$('bb').value||20);
+  ensurePlayers();
+  players.forEach(p=>{p.chips=BUYIN;p.buyIn=BUYIN;});
+  logs=[];players.forEach(p=>log(p.name+' 买入 +'+BUYIN));
+  gameStarted=true;dealer=-1;
+  $('setup').style.opacity=.5;$('minus').disabled=true;$('plus').disabled=true;
+  $('buyin').disabled=true;$('sb').disabled=true;$('bb').disabled=true;
+  $('btn-start').disabled=true;$('btn-restart').disabled=false;
+  startHand();
+}
+function rebuy(i){
+  if(handActive)return;
+  players[i].chips+=BUYIN;players[i].buyIn+=BUYIN;
+  log(players[i].name+' 买入 +'+BUYIN);
+  $('msg').textContent=players[i].name+' 买入了 '+BUYIN+' 筹码。';
+  render(false);
+}
+function startHand(){
+  const able=players.map((p,i)=>i).filter(i=>players[i].chips>0);
+  if(able.length<2){$('msg').textContent='可参与的玩家不足 2 人，请先给筹码归零的玩家「买入」。';$('btn-next').disabled=false;render(false);return;}
+  // reset
+  players.forEach(p=>{p.hole=[];p.bet=0;p.committed=0;p.folded=false;p.allIn=false;p.need=false;p.winner=false;p.inHand=p.chips>0;});
+  peeked=Array(numPlayers).fill(false);
+  $('rank-'+0); players.forEach((p,i)=>{const r=$('rank-'+i);if(r)r.textContent='';});
+  pot=0;currentBet=0;minRaiseSize=BB;prevReveal=0;stage='preflop';
+  deck=shuffle(buildDeck());
+  // deal 2 each
+  const order=[];let s=dealer;for(let k=0;k<numPlayers;k++){s=nextSeat(s,inHandSeat);if(s<0)break;order.push(s);}
+  for(let r=0;r<2;r++)for(const i of (order.length?order:players.map((_,i)=>i).filter(i=>players[i].inHand)))players[i].hole.push(deck.pop());
+  community=[deck.pop(),deck.pop(),deck.pop(),deck.pop(),deck.pop()];
+  // dealer + blinds
+  dealer=nextSeat(dealer,inHandSeat);
+  if(able.length===2){sbSeat=dealer;bbSeat=nextSeat(dealer,inHandSeat);}
+  else{sbSeat=nextSeat(dealer,inHandSeat);bbSeat=nextSeat(sbSeat,inHandSeat);}
+  postBlind(sbSeat,SB);postBlind(bbSeat,BB);
+  currentBet=BB;minRaiseSize=BB;
+  players.forEach(p=>{p.need=canAct(p);});
+  // first to act
+  if(able.length===2)toAct=sbSeat; else toAct=nextSeat(bbSeat,inHandSeat);
+  if(!(players[toAct]&&players[toAct].need&&canAct(players[toAct])))toAct=nextActor(toAct-1+numPlayers);
+  handActive=true;awaiting=false;
+  $('btn-next').disabled=true;
+  log('—— 新一局（庄家：'+players[dealer].name+'）——');
+  $('msg').textContent='新一局开始。轮到 '+players[toAct].name+' 行动。';
+  render(true);
+  refreshAction();
+}
+function postBlind(i,amt){const p=players[i];const pay=Math.min(amt,p.chips);p.chips-=pay;p.bet+=pay;p.committed+=pay;pot+=pay;if(p.chips===0)p.allIn=true;}
+
+function refreshAction(){
+  const bar=$('actionbar');
+  if(!handActive||toAct<0){bar.classList.remove('show');return;}
+  const p=players[toAct];
+  if(!canAct(p)){bar.classList.remove('show');return;}
+  bar.classList.add('show');
+  const toCall=currentBet-p.bet;
+  $('abhead').innerHTML='轮到 <b>'+p.name+'</b> · 筹码 '+p.chips+(toCall>0?' · 需跟注 '+Math.min(toCall,p.chips):' · 可过牌');
+  // buttons
+  const btns=$('abbtns');btns.innerHTML='';
+  const mk=(txt,cls,fn,dis)=>{const b=document.createElement('button');b.className=cls;b.textContent=txt;b.disabled=!!dis;b.onclick=fn;btns.appendChild(b);};
+  mk('弃牌','danger',()=>action('fold'));
+  if(toCall<=0)mk('过牌','neutral',()=>action('check'));
+  else mk('跟注 '+Math.min(toCall,p.chips),'',()=>action('call'));
+  // raise area
+  const ra=$('abraise');ra.innerHTML='';
+  const maxTotal=p.bet+p.chips;                  // all-in total
+  const minTotal=Math.min(maxTotal,currentBet+minRaiseSize);
+  const canRaise=maxTotal>currentBet;
+  if(canRaise&&maxTotal>minTotal){
+    const inp=document.createElement('input');inp.type='number';inp.value=minTotal;inp.min=minTotal;inp.max=maxTotal;inp.id='raiseval';ra.appendChild(inp);
+    const mkR=(t,v)=>{const b=document.createElement('button');b.className='mini neutral';b.textContent=t;b.onclick=()=>{inp.value=v;};ra.appendChild(b);};
+    mkR('最小',minTotal);
+    const potRaise=Math.min(maxTotal,currentBet+pot+toCall);if(potRaise>minTotal)mkR('底池',potRaise);
+    const rb=document.createElement('button');rb.textContent=(currentBet>0?'加注至 ':'下注 ');rb.onclick=()=>{const v=+$('raiseval').value;action('raise',v);};ra.appendChild(rb);
+    mk2(ra,'全下 '+maxTotal,()=>action('raise',maxTotal));
+  }else if(canRaise){
+    mk2(ra,'全下 '+maxTotal,()=>action('raise',maxTotal));
+  }
+}
+function mk2(parent,txt,fn){const b=document.createElement('button');b.textContent=txt;b.onclick=fn;parent.appendChild(b);}
+
+function action(type,raiseTotal){
+  const p=players[toAct];if(!canAct(p))return;
+  if(type==='fold'){p.folded=true;p.need=false;}
+  else if(type==='check'){if(p.bet!==currentBet)return;p.need=false;}
+  else if(type==='call'){const need=currentBet-p.bet;const pay=Math.min(need,p.chips);payChip(p,pay);p.need=false;}
+  else if(type==='raise'){
+    const maxTotal=p.bet+p.chips;
+    let total=Math.min(raiseTotal,maxTotal);
+    const isAllIn=(total===maxTotal);
+    if(total<=currentBet){ // not a real raise -> call/all-in for less
+      const pay=Math.min(currentBet-p.bet,p.chips);payChip(p,pay);p.need=false;
+    }else{
+      const raiseSize=total-currentBet;
+      if(!isAllIn&&raiseSize<minRaiseSize)total=Math.min(currentBet+minRaiseSize,maxTotal);
+      payChip(p,total-p.bet);
+      const newBet=p.bet; // actual after payment
+      if(newBet>currentBet){
+        if(newBet-currentBet>=minRaiseSize)minRaiseSize=newBet-currentBet;
+        currentBet=newBet;
+        players.forEach(o=>{if(o!==p&&canAct(o))o.need=true;});
+      }
+      p.need=false;
+    }
+  }
+  // single player left
+  const live=players.filter(p=>p.inHand&&!p.folded);
+  if(live.length===1){endSingle(players.indexOf(live[0]));return;}
+  const nx=nextActor(toAct);
+  if(nx<0){closeRound();}
+  else{toAct=nx;$('msg').textContent='轮到 '+players[nx].name+' 行动。';render(false);refreshAction();}
+}
+function payChip(p,amt){amt=Math.max(0,Math.min(amt,p.chips));p.chips-=amt;p.bet+=amt;p.committed+=amt;pot+=amt;if(p.chips===0)p.allIn=true;}
+
+function closeRound(){
+  players.forEach(p=>{p.bet=0;p.need=false;});
+  currentBet=0;minRaiseSize=BB;
+  $('actionbar').classList.remove('show');
+  // remaining who can still act
+  const liveActable=players.filter(p=>canAct(p)).length;
+  awaiting=true;toAct=-1;
+  // auto-run to showdown if no further betting possible
+  advanceStreet(liveActable<2);
+}
+function advanceStreet(autoRun){
+  if(stage==='preflop')stage='flop';
+  else if(stage==='flop')stage='turn';
+  else if(stage==='turn')stage='river';
+  else if(stage==='river'){showdown();return;}
+  render(false);
+  const liveActable=players.filter(p=>canAct(p)).length;
+  if(autoRun||liveActable<2){
+    if(stage==='river'){setTimeout(showdown,650);}
+    else setTimeout(()=>advanceStreet(true),650);
+    return;
+  }
+  // open betting
+  players.forEach(p=>{p.need=canAct(p);});
+  toAct=nextSeat(dealer,(i,pp)=>pp.inHand&&!pp.folded&&!pp.allIn&&pp.need);
+  if(toAct<0){setTimeout(()=>{if(stage==='river')showdown();else advanceStreet(true);},500);return;}
+  $('msg').textContent=({flop:'翻牌',turn:'转牌',river:'河牌'}[stage])+'后下注，轮到 '+players[toAct].name+'。';
+  render(false);refreshAction();
+}
+
+/* ---------- pots & showdown ---------- */
+function buildPots(){
+  let c=players.map((p,i)=>({i,amt:p.committed,folded:p.folded})).filter(x=>x.amt>0);
+  const pots=[];
+  while(c.length){
+    const min=Math.min(...c.map(x=>x.amt));let amount=0;const elig=[];
+    c.forEach(x=>{amount+=min;x.amt-=min;if(!x.folded)elig.push(x.i);});
+    pots.push({amount,eligible:[...new Set(elig)]});
+    c=c.filter(x=>x.amt>0);
+  }
+  return pots;
+}
+function endSingle(i){
+  const p=players[i];p.chips+=pot;p.winner=true;
+  log(p.name+' 赢得底池 '+pot+'（其余玩家弃牌）');
+  $('msg').textContent='🏆 '+p.name+' 赢得底池 '+pot+'（其余玩家弃牌）';
+  finishHand();
+}
+function showdown(){
+  stage='showdown';
+  const pots=buildPots();
+  const scoreOf={};
+  players.forEach((p,i)=>{if(p.inHand&&!p.folded)scoreOf[i]=best7([...p.hole,...community]);});
+  // rank labels
+  players.forEach((p,i)=>{if(scoreOf[i]){const r=$('rank-'+i);if(r)r.textContent=CAT[scoreOf[i][0]];}});
+  const won={};
+  pots.forEach((pt,idx)=>{
+    const elig=pt.eligible.filter(i=>scoreOf[i]);
+    if(!elig.length)return;
+    let best=null;elig.forEach(i=>{if(!best||cmp(scoreOf[i],scoreOf[best])>0)best=i;});
+    const winners=elig.filter(i=>cmp(scoreOf[i],scoreOf[best])===0);
+    const share=Math.floor(pt.amount/winners.length);let rem=pt.amount-share*winners.length;
+    winners.forEach(i=>{let add=share;if(rem>0){add++;rem--;}players[i].chips+=add;players[i].winner=true;won[i]=(won[i]||0)+add;});
+    const label=pots.length>1?('边池'+(idx===0?'(主池)':idx)+' '):'';
+    log(label+winners.map(i=>players[i].name).join('、')+' 赢得 '+pt.amount+'（'+CAT[best!=null?scoreOf[best][0]:0]+'）');
+  });
+  const winnerNames=Object.keys(won).map(i=>players[i].name+' +'+won[i]);
+  $('msg').textContent='🏆 摊牌：'+winnerNames.join('，');
+  finishHand();
+}
+function finishHand(){
+  handActive=false;awaiting=false;toAct=-1;
+  $('actionbar').classList.remove('show');
+  $('btn-next').disabled=false;
+  render(false);
+}
+
+function restart(){
+  if(!confirm('清空所有筹码与账本，重新开始？'))return;
+  players=[];gameStarted=false;handActive=false;stage='idle';logs=[];
+  pot=0;dealer=-1;sbSeat=bbSeat=-1;
+  ensurePlayers();
+  $('setup').style.opacity=1;$('minus').disabled=false;$('plus').disabled=false;
+  $('buyin').disabled=false;$('sb').disabled=false;$('bb').disabled=false;
+  $('btn-start').disabled=false;$('btn-next').disabled=true;$('btn-restart').disabled=true;
+  $('msg').textContent='设置人数、买入与盲注，点「开始游戏」给每人发筹码并开局。';
+  render(false);
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function setCount(n){if(gameStarted)return;numPlayers=clamp(n,2,9);$('count').textContent=numPlayers;ensurePlayers();render(false);}
+
+$('minus').onclick=()=>setCount(numPlayers-1);
+$('plus').onclick=()=>setCount(numPlayers+1);
+$('btn-start').onclick=startGame;
+$('btn-next').onclick=startHand;
+$('btn-restart').onclick=restart;
+
+ensurePlayers();render(false);
+</script>
+</body>
+</html>
