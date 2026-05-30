@@ -113,6 +113,10 @@
   /* ledger */
   .ledger{z-index:1;width:100%;max-width:760px;margin-top:22px;background:rgba(0,0,0,.32);border:1px solid rgba(216,179,112,.28);border-radius:16px;padding:14px 16px;}
   .ledger h3{font-family:"Cinzel";font-size:14px;letter-spacing:.12em;color:var(--gold);text-align:center;margin-bottom:10px;}
+  .ledger-head{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px;}
+  .ledger-head h3{margin-bottom:0;}
+  .led-in{width:82px;background:rgba(0,0,0,.4);border:1px solid rgba(216,179,112,.45);border-radius:8px;color:var(--gold-bright);font-family:"Outfit";font-size:14px;padding:5px;text-align:center;outline:none;}
+  .led-in:focus{border-color:var(--gold-bright);}
   table{width:100%;border-collapse:collapse;font-size:13px;}
   th,td{padding:7px 6px;text-align:center;border-bottom:1px solid rgba(216,179,112,.15);}
   th{font-family:"Cinzel";font-size:11px;letter-spacing:.06em;color:var(--gold-deep);font-weight:600;}
@@ -161,7 +165,7 @@
   </div>
 
   <div class="ledger">
-    <h3>账 本 LEDGER</h3>
+    <div class="ledger-head"><h3>账 本 LEDGER</h3><button id="btn-edit" class="mini neutral" disabled>编辑账面</button></div>
     <table><thead><tr><th>玩家</th><th>累计买入</th><th>当前筹码</th><th>盈亏</th></tr></thead><tbody id="ledger-body"></tbody></table>
     <div class="log" id="log"></div>
   </div>
@@ -271,13 +275,41 @@ function renderHole(i,anim){
 }
 function renderLedger(){
   const body=$('ledger-body');body.innerHTML='';
-  players.forEach(p=>{
+  players.forEach((p,i)=>{
     const net=p.chips-p.buyIn;
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${p.name}</td><td>${p.buyIn}</td><td>${p.chips}</td><td class="${net>0?'pos':net<0?'neg':''}">${net>0?'+':''}${net}</td>`;
+    const netCell=`<td class="${net>0?'pos':net<0?'neg':''}">${net>0?'+':''}${net}</td>`;
+    if(editMode){
+      tr.innerHTML=`<td>${p.name}</td>`+
+        `<td><input class="led-in" id="edit-buyin-${i}" type="number" value="${p.buyIn}"></td>`+
+        `<td><input class="led-in" id="edit-chips-${i}" type="number" value="${p.chips}"></td>`+netCell;
+    }else{
+      tr.innerHTML=`<td>${p.name}</td><td>${p.buyIn}</td><td>${p.chips}</td>`+netCell;
+    }
     body.appendChild(tr);
   });
   $('log').innerHTML=logs.slice().reverse().map(l=>'<div>'+l+'</div>').join('');
+}
+function toggleEdit(){
+  if(!gameStarted)return;
+  if(!editMode){
+    if(handActive){$('msg').textContent='对局进行中无法编辑账面，请等本局结束后再修改。';return;}
+    editMode=true;$('btn-edit').textContent='保存账面';renderLedger();
+    $('msg').textContent='编辑模式：直接修改「累计买入」「当前筹码」，改完点「保存账面」。';
+  }else{
+    let changed=0;
+    players.forEach((p,i)=>{
+      const nb=Math.max(0,Math.round(+$('edit-buyin-'+i).value||0));
+      const nc=Math.max(0,Math.round(+$('edit-chips-'+i).value||0));
+      if(nb!==p.buyIn||nc!==p.chips){
+        log('✎ 手动修改 '+p.name+'：买入 '+p.buyIn+'→'+nb+'，筹码 '+p.chips+'→'+nc);
+        p.buyIn=nb;p.chips=nc;changed++;
+      }
+    });
+    editMode=false;$('btn-edit').textContent='编辑账面';
+    $('msg').textContent=changed?('账面已更新（修改了 '+changed+' 名玩家）。'):'账面无改动。';
+    render(false);
+  }
 }
 function log(s){logs.push(s);}
 
@@ -306,7 +338,7 @@ function best7(seven){let best=null;for(let a=0;a<3;a++)for(let b=a+1;b<4;b++)fo
 function cmp(x,y){const n=Math.max(x.length,y.length);for(let i=0;i<n;i++){const a=x[i]||0,b=y[i]||0;if(a!==b)return a-b;}return 0;}
 
 /* ---------- seat helpers ---------- */
-let sbSeat=-1,bbSeat=-1,gameStarted=false;
+let sbSeat=-1,bbSeat=-1,gameStarted=false,editMode=false;
 function nextSeat(from,pred){for(let k=1;k<=numPlayers;k++){const i=(from+k)%numPlayers;if(pred(i,players[i]))return i;}return -1;}
 function withChips(i,p){return p.chips>0;}
 function inHandSeat(i,p){return p.inHand;}
@@ -325,7 +357,7 @@ function startGame(){
   gameStarted=true;dealer=-1;
   $('setup').style.opacity=.5;$('minus').disabled=true;$('plus').disabled=true;
   $('buyin').disabled=true;$('sb').disabled=true;$('bb').disabled=true;
-  $('btn-start').disabled=true;$('btn-restart').disabled=false;
+  $('btn-start').disabled=true;$('btn-restart').disabled=false;$('btn-edit').disabled=false;
   startHand();
 }
 function rebuy(i){
@@ -341,6 +373,7 @@ function startHand(){
   // reset
   players.forEach(p=>{p.hole=[];p.bet=0;p.committed=0;p.folded=false;p.allIn=false;p.need=false;p.winner=false;p.inHand=p.chips>0;});
   peeked=Array(numPlayers).fill(false);
+  editMode=false;$('btn-edit').textContent='编辑账面';
   $('rank-'+0); players.forEach((p,i)=>{const r=$('rank-'+i);if(r)r.textContent='';});
   pot=0;currentBet=0;minRaiseSize=BB;prevReveal=0;stage='preflop';
   deck=shuffle(buildDeck());
@@ -517,6 +550,7 @@ function restart(){
   $('setup').style.opacity=1;$('minus').disabled=false;$('plus').disabled=false;
   $('buyin').disabled=false;$('sb').disabled=false;$('bb').disabled=false;
   $('btn-start').disabled=false;$('btn-next').disabled=true;$('btn-restart').disabled=true;
+  $('btn-edit').disabled=true;editMode=false;$('btn-edit').textContent='编辑账面';
   $('msg').textContent='设置人数、买入与盲注，点「开始游戏」给每人发筹码并开局。';
   render(false);
 }
@@ -528,6 +562,7 @@ $('plus').onclick=()=>setCount(numPlayers+1);
 $('btn-start').onclick=startGame;
 $('btn-next').onclick=startHand;
 $('btn-restart').onclick=restart;
+$('btn-edit').onclick=toggleEdit;
 
 ensurePlayers();render(false);
 </script>
