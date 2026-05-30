@@ -491,7 +491,7 @@ function showdown(){
   pots.forEach((pt,idx)=>{
     const elig=pt.eligible.filter(i=>scoreOf[i]);
     if(!elig.length)return;
-    let best=null;elig.forEach(i=>{if(!best||cmp(scoreOf[i],scoreOf[best])>0)best=i;});
+    let best=null;elig.forEach(i=>{if(best===null||cmp(scoreOf[i],scoreOf[best])>0)best=i;});
     const winners=elig.filter(i=>cmp(scoreOf[i],scoreOf[best])===0);
     const share=Math.floor(pt.amount/winners.length);let rem=pt.amount-share*winners.length;
     winners.forEach(i=>{let add=share;if(rem>0){add++;rem--;}players[i].chips+=add;players[i].winner=true;won[i]=(won[i]||0)+add;});
