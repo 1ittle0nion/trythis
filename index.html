@@ -377,9 +377,9 @@ function startHand(){
   $('rank-'+0); players.forEach((p,i)=>{const r=$('rank-'+i);if(r)r.textContent='';});
   pot=0;currentBet=0;minRaiseSize=BB;prevReveal=0;stage='preflop';
   deck=shuffle(buildDeck());
-  // deal 2 each
-  const order=[];let s=dealer;for(let k=0;k<numPlayers;k++){s=nextSeat(s,inHandSeat);if(s<0)break;order.push(s);}
-  for(let r=0;r<2;r++)for(const i of (order.length?order:players.map((_,i)=>i).filter(i=>players[i].inHand)))players[i].hole.push(deck.pop());
+  // deal 2 each — build the seating order so every in-hand player appears exactly once
+  const order=players.map((_,i)=>i).filter(i=>players[i].inHand);
+  for(let r=0;r<2;r++)for(const i of order)players[i].hole.push(deck.pop());
   community=[deck.pop(),deck.pop(),deck.pop(),deck.pop(),deck.pop()];
   // dealer + blinds
   dealer=nextSeat(dealer,inHandSeat);
