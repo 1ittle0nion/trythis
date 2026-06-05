@@ -15,7 +15,8 @@
     --panel:rgba(255,251,243,0.78);
     --disp:'ZCOOL XiaoWei', serif; --body:'Noto Sans SC', sans-serif;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;}
+  input{-webkit-user-select:text; user-select:text;}
   html,body{margin:0; height:100%; overflow:hidden;}
   body{font-family:var(--body); color:var(--ink); user-select:none;
     background:
@@ -213,10 +214,28 @@
 <script>
 "use strict";
 /* ===== STORAGE ===== */
-const store={ mem:new Map(), has(){return typeof window!=="undefined"&&window.storage;},
-  async get(k,s=false){ if(this.has()){try{const r=await window.storage.get(k,s);return r?r.value:null;}catch(e){return null;}} return this.mem.has(k)?this.mem.get(k):null;},
-  async set(k,v,s=false){ if(this.has()){try{await window.storage.set(k,v,s);}catch(e){}} this.mem.set(k,v);},
-  async list(p,s=false){ if(this.has()){try{const r=await window.storage.list(p,s);return(r&&r.keys)?r.keys:[];}catch(e){return[];}} return[...this.mem.keys()].filter(k=>k.startsWith(p));} };
+/* ★★ 想让「房间PK / 全球榜」在你部署的网站上跨设备生效，把下面 FB 填成你的
+   Firebase 实时数据库地址，形如： https://你的项目-default-rtdb.firebaseio.com
+   （留空也能玩，但房间和全球榜只在本机有效，无法和好友互通）★★ */
+const FB = "https://ittle0nion-tryjump-default-rtdb.asia-southeast1.firebasedatabase.app";
+const store={
+  wsOK(){ return typeof window!=="undefined" && window.storage; },
+  async get(k,s=false){
+    if(this.wsOK()){ try{ const r=await window.storage.get(k,s); return r?r.value:null; }catch(e){} }
+    if(s && FB){ try{ const r=await fetch(`${FB}/${k.replace(/:/g,"/")}.json`); const d=await r.json(); return (d==null)?null:d; }catch(e){ return null; } }
+    try{ return localStorage.getItem("ij_"+k); }catch(e){ return null; }
+  },
+  async set(k,v,s=false){
+    if(this.wsOK()){ try{ await window.storage.set(k,v,s); return; }catch(e){} }
+    if(s && FB){ try{ await fetch(`${FB}/${k.replace(/:/g,"/")}.json`,{method:"PUT",body:JSON.stringify(v)}); return; }catch(e){} }
+    try{ localStorage.setItem("ij_"+k,v); }catch(e){}
+  },
+  async list(prefix,s=false){
+    if(this.wsOK()){ try{ const r=await window.storage.list(prefix,s); if(r&&r.keys) return r.keys; }catch(e){} }
+    if(s && FB){ try{ const path=prefix.replace(/:/g,"/").replace(/\/$/,""); const r=await fetch(`${FB}/${path}.json?shallow=true`); const d=await r.json(); return d?Object.keys(d).map(x=>prefix+x):[]; }catch(e){ return []; } }
+    try{ const out=[]; for(let i=0;i<localStorage.length;i++){ const kk=localStorage.key(i); if(kk&&kk.indexOf("ij_"+prefix)===0) out.push(kk.slice(3)); } return out; }catch(e){ return []; }
+  }
+};
 const J=o=>JSON.stringify(o), P=s=>{try{return JSON.parse(s);}catch(e){return null;}};
 const safe=s=>(s||"").trim().replace(/[\s\/\\'"]+/g,"_").slice(0,24)||"玩家";
 const $=id=>document.getElementById(id);
@@ -378,7 +397,7 @@ $("lbClose").onclick=()=>overlay("lb",false);
 
 /* ===== ISOMETRIC GAME ===== */
 const canvas=$("game"), ctx=canvas.getContext("2d");
-let W=0,H=0,DPR=1, ISO_W=0.92, ISO_H=0.46;
+let W=0,H=0,DPR=1, ISO_W=0.8, ISO_H=0.5;
 function resize(){ const r=canvas.getBoundingClientRect(); W=r.width; H=r.height; DPR=Math.min(window.devicePixelRatio||1,2);
   canvas.width=W*DPR; canvas.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
 window.addEventListener("resize",()=>{ if($("gameScreen").classList.contains("on")) resize(); });
@@ -393,7 +412,7 @@ function cwy(p){ return (p.type==="moving"&&p.axis==="y")? p.base : p.wy; }
 function makePlat(wx,wy,type){ type=type||"round"; const r = type==="small"? RAD*0.6 : RAD*(0.9+Math.random()*0.18);
   const p={wx,wy,r,type,standT:0,broken:false}; if(type==="moving"){ p.axis=Math.random()<0.5?"x":"y"; p.amp=24+Math.random()*22; p.base=(p.axis==="x"?wx:wy); p.phase=Math.random()*7; } return p; }
 function addNext(){ const c=G_.platforms[G_.platforms.length-1]; const diff=Math.min(1,G_.score/28);
-  const gap=GMIN+Math.random()*((GMAX+diff*80)-GMIN); let type="round"; const special=0.1+diff*0.45;
+  const gap=GMIN+Math.random()*((GMAX+diff*45)-GMIN); let type="round"; const special=0.1+diff*0.45;
   if(Math.random()<special){ const pool=G_.score<5?["hex","small"]:["hex","small","moving","fragile"]; type=pool[Math.floor(Math.random()*pool.length)]; }
   let nx=cwx(c), ny=cwy(c); if(Math.random()<0.5) nx+=gap; else ny+=gap; G_.platforms.push(makePlat(nx,ny,type)); }
 
@@ -406,7 +425,7 @@ function startGame(){
   if(roomCode){ $("liveBoard").style.display="block"; writeMyRoom(0,"playing"); updateLive(); startLivePoll(); } else $("liveBoard").style.display="none";
   if(raf)cancelAnimationFrame(raf); last=performance.now(); raf=requestAnimationFrame(loop);
 }
-function setCamTarget(){ const sx=W*0.5, sy=H*0.62, p=curPlat(); G_.camTX=sx-(cwx(p)-cwy(p))*ISO_W; G_.camTY=sy+(cwx(p)+cwy(p))*ISO_H; }
+function setCamTarget(){ const a=curPlat(), b=nextPlat(); const mx=(cwx(a)+(b?cwx(b):cwx(a)))/2, my=(cwy(a)+(b?cwy(b):cwy(a)))/2; const sx=W*0.5, sy=H*0.56; G_.camTX=sx-(mx-my)*ISO_W; G_.camTY=sy+(mx+my)*ISO_H; }
 
 function press(){ if(G_.phase!=="idle")return; SFX.init(); G_.phase="charging"; G_.chargeStart=performance.now(); SFX.startCharge(); $("gameHint").style.display="none"; }
 function release(){ if(G_.phase!=="charging")return; const power=Math.min(1,(performance.now()-G_.chargeStart)/CHARGE); SFX.stopCharge(); SFX.jump(power);
@@ -421,6 +440,7 @@ function update(dt){
   G_.camX+=(G_.camTX-G_.camX)*Math.min(1,dt*6); G_.camY+=(G_.camTY-G_.camY)*Math.min(1,dt*6);
   if(G_.landFx>0)G_.landFx-=dt*3; if(G_.shake>0)G_.shake-=dt*4;
   for(const p of G_.platforms){ if(p.type==="moving"&&!p.broken){ const v=p.base+Math.sin(nowT*1.1+p.phase)*p.amp; if(p.axis==="x")p.wx=v; else p.wy=v; } }
+  if(G_.phase==="idle"||G_.phase==="charging"){ const cp=curPlat(); if(cp&&cp.type==="moving"){ G_.chx=cp.wx; G_.chy=cp.wy; } }
   for(const s of G_.sparks){ s.wz+=s.vz*dt; s.vz-=200*dt; s.life-=dt; s.wx+=s.vx*dt; s.wy+=s.vy*dt; }
   G_.sparks=G_.sparks.filter(s=>s.life>0);
   if(G_.phase==="charging"){ G_.charge=Math.min(1,(performance.now()-G_.chargeStart)/CHARGE); SFX.setCharge(G_.charge); }
@@ -458,11 +478,11 @@ function render(){
   const g=ctx.createRadialGradient(W*0.5,H*0.3,40,W*0.5,H*0.3,H*0.8); g.addColorStop(0,"rgba(255,255,255,0.25)"); g.addColorStop(1,"rgba(255,255,255,0)"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
   const order=G_.platforms.map((p,i)=>i).sort((a,b)=>(G_.platforms[a].wx+G_.platforms[a].wy)-(G_.platforms[b].wx+G_.platforms[b].wy));
   for(const i of order){ const compress=(i===G_.cur&&G_.phase==="charging")?G_.charge:0; drawPlat(G_.platforms[i], i===G_.cur+1, compress); }
-  if(G_.phase!=="dead"){ const sp=proj(G_.chx,G_.chy,0); ctx.fillStyle="rgba(79,67,57,0.16)"; ctx.beginPath(); ctx.ellipse(sp.x,sp.y,14-Math.min(10,G_.chz*0.06),6,0,0,7); ctx.fill(); }
+  if(G_.phase!=="dead"){ const sp=proj(G_.chx,G_.chy,0); const dp=(G_.phase==="charging"?G_.charge*7:0); ctx.fillStyle="rgba(79,67,57,0.16)"; ctx.beginPath(); ctx.ellipse(sp.x,sp.y+dp,14-Math.min(10,G_.chz*0.06),6,0,0,7); ctx.fill(); }
   const cp=proj(G_.chx,G_.chy,G_.chz);
   let pose=G_.phase==="charging"?"squat":(G_.phase==="jumping"||G_.phase==="dead")?"jump":(G_.landFx>0.6?"squat":"idle");
   const sk2=G_.phase==="charging"?G_.charge:(G_.landFx>0.6?0.4:1);
-  drawChar(ctx,me.char,cp.x,cp.y- (G_.phase==="charging"?G_.charge*4:0),1.15,pose,sk2);
+  drawChar(ctx,me.char,cp.x,cp.y+(G_.phase==="charging"?G_.charge*7:0),1.15,pose,sk2);
   ctx.textAlign="center"; ctx.font="15px 'Noto Sans SC'";
   for(const s of G_.sparks){ const sp=proj(s.wx,s.wy,s.wz); ctx.globalAlpha=Math.max(0,s.life); ctx.fillStyle=s.c; ctx.fillText(s.g,sp.x,sp.y); }
   ctx.globalAlpha=1; ctx.restore();
