@@ -8,10 +8,10 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root{
-    --bg:linear-gradient(165deg,#efe7d5 0%,#f3ece0 55%,#eee6d6 100%);
-    --panel:#fdfaf3; --panel2:#f4eedf; --line:#e6ddc8;
-    --txt:#4a4233; --txt2:#9d9380; --accent:#9f8fd6; --accent-deep:#6f5fa6;
-    --pink:#ea99ab; --green:#bcd6b5; --radius:14px;
+    --bg:#f1f0f3;
+    --panel:#ffffff; --panel2:#f7f6f8; --line:#e7e5ea;
+    --txt:#2d2c33; --txt2:#9b99a3; --accent:#f58aa6; --accent-deep:#e85d82;
+    --pink:#ff9bb3; --green:#c9ebca; --radius:14px;
   }
   body{
     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
@@ -43,7 +43,7 @@
     width:100%; background:var(--panel2); border:1px solid var(--line);
     color:var(--txt); padding:9px 11px; border-radius:9px; font-size:14px; font-family:inherit;
   }
-  input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(159,143,214,.22); }
+  input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(245,138,166,.25); }
   .avatar-pick{ display:flex; align-items:center; gap:10px; }
   .avatar-prev{
     width:44px; height:44px; border-radius:8px; background:var(--panel2);
@@ -55,8 +55,8 @@
     cursor:pointer; font-family:inherit; transition:.15s;
   }
   .btn-ghost{ background:var(--panel2); color:var(--txt); border:1px solid var(--line); }
-  .btn-ghost:hover{ border-color:var(--accent); background:#efe9f6; color:var(--accent-deep); }
-  .btn-accent{ background:linear-gradient(135deg,#a596dd,#6f5fa6); color:#fff; width:100%; padding:14px; font-size:15px; border-radius:12px; box-shadow:0 8px 20px rgba(111,95,166,.3); }
+  .btn-ghost:hover{ border-color:var(--accent); background:#fdeef2; color:var(--accent-deep); }
+  .btn-accent{ background:linear-gradient(135deg,#fba3bb,#ee6a8e); color:#fff; width:100%; padding:14px; font-size:15px; border-radius:12px; box-shadow:0 8px 20px rgba(238,106,142,.3); }
   .btn-accent:hover{ filter:brightness(1.08); }
   .btn-sm{ padding:6px 10px; font-size:12px; }
   .member-card{
@@ -78,19 +78,19 @@
     width:100%; background:var(--panel); border:1px solid var(--line); color:var(--txt);
     border-radius:8px; padding:8px; font-size:14px; font-family:inherit; resize:vertical; min-height:38px;
   }
-  .msg-edit textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(159,143,214,.22); }
+  .msg-edit textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(245,138,166,.25); }
   .icon-btn{
     background:transparent; border:0; color:var(--txt2); cursor:pointer; font-size:16px;
     padding:4px 6px; border-radius:6px;
   }
   .icon-btn:hover{ color:#ff6b8a; background:rgba(255,155,179,.16); }
   .hint{ font-size:11px; color:var(--txt2); margin-top:6px; }
-  #addMsgBtn, #addMemberBtn{ background:#fff1f4; border-color:#ffd2dc; color:#e76a89; }
-  #addMsgBtn:hover, #addMemberBtn:hover{ background:#ffe5ec; border-color:var(--pink); color:#d84f72; }
+  #addMsgBtn, #addMemberBtn{ background:#eef7ee; border-color:#c9ebca; color:#5aa86a; }
+  #addMsgBtn:hover, #addMemberBtn:hover{ background:#e2f1e2; border-color:#a6d6a8; color:#4c9a5c; }
   .hidden{ display:none !important; }
-  .modal{ position:fixed; inset:0; background:rgba(60,50,35,.5); display:flex; align-items:center; justify-content:center; z-index:100; padding:24px; }
+  .modal{ position:fixed; inset:0; background:rgba(45,42,52,.5); display:flex; align-items:center; justify-content:center; z-index:100; padding:24px; }
   .modal.hidden{ display:none !important; }
-  .modal-box{ background:#fdfaf3; border-radius:18px; padding:20px; max-width:330px; width:100%; max-height:88vh; overflow:auto; text-align:center; box-shadow:0 24px 70px rgba(60,50,35,.4); }
+  .modal-box{ background:#fff; border-radius:18px; padding:20px; max-width:330px; width:100%; max-height:88vh; overflow:auto; text-align:center; box-shadow:0 24px 70px rgba(45,42,52,.4); }
   .modal-title{ font-size:16px; font-weight:700; color:var(--accent-deep); margin-bottom:14px; }
   .modal-box img{ width:100%; border-radius:10px; border:1px solid var(--line); margin-bottom:14px; display:block; }
   .modal-box .btn{ display:block; width:100%; text-decoration:none; margin-bottom:8px; box-sizing:border-box; }
@@ -100,7 +100,7 @@
   .preview-tools{ margin-bottom:18px; display:flex; gap:10px; align-items:center; }
   .phone{
     width:375px; background:#ededed; overflow:hidden;
-    box-shadow:0 24px 60px rgba(120,100,70,.28); border-radius:6px;
+    box-shadow:0 24px 60px rgba(70,65,80,.2); border-radius:6px;
   }
 
   /* 状态栏 */
@@ -164,14 +164,14 @@
 
   /* ====== 微信主题 ====== */
   .phone.wechat{ background:#ededed; }
-  .phone.wechat .navbar{ background:#ededed; }
+  .phone.wechat .navbar{ background:#ededed; border-bottom:1px solid #d9d9d9; }
   .phone.wechat .chat-body{ background:#ededed; }
   .phone.wechat .msg.me .bubble{ background:#95ec69; }
 
   /* ====== QQ 主题 ====== */
   .phone.qq{ background:#fff; }
   .phone.qq .statusbar{ color:#000; }
-  .phone.qq .navbar{ background:#fff; border-bottom:1px solid #f0f0f0; }
+  .phone.qq .navbar{ background:#fff; border-bottom:1px solid #e2e2e2; }
   .phone.qq .chat-body{ background:#f2f4f7; min-height:320px; }
   .phone.qq .msg .av{ border-radius:50%; }
   .phone.qq .msg .bubble{ border-radius:8px; font-size:15.5px; }
@@ -297,6 +297,17 @@
     </div>
 
     <div class="group">
+      <div class="group-title">聊天背景(可选)</div>
+      <div class="avatar-pick">
+        <div class="avatar-prev" id="chatBgPrev" style="width:64px;height:44px;border-radius:8px">无</div>
+        <input type="file" id="chatBgInput" accept="image/*" class="hidden">
+        <button class="btn btn-ghost btn-sm" id="chatBgBtn">上传背景</button>
+        <button class="btn btn-ghost btn-sm" id="chatBgClear">清除</button>
+      </div>
+      <div class="hint">设置后聊天区会铺上这张图(适合微信/QQ)。</div>
+    </div>
+
+    <div class="group">
       <div class="group-title" id="membersTitle">对方</div>
       <div id="membersList"></div>
       <button class="btn btn-ghost btn-sm hidden" id="addMemberBtn">+ 添加群成员</button>
@@ -377,6 +388,7 @@ let state = {
   time:'20:08', carrier:'中国移动', battery:'86',
   title:'小明',
   myAvatar:DEFAULT_AV,
+  chatBg:null,
   members:[ {id:'m1', name:'小明', avatar:DEFAULT_AV} ],
   messages:[
     {id:'x0', sender:'me', type:'time', text:'下午 3:24'},
@@ -520,6 +532,13 @@ function renderPreview(){
 
   const body = document.getElementById('vChatBody');
   body.innerHTML = '';
+  if(state.chatBg){
+    body.style.backgroundImage = `url(${state.chatBg})`;
+    body.style.backgroundSize = 'cover';
+    body.style.backgroundPosition = 'center';
+  } else {
+    body.style.backgroundImage = '';
+  }
   const plat = state.platform==='wechat'?'微信':'QQ';
 
   if(state.platform==='imessage'){
@@ -628,6 +647,22 @@ document.getElementById('myAvatarInput').onchange = e=>{
     document.getElementById('myAvatarPrev').textContent='';
     renderPreview();
   });
+};
+document.getElementById('chatBgBtn').onclick = ()=> document.getElementById('chatBgInput').click();
+document.getElementById('chatBgPrev').onclick = ()=> document.getElementById('chatBgInput').click();
+document.getElementById('chatBgInput').onchange = e=>{
+  if(e.target.files[0]) readImage(e.target.files[0], d=>{
+    state.chatBg=d;
+    const p=document.getElementById('chatBgPrev');
+    p.style.backgroundImage=`url(${d})`; p.textContent='';
+    renderPreview();
+  });
+};
+document.getElementById('chatBgClear').onclick = ()=>{
+  state.chatBg=null;
+  const p=document.getElementById('chatBgPrev');
+  p.style.backgroundImage=''; p.textContent='无';
+  renderPreview();
 };
 document.getElementById('addMemberBtn').onclick = ()=>{
   state.members.push({id:nid('m'), name:'新成员', avatar:DEFAULT_AV});
