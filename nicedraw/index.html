@@ -342,6 +342,29 @@ async function saveStore(){
 }
 function uid(){ return "a"+Math.random().toString(36).slice(2,9); }
 
+/* ---- real, openable share links (no backend: activity is embedded in the URL) ---- */
+function b64e(o){ return btoa(unescape(encodeURIComponent(JSON.stringify(o)))); }
+function b64d(s){ return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+function shareUrl(act){
+  if(!act) return location.href;
+  const slim={id:act.id,title:act.title,desc:act.desc,type:act.type,icon:act.icon,color:act.color,
+    accessMode:act.accessMode,accessPassword:act.accessPassword,maxDraws:act.maxDraws,
+    allowRedraw:act.allowRedraw,canViewHistory:act.canViewHistory,creator:act.creator,config:act.config};
+  return location.origin+location.pathname+"#a="+encodeURIComponent(b64e(slim));
+}
+let incomingAct=null;                       // 通过分享链接打开的活动（不写入本地"我创建的"）
+function findAct(id){
+  return store.activities.find(a=>a.id===id) || (incomingAct&&incomingAct.id===id?incomingAct:null);
+}
+function routeFromHash(){
+  const m=(location.hash||"").match(/a=([^&]+)/);
+  if(!m) return null;
+  try{ const act=b64d(decodeURIComponent(m[1]));
+    if(act&&act.id){ act.records=act.records||[]; act.incoming=true; incomingAct=act; return act; }
+  }catch(e){}
+  return null;
+}
+
 /* ============ RENDER HELPERS ============ */
 const app = document.getElementById('app');
 let toastTimer;
@@ -731,7 +754,8 @@ async function publishDraft(){
 /* ============ PUBLISH SUCCESS ============ */
 function renderPublishSuccess(act){
   confetti();
-  const url=`draw.luckyfun.com/${act.id}`;
+  const url=shareUrl(act);
+  const shown=(location.host||"抽签屋")+"/…#"+act.id;
   showScreen(`
     <div class="success">
       <div class="bunting">🎊🎉🎊🎉🎊</div>
@@ -739,12 +763,12 @@ function renderPublishSuccess(act){
       <h2 class="disp">抽签创建成功！</h2>
       <div class="sub">快去分享给大家吧～</div>
       <div class="linkbox">
-        <div class="lt">🔗 活动链接</div>
-        <div class="lr"><div class="url">${url}</div>
+        <div class="lt">🔗 活动链接（点开即可参与）</div>
+        <div class="lr"><div class="url">${shown}</div>
           <button class="copy" onclick="copyLink('${url}')">复制链接</button></div>
       </div>
       <div class="threeact">
-        <button onclick="toast('分享面板：微信 / 复制 / 系统分享')"><div class="c" style="background:var(--peach-soft)">📤</div><div class="lab">分享链接</div></button>
+        <button onclick="openParticipate('${act.id}')"><div class="c" style="background:var(--peach-soft)">👀</div><div class="lab">打开活动</div></button>
         <button onclick="toast('二维码已生成（演示）')"><div class="c" style="background:var(--mint-soft)">🔳</div><div class="lab">生成二维码</div></button>
         <button onclick="openManage('${act.id}')"><div class="c" style="background:var(--lav-soft)">📋</div><div class="lab">管理活动</div></button>
       </div>
@@ -756,15 +780,15 @@ function renderPublishSuccess(act){
   `);
 }
 function copyLink(u){
-  navigator.clipboard?.writeText("https://"+u).catch(()=>{});
-  toast("链接已复制 ✓");
+  navigator.clipboard?.writeText(u).catch(()=>{});
+  toast("链接已复制 ✓ 粘贴到浏览器即可打开");
 }
 
 /* ============ PARTICIPATE ============ */
 let session=null; // {act, subjectName}
 function openParticipate(id){
-  const act=store.activities.find(a=>a.id===id);
-  if(!act) return;
+  const act=findAct(id);
+  if(!act){ toast("没找到这个活动～"); return renderHome(); }
   if(act.type==="random_group"){ // grouping is creator-run; show group result directly
     return renderGroupResult(act,true);
   }
@@ -990,7 +1014,7 @@ function renderGroupResult(act,fromParticipate){
         <p class="muted" style="font-size:12px;margin-top:8px">← 左右滑动查看所有小组 →</p>
       </div>
       <div class="res-foot">
-        <button class="btn btn-ghost" onclick="renderGroupResult(store.activities.find(a=>a.id==='${act.id}'),${!!fromParticipate})">🔄 重新分组</button>
+        <button class="btn btn-ghost" onclick="renderGroupResult(findAct('${act.id}'),${!!fromParticipate})">🔄 重新分组</button>
         <button class="btn btn-mint" onclick="toast('分组结果已保存 ✓')">💾 保存结果</button>
       </div>
     </div>
@@ -1042,7 +1066,7 @@ function renderManage(id){
           <div class="stat"><div class="v">${act.maxDraws===99?'∞':(act.type==='random_group'?'—':act.maxDraws)}</div><div class="k">每人次数</div></div>
         </div>
       </div>
-      ${act.type==='random_group'? `<button class="btn btn-mint" style="width:100%;margin-bottom:14px" onclick="renderGroupResult(store.activities.find(a=>a.id==='${act.id}'),false)">🎲 执行随机分组</button>`
+      ${act.type==='random_group'? `<button class="btn btn-mint" style="width:100%;margin-bottom:14px" onclick="renderGroupResult(findAct('${act.id}'),false)">🎲 执行随机分组</button>`
         : `<button class="btn btn-primary" style="margin-bottom:14px" onclick="openParticipate('${act.id}')">👀 预览参与页 / 试抽</button>`}
       <div class="mtabs">
         <button class="${manageTab==='records'?'on':''}" onclick="setMTab('${act.id}','records')">参与记录</button>
@@ -1052,7 +1076,7 @@ function renderManage(id){
     </div>
     <div class="foot">
       <button class="btn btn-mint" onclick="exportCSV('${act.id}')">导出记录</button>
-      <button class="btn btn-primary" onclick="copyLink('draw.luckyfun.com/${act.id}')">分享活动</button>
+      <button class="btn btn-primary" onclick="copyLink(shareUrl(findAct('${act.id}')))">分享活动</button>
     </div>
   `);
 }
@@ -1076,8 +1100,14 @@ function exportCSV(id){
 /* ============ INIT ============ */
 (async function(){
   await loadStore();
-  renderHome();
+  const incoming = routeFromHash();
+  if(incoming){ openParticipate(incoming.id); }
+  else { renderHome(); }
 })();
+window.addEventListener('hashchange', ()=>{
+  const inc = routeFromHash();
+  if(inc) openParticipate(inc.id);
+});
 </script>
 </body>
 </html>
