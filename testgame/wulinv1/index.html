@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>宗门大啥比 · 玩家端原型</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --su:#E4E7E2; --zhi:#F3F4F0; --mo:#1B1F1D; --dai:#5C6660;
+  --zhu:#B0342A; --qing:#5F8272; --jin:#8A7B4F;
+  --xian:rgba(27,31,29,.14); --xian2:rgba(27,31,29,.07);
+  --serif:"Noto Serif SC","Songti SC",serif;
+  --sans:"Noto Sans SC","PingFang SC",sans-serif;
+  --mono:"JetBrains Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--su);color:var(--mo);font-family:var(--sans);font-size:14px;line-height:1.8;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+::selection{background:var(--zhu);color:var(--zhi)}
+:focus-visible{outline:2px solid var(--zhu);outline-offset:2px}
+
+/* ============ shell ============ */
+.app{display:grid;grid-template-columns:210px minmax(0,1fr);max-width:1100px;margin:0 auto;min-height:100vh}
+.rail{border-right:1px solid var(--xian);padding:26px 0 26px 24px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.brand{display:flex;gap:13px;align-items:flex-start;margin-bottom:34px}
+.vt{writing-mode:vertical-rl;font-family:var(--serif);font-weight:900;font-size:20px;letter-spacing:.2em;line-height:1;height:118px;border-left:2px solid var(--zhu);padding-left:9px}
+.brand small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--zhu);padding-top:3px}
+.brand em{display:block;font-style:normal;font-size:11px;color:var(--dai);margin-top:7px;line-height:1.7}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{
+  display:flex;align-items:center;gap:9px;background:none;border:0;border-left:2px solid transparent;
+  color:var(--dai);text-align:left;padding:7px 12px 7px 12px;margin-left:-14px;font-size:13.5px;transition:.16s;
+}
+.nav button:hover{color:var(--mo)}
+.nav button.on{color:var(--zhu);border-left-color:var(--zhu);font-weight:500}
+.nav i{font-family:var(--mono);font-style:normal;font-size:10px;opacity:.5}
+.dot{margin-left:auto;background:var(--zhu);color:#fff;font-family:var(--mono);font-size:9.5px;padding:0 5px;border-radius:8px;line-height:15px}
+.dot.q{background:var(--qing)}
+.clock{margin-top:auto;border-top:1px solid var(--xian);padding-top:16px;padding-right:24px}
+.clock b{display:block;font-family:var(--mono);font-size:19px;letter-spacing:.05em;color:var(--zhu)}
+.clock span{font-size:11px;color:var(--dai)}
+
+main{padding:30px 46px 90px;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding-bottom:16px;border-bottom:1px solid var(--xian);margin-bottom:26px;flex-wrap:wrap}
+.head h1{font-family:var(--serif);font-size:26px;font-weight:600;margin:0;letter-spacing:.02em}
+.head .sub{font-size:12px;color:var(--dai);margin-top:3px}
+.day{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--qing);border:1px solid var(--xian);padding:4px 10px}
+
+/* ============ common ============ */
+.card{background:var(--zhi);border:1px solid var(--xian);padding:20px 22px;margin-bottom:16px}
+.card h3{font-family:var(--serif);font-size:16px;font-weight:600;margin:0 0 14px;letter-spacing:.02em}
+.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--qing);text-transform:uppercase;display:block;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.tagx{display:inline-block;font-size:11px;padding:1px 8px;border:1px solid var(--xian);color:var(--dai);margin:0 5px 5px 0;background:rgba(255,255,255,.5)}
+.tagx.z{color:var(--zhu);border-color:rgba(176,52,42,.4)}
+.tagx.q{color:var(--qing);border-color:rgba(95,130,114,.45)}
+.tagx.j{color:var(--jin);border-color:rgba(138,123,79,.45)}
+.hint{font-family:var(--serif);font-size:14.5px;line-height:1.95;padding:7px 0 7px 15px;border-left:2px solid var(--xian);margin:0 0 4px}
+.hint.lv3{border-left-color:var(--zhu);color:var(--mo)}
+.hint.lv2{border-left-color:var(--jin)}
+.muted{color:var(--dai);font-size:12.5px}
+
+/* stat bars */
+.stat{margin-bottom:11px}
+.stat .r{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.stat .r b{font-family:var(--mono);font-weight:600;font-size:12px}
+.bar{height:3px;background:var(--xian2);position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--mo);transition:width .6s cubic-bezier(.2,.7,.3,1)}
+.bar.risk i{background:var(--zhu)}
+.delta{font-family:var(--mono);font-size:11px;margin-left:6px}
+.delta.up{color:var(--qing)}.delta.dn{color:var(--zhu)}
+
+/* disciple */
+.disc{background:var(--zhi);border:1px solid var(--xian);padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:.18s}
+.disc:hover{border-color:var(--dai)}
+.disc .top{display:flex;align-items:baseline;gap:10px}
+.disc .nm{font-family:var(--serif);font-size:18px;font-weight:600}
+.disc .role{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--qing)}
+.disc .mini{display:flex;gap:14px;flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--dai)}
+.disc .mini b{font-family:var(--mono);color:var(--mo);font-weight:600}
+.disc .body{display:none;margin-top:15px;padding-top:14px;border-top:1px solid var(--xian2)}
+.disc.open .body{display:block}
+.rel{font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--xian2)}
+.rel:last-child{border:0}
+.rel em{font-style:normal;color:var(--zhu);font-weight:500}
+
+/* action picker */
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.opt{
+  background:rgba(255,255,255,.55);border:1px solid var(--xian);padding:10px 12px;text-align:left;
+  font-size:13px;color:var(--mo);transition:.15s;line-height:1.5;
+}
+.opt:hover{border-color:var(--dai)}
+.opt.sel{border-color:var(--zhu);background:rgba(176,52,42,.06);box-shadow:inset 2px 0 0 var(--zhu)}
+.opt small{display:block;color:var(--dai);font-size:11px;margin-top:3px}
+.slot{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--xian2)}
+.slot:last-of-type{border:0;padding-bottom:0}
+.slot .sh{display:flex;align-items:baseline;gap:10px;margin-bottom:11px}
+.slot .sh b{font-family:var(--serif);font-size:15px;font-weight:600}
+.slot .sh span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--qing)}
+.slot .sh .ok{color:var(--zhu)}
+.sub{margin-top:11px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select{
+  font-family:inherit;font-size:13px;padding:6px 10px;background:var(--zhi);
+  border:1px solid var(--xian);color:var(--mo);
+}
+.whisper{font-size:11.5px;color:var(--dai);font-style:italic;margin-top:8px}
+.submit{
+  width:100%;padding:14px;background:var(--mo);color:var(--su);border:0;
+  font-family:var(--serif);font-size:16px;letter-spacing:.16em;font-weight:600;transition:.2s;
+}
+.submit:disabled{background:var(--xian);color:var(--dai);cursor:not-allowed}
+.submit.done{background:var(--qing)}
+
+/* events */
+.ev{background:var(--zhi);border:1px solid var(--xian);margin-bottom:16px}
+.ev .eh{padding:14px 20px;border-bottom:1px solid var(--xian2);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ev .eh b{font-family:var(--serif);font-size:16px;font-weight:600}
+.ev .eb{padding:18px 20px}
+.ev .scene{font-family:var(--serif);font-size:15px;line-height:2;margin:0 0 16px}
+.ev .choices{display:flex;flex-direction:column;gap:7px}
+.res{margin-top:16px;padding:16px 18px;background:rgba(95,130,114,.07);border-left:2px solid var(--qing);font-family:var(--serif);font-size:14.5px;line-height:2}
+.res .d{font-family:var(--mono);font-size:11.5px;color:var(--dai);margin-top:9px;letter-spacing:.03em}
+
+/* relations */
+.rw{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--xian2);flex-wrap:wrap}
+.rw:last-child{border:0}
+.rw .l b{font-family:var(--serif);font-size:15.5px;font-weight:600}
+.rw .l span{font-size:11.5px;color:var(--dai);margin-left:9px}
+.lvl{font-family:var(--mono);font-size:11px;padding:2px 9px;border:1px solid var(--xian);white-space:nowrap}
+.lvl.good{color:var(--qing);border-color:rgba(95,130,114,.45)}
+.lvl.bad{color:var(--zhu);border-color:rgba(176,52,42,.4)}
+
+/* board */
+.post{background:var(--zhi);border:1px solid var(--xian);padding:16px 18px;margin-bottom:12px}
+.post .ph{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.post .ph b{font-family:var(--serif);font-size:15px}
+.post .ph span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--qing)}
+.post p{font-family:var(--serif);font-size:14.5px;line-height:1.95;margin:0 0 12px}
+.mini-btn{background:none;border:1px solid var(--xian);color:var(--mo);font-size:12px;padding:5px 13px;transition:.15s}
+.mini-btn:hover{border-color:var(--zhu);color:var(--zhu)}
+.mini-btn:disabled{color:var(--dai);border-style:dashed;cursor:not-allowed}
+
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(27,31,29,.55);display:none;align-items:center;justify-content:center;padding:22px;z-index:60}
+.mask.on{display:flex;animation:fade .3s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:var(--zhi);border:1px solid var(--mo);max-width:520px;width:100%;padding:32px 34px;max-height:88vh;overflow:auto}
+.modal .mt{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--qing);margin-bottom:18px}
+.modal .line{font-family:var(--serif);font-size:17px;line-height:2.15;margin:0;opacity:0;transform:translateY(6px);animation:rise .6s cubic-bezier(.2,.7,.3,1) forwards}
+.modal .line:nth-of-type(1){animation-delay:.15s}
+.modal .line:nth-of-type(2){animation-delay:.65s}
+.modal .line:nth-of-type(3){animation-delay:1.15s}
+.modal .line b{color:var(--zhu);font-weight:600;font-size:15.5px}
+@keyframes rise{to{opacity:1;transform:none}}
+.modal .foot{margin-top:24px;padding-top:18px;border-top:1px solid var(--xian);opacity:0;animation:rise .6s ease forwards;animation-delay:1.6s}
+.modal .foot .dl{font-family:var(--mono);font-size:12px;color:var(--dai);margin-bottom:16px}
+.modal .foot .dl em{font-style:normal}
+.modal .foot button{width:100%;padding:11px;background:var(--mo);color:var(--su);border:0;font-size:14px;letter-spacing:.1em}
+@media(prefers-reduced-motion:reduce){.modal .line,.modal .foot{animation:none;opacity:1;transform:none}}
+
+.note{background:rgba(138,123,79,.09);border:1px solid rgba(138,123,79,.3);padding:12px 16px;font-size:12px;color:var(--dai);margin-bottom:20px;line-height:1.8}
+.note b{color:var(--jin)}
+
+/* mobile */
+@media(max-width:860px){
+  .app{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--xian);padding:16px 20px;flex-direction:row;align-items:center;justify-content:space-between}
+  .brand{margin:0;align-items:center}
+  .vt{writing-mode:horizontal-tb;height:auto;font-size:17px;border-left:0;border-bottom:2px solid var(--zhu);padding:0 0 3px}
+  .brand em{display:none}
+  .nav{display:none}
+  .clock{margin:0;border:0;padding:0}
+  .clock b{font-size:15px}
+  main{padding:20px 18px 92px}
+  .grid2{grid-template-columns:1fr}
+  .head h1{font-size:21px}
+  .mnav{
+    display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--zhi);
+    border-top:1px solid var(--xian);z-index:50;
+  }
+  .mnav button{flex:1;background:none;border:0;padding:11px 2px 13px;color:var(--dai);font-size:11px;position:relative}
+  .mnav button.on{color:var(--zhu)}
+  .mnav button i{display:block;font-family:var(--mono);font-style:normal;font-size:9px;opacity:.5;margin-bottom:2px}
+  .mnav .dot{position:absolute;top:5px;left:50%;margin-left:9px}
+  .modal{padding:24px 22px}
+  .modal .line{font-size:15.5px}
+}
+.mnav{display:none}
+</style>
+</head>
+<body>
+
+<div class="app">
+<aside class="rail">
+  <div class="brand">
+    <div class="vt">青冥剑宗</div>
+    <div>
+      <small>剑道</small>
+      <em>掌门 · 你<br>第三日 · 十宗秘境</em>
+    </div>
+  </div>
+  <nav class="nav" id="nav"></nav>
+  <div class="clock">
+    <b id="clk">03:41:22</b>
+    <span>距行动提交截止</span>
+  </div>
+</aside>
+
+<main id="view"></main>
+</div>
+
+<nav class="mnav" id="mnav"></nav>
+
+<div class="mask" id="mask">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/* ================= state ================= */
+const S = {
+  tab:'home',
+  attrs:{底蕴:52,财力:38,声望:61,凝聚:44,纪律:67,隐患:35},
+  styles:[['严苛','开局自选'],['尚武','D2 浮现']],
+  hints:[
+    {t:'演武场近日常有人深夜逗留。',lv:2},
+    {t:'柳窈已两日未至早课。',lv:3},
+    {t:'账房先生欲言又止。',lv:1}
+  ],
+  discs:[
+    {id:'shen',nm:'沈砚',role:'核心 · 首席候补',st:{修为:68,资质:74,忠诚:81,心境:55,野心:62,伤势:1},
+     tags:['慕强','重诺'],
+     rels:[['柳窈（本宗）','宿敌'],['丹霞谷 · 苏晚','初识']],
+     memo:'昨夜切磋误伤落霜剑派弟子，至今未曾开口辩解。'},
+    {id:'liu',nm:'柳窈',role:'核心',st:{修为:61,资质:79,忠诚:43,心境:38,野心:71,伤势:0},
+     tags:['自卑','渴望自由'],
+     rels:[['沈砚（本宗）','嫉妒'],['万宝行 · 陆九','爱慕'],['万宝行 · 陆九','共同秘密']],
+     memo:'资质在你门下最高，却始终未被立为首席。心境已跌破四十。'},
+    {id:'aluo',nm:'阿罗',role:'外门代表',st:{修为:29,资质:66,忠诚:70,心境:72,野心:20,伤势:0},
+     tags:['崇拜宗主'],
+     rels:[['沈砚（本宗）','欣赏']],
+     memo:'外门杂役出身。若你肯花三日培养，她可转为核心弟子。'},
+    {id:'xie',nm:'谢无咎',role:'长老',st:{修为:88,忠诚:52,心境:64,野心:77,伤势:0},
+     tags:['长老势大','另有所图'],
+     rels:[['丹霞谷 · 某人','私下往来']],
+     memo:'门中三成弟子由他亲授。近日常往丹房走动。'}
+  ],
+  sects:[
+    {nm:'落霜剑派',dao:'剑道',lvl:'心存芥蒂',bad:1,marks:[['仇怨 ×1','z']],secret:0},
+    {nm:'丹霞谷',dao:'丹道',lvl:'关系友善',bad:0,marks:[['情分 ×2','q'],['秘密碎片 ×1','j']],secret:1},
+    {nm:'药王宗',dao:'丹道',lvl:'素无往来',bad:0,marks:[],secret:0},
+    {nm:'万宝行',dao:'商道',lvl:'略有交情',bad:0,marks:[['债务 · 欠 30 灵石','z'],['缘分 · 柳窈','j']],secret:0},
+    {nm:'通天商盟',dao:'商道',lvl:'暗中提防',bad:1,marks:[['怀疑','z']],secret:0}
+  ],
+  acts:{inner:null,innerTgt:null, outer:null, outerTgt:null, outerAtt:null, outerDisc:null, social:null, socialTgt:null},
+  submitted:false,
+  events:[
+    {id:'e14',nm:'有人在打听',type:'宗门秘密 · A级',
+     scene:'守山弟子来报：昨日有两名外乡修士在山门外徘徊半日，问的尽是丹房与账房的事。递上名帖时，只说是路过。',
+     opts:[
+       {t:'加派守卫，闭门谢客',r:'山门收紧。此后三日，他宗探查你的成功率下降，但外界会说青冥剑宗有事要藏。',d:['纪律 +4','声望 -3']},
+       {t:'礼送出山，暗中跟踪',r:'你的人跟到了山下驿站，看见他们与一名着丹霞谷服色的仆从会面。你获得了一枚指向丹霞谷的秘密碎片。',d:['秘密碎片 +1','隐患 -2']},
+       {t:'置之不理',r:'你没有理会。三日后，一封匿名爆料出现在仙盟公告板上。',d:['隐患 +5']}
+     ],done:null},
+    {id:'e05',nm:'首席之争',type:'弟子关系 · B级',
+     scene:'柳窈在议事厅外站了很久。她说：「弟子入门比沈师兄晚三月，资质考评却高过他两等。掌门若要立首席，弟子只求一个说法。」沈砚就站在廊下，没有走。',
+     opts:[
+       {t:'当场立沈砚为首席',r:'沈砚跪谢。柳窈没有再说话，行礼退下。当夜她的房中灯亮到很晚。',d:['凝聚 -6','柳窈忠诚 -12','纪律 +3']},
+       {t:'以一场比试定夺',r:'你把决定权交给了演武场。两人都接受了——但也都明白，输的人再无话可说。',d:['纪律 +5','事件链推进：首席争夺 → 阶段二']},
+       {t:'悬而不决，两人皆可',r:'你说时机未到。柳窈看了你一眼，什么也没说。沈砚松了口气，柳窈没有。',d:['凝聚 -2','柳窈野心 +8','隐患 +3']}
+     ],done:null}
+  ],
+  letters:[
+    {from:'丹霞谷 · 谷主 云拂衣',txt:'贵宗那位谢长老，近来往我谷中来得勤了些。我未曾多问，也未曾拦。掌门若觉得该问，便来问我。'}
+  ],
+  posts:[
+    {from:'药王宗',type:'悬赏',txt:'求「九叶还魂草」一株，门下弟子急用。愿以两炉凝元丹或同等灵石相换。有此物者，请回帖。',act:'我有此物，愿换'},
+    {from:'落霜剑派',type:'公开声明',txt:'日前切磋误伤一事，我派弟子并无大碍。青冥剑宗若肯遣人来看一眼，此事便算过去了。',act:'遣弟子探视'},
+    {from:'万宝行',type:'联谊邀请',txt:'本行下月初开坊市，广邀诸宗弟子同游。愿结善缘者，请回帖告知同行弟子姓名。',act:'应邀，遣柳窈同行'}
+  ],
+  postDone:null
+};
+const TABS=[
+  ['home','01','宗门'],['disc','02','弟子'],['act','03','行动'],
+  ['mail','04','信箱'],['rel','05','往来'],['board','06','公告板']
+];
+
+const INNER=[
+  ['开坛讲道','底蕴＋，弟子心境＋'],['集中培养','指定弟子大幅成长'],['调查门内','发现隐患，或惊动人'],
+  ['整顿门规','纪律＋，弟子压力＋'],['修建设施','长期加成'],['派遣历练','资源与际遇'],['安抚弟子','忠诚＋，心境＋']
+];
+const OUTER=[['探查把柄','获取对方秘密'],['相亲相爱','制造弟子缘分'],['门下切磋','修为与宿敌'],['互通有无','资源与商路'],['结契交好','正式约定']];
+const ATT=['真诚','借机交好','暗中探查','尝试挖角'];
+const SOCIAL=[['传书','私信，可被截获'],['赠礼','情分＋'],['邀约','次日同框事件'],['公开表态','影响声望'],['悬赏','公告板异步征集']];
+
+/* ================= helpers ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const slotsDone=()=>['inner','outer','social'].filter(k=>S.acts[k]).length;
+const evLeft=()=>S.events.filter(e=>!e.done).length;
+
+/* ================= nav ================= */
+function nav(){
+  const badge=t=>{
+    if(t==='act'&&!S.submitted) return `<span class="dot ${slotsDone()===3?'q':''}">${slotsDone()}/3</span>`;
+    if(t==='mail'&&evLeft()) return `<span class="dot">${evLeft()}</span>`;
+    return '';
+  };
+  $('#nav').innerHTML=TABS.map(([t,n,l])=>
+    `<button data-t="${t}" class="${S.tab===t?'on':''}"><i>${n}</i>${l}${badge(t)}</button>`).join('');
+  $('#mnav').innerHTML=TABS.map(([t,n,l])=>
+    `<button data-t="${t}" class="${S.tab===t?'on':''}"><i>${n}</i>${l}${badge(t)}</button>`).join('');
+}
+
+/* ================= views ================= */
+function vHome(){
+  const bar=(k,v)=>`<div class="stat"><div class="r"><span>${k}</span><b>${v}</b></div>
+    <div class="bar ${k==='隐患'?'risk':''}"><i style="width:${v}%"></i></div></div>`;
+  return `
+  <div class="head"><div><h1>青冥剑宗</h1><div class="sub">剑道 · 掌门案头</div></div><div class="day">第三日 · 十宗秘境</div></div>
+  <div class="note"><b>原型说明</b>　这是玩家端界面原型，数据为模拟。可切换页签、选择每日三格行动、处理事件卡、在公告板回帖，并在提交后看到「因—果—兆」结算文本。</div>
+  <div class="grid2">
+    <div class="card">
+      <span class="lbl">宗门属性</span>
+      ${Object.entries(S.attrs).map(([k,v])=>bar(k,v)).join('')}
+    </div>
+    <div>
+      <div class="card">
+        <span class="lbl">宗门风格</span>
+        ${S.styles.map(([s,src])=>`<span class="tagx z">${s}</span><span class="muted" style="margin-right:12px">${src}</span>`).join('')}
+        <p class="muted" style="margin:10px 0 0">浮现风格会随你此后的行为改变。开局自选的那个不可更改。</p>
+      </div>
+      <div class="card">
+        <span class="lbl">今日待办</span>
+        <div style="font-size:13px;line-height:2.1">
+          <div>${S.acts.inner?'✓':'○'}　内务行动${S.acts.inner?'　<span class="muted">'+S.acts.inner+'</span>':''}</div>
+          <div>${S.acts.outer?'✓':'○'}　外交行动${S.acts.outer?'　<span class="muted">'+S.acts.outer+' → '+S.acts.outerTgt+'</span>':''}</div>
+          <div>${S.acts.social?'✓':'○'}　交际行动${S.acts.social?'　<span class="muted">'+S.acts.social+'</span>':''}</div>
+          <div>${evLeft()?'○':'✓'}　事件卡　<span class="muted">${evLeft()} 张待处理</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <span class="lbl">门中气象</span>
+    ${S.hints.map(h=>`<p class="hint lv${h.lv}">${h.t}</p>`).join('')}
+    <p class="muted" style="margin:12px 0 0">提示强度分四级。出现具名警告时，对应的隐藏倾向已接近临界。</p>
+  </div>`;
+}
+
+function vDisc(){
+  return `<div class="head"><div><h1>弟子名册</h1><div class="sub">2 名核心 · 1 名外门代表 · 1 名长老</div></div><div class="day">点击展开</div></div>
+  ${S.discs.map((d,i)=>`
+    <div class="disc" data-d="${i}">
+      <div class="top"><span class="nm">${d.nm}</span><span class="role">${d.role}</span></div>
+      <div class="mini">
+        ${Object.entries(d.st).map(([k,v])=>`<span>${k} <b>${v}</b></span>`).join('')}
+      </div>
+      <div style="margin-top:9px">${d.tags.map(t=>`<span class="tagx">${t}</span>`).join('')}</div>
+      <div class="body">
+        <p class="hint" style="margin-bottom:12px">${d.memo}</p>
+        <span class="lbl">已知关系</span>
+        ${d.rels.map(([w,r])=>`<div class="rel">${w}　<em>${r}</em></div>`).join('')}
+      </div>
+    </div>`).join('')}`;
+}
+
+function vAct(){
+  const opt=(list,key,val)=>list.map(o=>{
+    const[t,s]=Array.isArray(o)?o:[o,''];
+    return `<button class="opt ${val===t?'sel':''}" data-set="${key}" data-v="${t}">${t}${s?`<small>${s}</small>`:''}</button>`;
+  }).join('');
+  const sects=S.sects.map(s=>`<option ${S.acts.outerTgt===s.nm?'selected':''}>${s.nm}</option>`).join('');
+  const dsc=S.discs.slice(0,3).map(d=>`<option ${S.acts.outerDisc===d.nm?'selected':''}>${d.nm}</option>`).join('');
+  const lock=S.submitted?'style="opacity:.55;pointer-events:none"':'';
+  return `
+  <div class="head"><div><h1>每日行动</h1><div class="sub">内务 ×1　外交 ×1　交际 ×1　响应 ×不限</div></div><div class="day">${slotsDone()}/3 已选</div></div>
+  <div class="card" ${lock}>
+    <div class="slot">
+      <div class="sh"><b>内务行动</b><span class="${S.acts.inner?'ok':''}">${S.acts.inner?'已选':'未选'}</span></div>
+      <div class="opts">${opt(INNER,'inner',S.acts.inner)}</div>
+      ${['集中培养','安抚弟子'].includes(S.acts.inner)?`<div class="sub">
+        <span class="muted">目标弟子</span>
+        <select data-sel="innerTgt">${S.discs.slice(0,3).map(d=>`<option ${S.acts.innerTgt===d.nm?'selected':''}>${d.nm}</option>`).join('')}</select>
+      </div>`:''}
+    </div>
+
+    <div class="slot">
+      <div class="sh"><b>外交行动</b><span class="${S.acts.outer?'ok':''}">${S.acts.outer?'已选':'未选'}</span></div>
+      <div class="opts">${opt(OUTER,'outer',S.acts.outer)}</div>
+      ${S.acts.outer?`<div class="sub">
+        <span class="muted">目标宗门</span><select data-sel="outerTgt">${sects}</select>
+        <span class="muted">派遣弟子</span><select data-sel="outerDisc">${dsc}</select>
+      </div>
+      <div class="sub"><span class="muted">真实态度</span>
+        ${ATT.map(a=>`<button class="opt ${S.acts.outerAtt===a?'sel':''}" style="padding:6px 12px" data-set="outerAtt" data-v="${a}">${a}</button>`).join('')}
+      </div>
+      <p class="whisper">对方只会知道你来过，不会知道你选了哪种态度。</p>`:''}
+    </div>
+
+    <div class="slot">
+      <div class="sh"><b>交际行动</b><span class="${S.acts.social?'ok':''}">${S.acts.social?'已选':'未选'}</span></div>
+      <div class="opts">${opt(SOCIAL,'social',S.acts.social)}</div>
+      ${S.acts.social&&S.acts.social!=='悬赏'&&S.acts.social!=='公开表态'?`<div class="sub">
+        <span class="muted">目标宗门</span>
+        <select data-sel="socialTgt">${S.sects.map(s=>`<option ${S.acts.socialTgt===s.nm?'selected':''}>${s.nm}</option>`).join('')}</select>
+      </div>`:''}
+      ${S.postDone?`<p class="whisper">已在公告板回帖「${S.postDone}」，本格由该回帖占用。</p>`:''}
+      <p class="whisper">交际行动只产出情分、缘分与情报，不会失败，也不会结仇。</p>
+    </div>
+  </div>
+  <button class="submit ${S.submitted?'done':''}" id="sub" ${slotsDone()<3||S.submitted?'disabled':''}>
+    ${S.submitted?'已提交 · 等待今夜结算':'提交今日行动'}
+  </button>
+  <p class="muted" style="text-align:center;margin-top:12px">所有宗门同时提交、统一结算。20:00 硬截止，未提交则执行「闭门清修」。</p>`;
+}
+
+function vMail(){
+  return `<div class="head"><div><h1>事件信箱</h1><div class="sub">${evLeft()} 张事件卡待处理 · ${S.letters.length} 封密信</div></div><div class="day">第三日</div></div>
+  ${S.events.map((e,i)=>`
+    <div class="ev">
+      <div class="eh"><b>${e.nm}</b><span class="tagx q" style="margin:0">${e.type}</span></div>
+      <div class="eb">
+        <p class="scene">${e.scene}</p>
+        ${e.done===null?`<div class="choices">${e.opts.map((o,j)=>
+          `<button class="opt" data-ev="${i}" data-o="${j}">${o.t}</button>`).join('')}</div>`
+        :`<div class="res">${e.opts[e.done].r}<div class="d">${e.opts[e.done].d.map(x=>'▸ '+x).join('　　')}</div></div>`}
+      </div>
+    </div>`).join('')}
+  <div class="card">
+    <span class="lbl">密信</span>
+    ${S.letters.map(l=>`<div style="margin-bottom:6px"><b style="font-family:var(--serif)">${l.from}</b>
+      <p class="hint" style="margin-top:8px">${l.txt}</p></div>`).join('')}
+  </div>
+  <div class="card">
+    <span class="lbl">持有秘密</span>
+    <div class="rw"><div class="l"><b>丹霞谷</b><span>碎片 1 / 2</span></div><span class="lvl">仅知类型：丹道方面的问题</span></div>
+    <p class="muted" style="margin:12px 0 0">再得一枚碎片即可锁定完整秘密与涉事人物。取得证据后方可公开指证。</p>
+  </div>`;
+}
+
+function vRel(){
+  return `<div class="head"><div><h1>宗门往来</h1><div class="sub">五宗 · 关系仅显示文字等级</div></div><div class="day">第三日</div></div>
+  <div class="card">
+    ${S.sects.map(s=>`<div class="rw">
+      <div class="l"><b>${s.nm}</b><span>${s.dao}</span>
+        <div style="margin-top:6px">${s.marks.map(([m,c])=>`<span class="tagx ${c}">${m}</span>`).join('')||'<span class="muted">无标记</span>'}</div>
+      </div>
+      <span class="lvl ${s.bad?'bad':(s.lvl==='素无往来'?'':'good')}">${s.lvl}</span>
+    </div>`).join('')}
+  </div>
+  <div class="card">
+    <span class="lbl">跨宗弟子关系</span>
+    <div class="rel">沈砚　×　丹霞谷 · 苏晚　<em>初识</em></div>
+    <div class="rel">柳窈　×　万宝行 · 陆九　<em>爱慕 · 共同秘密</em>　<span class="muted">链 A 已进入阶段二</span></div>
+    <p class="muted" style="margin-top:12px">缘分达最高级且一方忠诚低于四十时，链 A 将进入阶段三。柳窈当前忠诚 43。</p>
+  </div>`;
+}
+
+function vBoard(){
+  return `<div class="head"><div><h1>仙盟公告板</h1><div class="sub">异步张贴与回帖 · 回帖视为交际行动</div></div><div class="day">第三日</div></div>
+  <div class="note"><b>为什么有这一页</b>　群聊需要在线时间重叠，时区错开或不擅社交的玩家会零互动。公告板让任何人都能在任何时候接上一次互动。</div>
+  ${S.posts.map((p,i)=>`
+    <div class="post">
+      <div class="ph"><b>${p.from}</b><span>${p.type}</span></div>
+      <p>${p.txt}</p>
+      <button class="mini-btn" data-post="${i}" ${S.postDone||S.acts.social?'disabled':''}>
+        ${S.postDone===p.act?'已回帖':p.act}
+      </button>
+    </div>`).join('')}
+  <div class="card">
+    <span class="lbl">匿名爆料</span>
+    <p class="muted" style="margin:0">需消耗 1 枚秘密碎片。有 30% 概率被追溯来源。</p>
+    <button class="mini-btn" style="margin-top:12px" disabled>碎片不足（1 / 1 已锁定用途）</button>
+  </div>`;
+}
+
+/* ================= 结算 ================= */
+const YIN={
+  '集中培养':t=>`你已连续三日集中培养${t||'沈砚'}。`,
+  '安抚弟子':t=>`你今夜去了${t||'柳窈'}的院子，坐了很久。`,
+  '整顿门规':()=>'你本月第二次动用门规。',
+  '调查门内':()=>'你派人查了丹房的账。',
+  '开坛讲道':()=>'你在藏经阁讲了半日剑意。',
+  '修建设施':()=>'演武场东侧动了土。',
+  '派遣历练':()=>'你把弟子放下了山。'
+};
+const GUO={
+  '集中培养':t=>`${t==='柳窈'?'沈砚在演武场独自留到深夜，无人过问。':'柳窈在演武场独自留到深夜，无人过问。'}`,
+  '安抚弟子':t=>`${t||'柳窈'}没有多说什么，只是把一封写了一半的信收进了袖中。`,
+  '整顿门规':()=>'纪律井然。三名外门弟子被罚跪至天明，其中一人是阿罗的同乡。',
+  '调查门内':()=>'账目缺了七味药材。谢长老说是耗损，语气不容置疑。',
+  '开坛讲道':()=>'沈砚有所悟。柳窈坐在最后一排，没有抬头。',
+  '修建设施':()=>'工期比预想的长，灵石也比预想的多。',
+  '派遣历练':()=>'弟子带回三块灵矿，和一句山下的传闻。'
+};
+function settle(){
+  const a=S.acts, t=a.innerTgt||'沈砚';
+  const yin=(YIN[a.inner]||(()=>'你做了决定。'))(t);
+  const guo=(GUO[a.inner]||(()=>'门中一切如常。'))(t);
+  let extra='';
+  if(a.outer==='探查把柄') extra='　你的人已在丹霞谷外守了一夜——对方也已察觉。';
+  if(a.outer==='相亲相爱') extra=`　两宗弟子在坊市同行了一段路。`;
+  if(a.outer==='门下切磋') extra='　演武场上有人收手慢了半分。';
+  if(a.outer==='结契交好') extra='　文书已递出，等对方用印。';
+  if(a.outer==='互通有无') extra='　三车货物入库，账还没平。';
+  const zhao = S.attrs.凝聚<48
+    ? '外门弟子近来议论颇多。'
+    : '演武场近日常有人深夜逗留。';
+  const dl = a.inner==='安抚弟子'
+    ? ['凝聚 +5','柳窈忠诚 +9','柳窈心境 +6']
+    : a.inner==='整顿门规' ? ['纪律 +6','凝聚 -4','弟子压力 +3']
+    : a.inner==='集中培养' ? [`${t} 修为 +7`,'其余弟子嫉妒 +4','亲传偏宠 +1']
+    : ['底蕴 +4','声望 +2'];
+
+  $('#modal').innerHTML=`
+    <div class="mt">今夜结算 · 第三日</div>
+    <p class="line"><b>【因】</b>${yin}</p>
+    <p class="line"><b>【果】</b>${guo}${extra}</p>
+    <p class="line"><b>【兆】</b>${zhao}</p>
+    <div class="foot">
+      <div class="dl">${dl.map(x=>'▸ '+x).join('　　')}</div>
+      <button id="close">收起</button>
+    </div>`;
+  $('#mask').classList.add('on');
+  $('#close').onclick=()=>{$('#mask').classList.remove('on')};
+  // 应用一点可见变化
+  if(a.inner==='整顿门规'){S.attrs.纪律=Math.min(100,S.attrs.纪律+6);S.attrs.凝聚-=4}
+  if(a.inner==='安抚弟子'){S.attrs.凝聚+=5;S.discs[1].st.忠诚+=9;S.discs[1].st.心境+=6}
+  if(a.inner==='开坛讲道'){S.attrs.底蕴+=4;S.attrs.声望+=2}
+}
+
+/* ================= render ================= */
+function render(){
+  const V={home:vHome,disc:vDisc,act:vAct,mail:vMail,rel:vRel,board:vBoard};
+  $('#view').innerHTML=V[S.tab]();
+  nav();
+  try{window.scrollTo(0,0)}catch(e){}
+}
+
+/* 事件委托：只绑定一次，不受重绘影响 */
+document.addEventListener('click',function(e){
+  const hit=sel=>e.target.closest(sel);
+  let el;
+
+  if(el=hit('[data-t]')){ S.tab=el.getAttribute('data-t'); render(); return; }
+
+  if(el=hit('.disc')){ el.classList.toggle('open'); return; }
+
+  if(el=hit('[data-set]')){
+    const k=el.getAttribute('data-set'), v=el.getAttribute('data-v');
+    S.acts[k]= S.acts[k]===v ? null : v;
+    if(k==='inner'&&!S.acts.innerTgt) S.acts.innerTgt='沈砚';
+    if(k==='outer'&&S.acts.outer){
+      if(!S.acts.outerTgt) S.acts.outerTgt=S.sects[0].nm;
+      if(!S.acts.outerDisc) S.acts.outerDisc='沈砚';
+      if(!S.acts.outerAtt) S.acts.outerAtt='真诚';
+    }
+    if(k==='social'&&!S.acts.socialTgt) S.acts.socialTgt=S.sects[0].nm;
+    render(); return;
+  }
+
+  if(el=hit('[data-ev]')){
+    S.events[+el.getAttribute('data-ev')].done=+el.getAttribute('data-o');
+    render(); return;
+  }
+
+  if(el=hit('[data-post]')){
+    const p=S.posts[+el.getAttribute('data-post')];
+    S.postDone=p.act; S.acts.social='回帖 · '+p.from; S.acts.socialTgt=p.from;
+    render(); return;
+  }
+
+  if(hit('#sub')){ if(slotsDone()<3||S.submitted) return; S.submitted=true; render(); settle(); return; }
+
+  if(e.target.id==='close'){ $('#mask').classList.remove('on'); return; }
+  if(e.target.id==='mask'){ $('#mask').classList.remove('on'); return; }
+},false);
+
+document.addEventListener('change',function(e){
+  const s=e.target.closest('[data-sel]');
+  if(!s) return;
+  S.acts[s.getAttribute('data-sel')]=s.value;
+  render();
+},false);
+
+/* clock */
+let left=3*3600+41*60+22;
+setInterval(()=>{
+  left--; const h=String(Math.floor(left/3600)).padStart(2,'0'),
+    m=String(Math.floor(left%3600/60)).padStart(2,'0'), s=String(left%60).padStart(2,'0');
+  const c=$('#clk'); if(c) c.textContent=`${h}:${m}:${s}`;
+},1000);
+
+$('#mask').onclick=e=>{if(e.target.id==='mask') $('#mask').classList.remove('on')};
+try{ render(); }catch(err){
+  $('#view').innerHTML='<div class="card"><h3>原型脚本出错</h3><p class="muted">'+String(err&&err.message)+'</p></div>';
+}
+</script>
+</body>
+</html>
