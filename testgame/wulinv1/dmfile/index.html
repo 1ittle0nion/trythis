@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#E3E4DA">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#16181D">
+<title>五日大比 · 执事堂手册</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --paper:#E3E4DA;--deep:#D5D6CA;--card:rgba(255,255,255,.28);
+  --ink:#1B1E25;--soft:#565A63;--faint:#8A8E93;
+  --zhu:#B23A32;--zi:#584C7E;
+  --rule:rgba(27,30,37,.2);--grid:rgba(178,58,50,.085);
+  --song:"Songti SC","SimSun","Noto Serif CJK SC",serif;
+  --fang:"FangSong","STFangsong","Songti SC","SimSun",serif;
+  --hei:"PingFang SC","Heiti SC","Microsoft YaHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#16181D;--deep:#1F222A;--card:rgba(255,255,255,.045);
+    --ink:#DFDDD2;--soft:#9B9E9A;--faint:#6B6E72;
+    --zhu:#CE6A5C;--zi:#9B8BCB;
+    --rule:rgba(223,221,210,.22);--grid:rgba(206,106,92,.075);
+  }
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--fang);font-size:16.5px;line-height:1.9;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px 100px}
+
+/* 抬头 */
+.top{padding:44px 0 22px}
+.org{font-family:var(--hei);font-size:11.5px;letter-spacing:.5em;color:var(--soft)}
+h1{font-family:var(--song);font-weight:700;font-size:clamp(34px,7vw,54px);letter-spacing:.16em;margin:14px 0 4px}
+.sub{font-family:var(--song);font-size:14px;letter-spacing:.3em;color:var(--soft)}
+
+/* 导航 */
+nav{position:sticky;top:0;z-index:20;background:var(--paper);
+  border-top:1px solid var(--rule);border-bottom:3px double var(--rule);
+  display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav button{flex:none;background:none;border:none;cursor:pointer;
+  font-family:var(--song);font-size:16px;letter-spacing:.18em;color:var(--soft);
+  padding:14px 20px;border-bottom:2px solid transparent;transition:.15s}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected=true]{color:var(--zhu);border-bottom-color:var(--zhu)}
+nav button:focus-visible{outline:2px solid var(--zhu);outline-offset:-4px}
+
+.panel{display:none;padding-top:34px;color:var(--ink)}
+.panel.on{display:block}
+h2{font-family:var(--song);font-weight:700;font-size:25px;letter-spacing:.12em;margin:38px 0 16px}
+h2:first-child{margin-top:0}
+h3{font-family:var(--song);font-weight:700;font-size:17.5px;letter-spacing:.08em;margin:26px 0 10px}
+p{margin:0 0 14px}
+b{font-weight:400;color:var(--zhu)}
+ul,ol{padding-left:1.5em;margin:0 0 14px}li{margin-bottom:6px}
+.lead{font-family:var(--song);font-size:18px;line-height:2.05;margin-bottom:26px}
+
+/* 表 */
+.tb{font-family:var(--hei);font-size:14px;margin:0 0 22px}
+.tr{display:flex;gap:12px;padding:9px 2px;border-bottom:1px dotted var(--rule)}
+.tr:first-child{border-top:1px solid var(--rule);font-size:11px;letter-spacing:.2em;color:var(--soft)}
+.tr>span{flex:1}.tr>span:first-child{flex:1.3}
+.n{text-align:right;font-variant-numeric:tabular-nums}
+
+/* 日程 */
+.days{display:flex;gap:8px;margin-bottom:26px;flex-wrap:wrap}
+.day{flex:1;min-width:88px;background:none;border:1px solid var(--rule);cursor:pointer;
+  padding:14px 8px;font-family:var(--song);letter-spacing:.1em;color:var(--soft);transition:.15s;text-align:center}
+.day b{display:block;font-size:21px;font-weight:700;margin-bottom:3px;color:inherit}
+.day:hover{border-color:var(--ink)}
+.day[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.day:focus-visible{outline:2px solid var(--zhu);outline-offset:2px}
+.daybody{border:1px solid var(--rule);padding:24px 22px;background:var(--card)}
+.daybody h3:first-child{margin-top:0}
+.mark{display:inline-block;font-family:var(--hei);font-size:10.5px;letter-spacing:.24em;
+  color:var(--zhu);border:1px solid var(--zhu);padding:2px 9px;margin-bottom:10px}
+
+/* 判定器 */
+.dev{background:var(--deep);border:1px solid var(--rule);padding:26px 22px;margin-bottom:24px}
+.ct{margin-bottom:20px}
+.cl{display:block;font-family:var(--hei);font-size:12px;letter-spacing:.16em;color:var(--soft);margin-bottom:8px}
+.segs{display:flex;gap:7px;flex-wrap:wrap}
+.seg{font-family:var(--song);font-size:15px;letter-spacing:.1em;padding:8px 18px;
+  border:1px solid var(--rule);background:none;color:var(--soft);cursor:pointer;transition:.15s}
+.seg:hover{border-color:var(--ink)}
+.seg[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg:focus-visible{outline:2px solid var(--zhu);outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--zhu)}
+.out{display:flex;flex-wrap:wrap;gap:18px 30px;align-items:flex-end;margin-top:22px;padding-top:20px;border-top:1px solid var(--rule)}
+.st{font-family:var(--hei)}
+.st i{display:block;font-style:normal;font-size:10.5px;letter-spacing:.22em;color:var(--faint);margin-bottom:4px}
+.st b{font-family:var(--song);font-size:25px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+#mk{margin-left:auto;border:2.5px solid var(--soft);color:var(--soft);
+  font-family:var(--song);font-weight:700;font-size:22px;letter-spacing:.22em;
+  padding:16px 20px;transform:rotate(-7deg);opacity:.6;transition:.2s}
+#mk.burn{border-color:var(--zhu);color:var(--zhu);opacity:.9}
+
+/* 名册 */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.cd{border:1px solid var(--rule);background:var(--card);text-align:left;
+  padding:0;cursor:pointer;font-family:var(--fang);color:inherit;transition:.15s}
+.cd:hover{border-color:var(--ink)}
+.cd:focus-visible{outline:2px solid var(--zhu);outline-offset:2px}
+.cd.evil{border-color:var(--zi)}
+.cd-h{padding:17px 17px 15px}
+.cd-no{font-family:var(--hei);font-size:10px;letter-spacing:.3em;color:var(--faint);margin-bottom:7px}
+.cd.evil .cd-no{color:var(--zi)}
+.cd-nm{font-family:var(--song);font-weight:700;font-size:20px;letter-spacing:.14em}
+.cd.evil .cd-nm{color:var(--zi)}
+.cd-q{font-family:var(--song);font-size:13px;color:var(--soft);line-height:1.65;margin-top:4px}
+.cd-body{display:none;padding:0 17px 18px;font-size:14.5px;line-height:1.8}
+.cd[aria-expanded=true] .cd-body{display:block}
+.cd-lb{font-family:var(--hei);font-size:10px;letter-spacing:.24em;color:var(--faint);margin:13px 0 4px}
+.cd-more{font-family:var(--hei);font-size:11px;letter-spacing:.2em;color:var(--faint);padding:0 17px 15px}
+.cd[aria-expanded=true] .cd-more{display:none}
+
+/* 折叠 */
+.qa{border-bottom:1px solid var(--rule)}
+.qa button{width:100%;background:none;border:none;cursor:pointer;text-align:left;
+  font-family:var(--song);font-size:16.5px;letter-spacing:.06em;color:var(--ink);
+  padding:16px 30px 16px 0;position:relative;line-height:1.7}
+.qa button::after{content:"＋";position:absolute;right:2px;top:16px;color:var(--zhu);font-family:var(--hei)}
+.qa button[aria-expanded=true]::after{content:"－"}
+.qa button:focus-visible{outline:2px solid var(--zhu);outline-offset:-2px}
+.qa div{display:none;padding:0 0 20px;color:var(--soft);font-size:15.5px;background:transparent}
+.qa button[aria-expanded=true]+div{display:block}
+
+.rule{border-left:2px solid var(--zhu);padding-left:16px;margin:20px 0;color:var(--soft);font-size:15px}
+.foot{padding:40px 0 0;font-family:var(--hei);font-size:11px;letter-spacing:.16em;color:var(--faint);text-align:center;line-height:2.2}
+
+@media(max-width:600px){
+  body{font-size:15.5px}.wrap{padding:0 15px 70px}
+  nav button{padding:12px 15px;font-size:15px}
+  #mk{margin-left:0;font-size:19px;padding:13px 16px}
+  .tr{font-size:13px;gap:8px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top">
+  <div class="org">玄 天 宗 执 事 堂</div>
+  <h1>五日大比</h1>
+  <div class="sub">执 事 堂 手 册 　 10 人 · 5 天 · 约 28 分 钟</div>
+</div>
+
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-p="p1">日程</button>
+  <button role="tab" aria-selected="false" data-p="p2">机制</button>
+  <button role="tab" aria-selected="false" data-p="p3">数值</button>
+  <button role="tab" aria-selected="false" data-p="p4">名册</button>
+  <button role="tab" aria-selected="false" data-p="p5">补遗</button>
+  <button role="tab" aria-selected="false" data-p="p6">疑问</button>
+</nav>
+
+<!-- 日程 -->
+<div class="panel on" id="p1" role="tabpanel">
+  <p class="lead">你无法修炼自己。你的境界完全取决于同门举荐你多少次——而灵气灌得太急，人是会炸的。</p>
+
+  <h2>每日四阶段</h2>
+  <div class="tb">
+    <div class="tr"><span>阶段</span><span class="n">时长</span><span style="flex:2.6">内容</span></div>
+    <div class="tr"><span>议事</span><span class="n">90s</span><span style="flex:2.6">公共频道与私聊同时开放</span></div>
+    <div class="tr"><span>具帖</span><span class="n">30s</span><span style="flex:2.6">每人投出 3 票，须投满，不可投自己</span></div>
+    <div class="tr"><span>心法</span><span class="n">同上</span><span style="flex:2.6">与具帖同时秘密选择</span></div>
+    <div class="tr"><span>结算</span><span class="n">20s</span><span style="flex:2.6">公示各人得票数与境界，不公示举荐人</span></div>
+  </div>
+
+  <h2>逐日</h2>
+  <div class="days" role="tablist" id="days">
+    <button class="day" role="tab" aria-selected="true" data-d="1"><b>一</b>试招</button>
+    <button class="day" role="tab" aria-selected="false" data-d="2"><b>二</b>对坐</button>
+    <button class="day" role="tab" aria-selected="false" data-d="3"><b>三</b>分野</button>
+    <button class="day" role="tab" aria-selected="false" data-d="4"><b>四</b>定谳</button>
+    <button class="day" role="tab" aria-selected="false" data-d="5"><b>五</b>清算</button>
+  </div>
+  <div class="daybody" id="daybody"></div>
+</div>
+
+<!-- 机制 -->
+<div class="panel" id="p2" role="tabpanel">
+  <h2>举荐</h2>
+  <p>每人每日 3 票，一票等于一点灵力。不可弃权，不可投自己。全场每日固定产出 30 点，五天共 <b>150 点</b>，人均 15 点。想让某人变强，就必须有人变弱。</p>
+  <p>结算只公示各人的<b>得票总数</b>，不公示举荐人。全场都知道谁被喂饱了，无人知道是谁喂的。</p>
+
+  <h2>心法</h2>
+  <p>与具帖同时秘密选择，决定你今日<b>如何接收</b>。</p>
+  <div class="tb">
+    <div class="tr"><span>心法</span><span style="flex:1.2">吸收</span><span style="flex:2.4">走火阈值</span></div>
+    <div class="tr"><span>纳灵</span><span style="flex:1.2">全额</span><span style="flex:2.4">−1</span></div>
+    <div class="tr"><span>固本</span><span style="flex:1.2">一半，向下取整</span><span style="flex:2.4">+2</span></div>
+    <div class="tr"><span>观道</span><span style="flex:1.2">0</span><span style="flex:2.4">免疫；可指定 2 人，看到他俩今日投给了谁</span></div>
+  </div>
+  <p>超时未选按<b>固本</b>处理。固本只吸收一半，光靠苟是修不上去的——所有人迟早得开纳灵，而开纳灵那天就是最容易死的一天。</p>
+
+  <h2>走火入魔</h2>
+  <p>每收到一票，当日走火值 +1，每日归零。走火值达到阈值即走火。</p>
+  <div class="rule">阈值按你<b>当日吸收完成后</b>的境界计算，不是吸收之前。边吃边涨，容量跟着涨。这条决定了一夜连跨两阶是可行的，但极其精细，差一票就是死。</div>
+
+  <h2>心魔</h2>
+  <p>走火不是淘汰，是换阵营：</p>
+  <ul>
+    <li>境界 −1（灵力 −4）</li>
+    <li>3 票由举荐变为<b>侵蚀</b>，被投者每票扣 1 点灵力</li>
+    <li>不再从任何举荐中获得灵力</li>
+    <li>胜利条件替换为：宗门大比失败</li>
+    <li>心魔身份对全场公开，侵蚀目标不公开</li>
+    <li>自动加入魔道卧底的私密频道</li>
+  </ul>
+  <p>所以喂饱一个人永远是双刃的：你在帮他，也在把他推向敌方阵营。</p>
+
+  <h2>外门杂役</h2>
+  <p>第三日结算后，境界最低的 2 人沦为杂役，从此可查看<b>全场完整荐帖明细</b>。灵力规则与胜利条件不变。用信息换实力。</p>
+
+  <h2>宗门大比</h2>
+  <p>第五日取全场境界最高 3 人，分值相加。</p>
+  <ul>
+    <li><b>≥9 分</b>　宗门存续，各人个人目标开始判定</li>
+    <li><b>&lt;9 分</b>　全员判负，仅卧底与全体心魔获胜</li>
+  </ul>
+  <p>九分大致是「元婴 + 金丹 + 筑基」。全场必须至少合力把一个人推上金丹以上，同时又不能只顾一个人。</p>
+</div>
+
+<!-- 数值 -->
+<div class="panel" id="p3" role="tabpanel">
+  <h2>境界与阈值</h2>
+  <div class="tb">
+    <div class="tr"><span>境界</span><span class="n">累计灵力</span><span class="n">大比分值</span><span class="n">基础阈值</span><span class="n">纳灵</span><span class="n">固本</span></div>
+    <div class="tr"><span>炼气</span><span class="n">0</span><span class="n">1</span><span class="n">5</span><span class="n">4</span><span class="n">7</span></div>
+    <div class="tr"><span>筑基</span><span class="n">4</span><span class="n">2</span><span class="n">7</span><span class="n">6</span><span class="n">9</span></div>
+    <div class="tr"><span>金丹</span><span class="n">9</span><span class="n">3</span><span class="n">9</span><span class="n">8</span><span class="n">11</span></div>
+    <div class="tr"><span>元婴</span><span class="n">16</span><span class="n">4</span><span class="n">11</span><span class="n">10</span><span class="n">13</span></div>
+    <div class="tr"><span>化神</span><span class="n">26</span><span class="n">5</span><span class="n">13</span><span class="n">12</span><span class="n">15</span></div>
+  </div>
+
+  <h2>走火速查</h2>
+  <div class="dev">
+    <div class="ct">
+      <label class="cl" for="qi">当前累计灵力　<b id="qv" style="font-family:var(--song);font-size:17px;color:var(--ink)">4</b> 点　<span id="qr" style="color:var(--faint)"></span></label>
+      <input type="range" id="qi" min="0" max="40" value="4">
+    </div>
+    <div class="ct">
+      <span class="cl">今日心法</span>
+      <div class="segs" id="arts">
+        <button class="seg" data-a="纳灵" aria-pressed="true">纳灵</button>
+        <button class="seg" data-a="固本" aria-pressed="false">固本</button>
+        <button class="seg" data-a="观道" aria-pressed="false">观道</button>
+      </div>
+    </div>
+    <div class="ct">
+      <label class="cl" for="vt">今日受票　<b id="vv" style="font-family:var(--song);font-size:17px;color:var(--ink)">5</b> 票</label>
+      <input type="range" id="vt" min="0" max="18" value="5">
+    </div>
+    <div class="out">
+      <div class="st"><i>本日吸收</i><b id="g">—</b></div>
+      <div class="st"><i>吸收后灵力</i><b id="af">—</b></div>
+      <div class="st"><i>结算境界</i><b id="rm">—</b></div>
+      <div class="st"><i>实际阈值</i><b id="th">—</b></div>
+      <div id="mk">安 然</div>
+    </div>
+  </div>
+
+  <h2>速记</h2>
+  <div class="rule">
+    每日 3 票 · 总盘 150 点<br>
+    境界　炼气 0 / 筑基 4 / 金丹 9 / 元婴 16 / 化神 26<br>
+    阈值　5 / 7 / 9 / 11 / 13　（纳灵 −1，固本 +2，观道免疫）<br>
+    心魔　境界 −1，三票转侵蚀，不再受灵<br>
+    杂役　第三日后境界最低 2 人，得完整荐帖明细<br>
+    大比　前三名分值和 ≥ 9
+  </div>
+</div>
+
+<!-- 名册 -->
+<div class="panel" id="p4" role="tabpanel">
+  <p>开局随机发放，全程保密。除<span style="color:var(--zi)">紫墨誊录的两张</span>之外，所有胜利条件都须先满足「宗门存续」。点击展开。</p>
+  <div class="cards" id="cards"></div>
+</div>
+
+<!-- 补遗 -->
+<div class="panel" id="p5" role="tabpanel">
+  <h2>裁定补遗</h2>
+  <p>以下情形在规则正文中未逐条列明，按此裁定。</p>
+  <div id="rulings"></div>
+</div>
+
+<!-- 疑问 -->
+<div class="panel" id="p6" role="tabpanel">
+  <h2>常见疑问</h2>
+  <div id="faq"></div>
+</div>
+
+<div class="foot">玄天宗执事堂 · 手册<br>此件供内部传阅</div>
+</div>
+
+<script>
+(function(){
+/* ── 主导航 ── */
+var nav=document.querySelector('nav');
+nav.addEventListener('click',function(e){
+  var b=e.target.closest('button[data-p]');if(!b)return;
+  nav.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-selected',String(x===b));});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on',p.id===b.dataset.p);});
+  window.scrollTo({top:0,behavior:'auto'});
+});
+
+/* ── 逐日 ── */
+var DAY={
+ 1:{t:'第一日 · 试招',m:'杀人最便宜的一天',
+    h:['议事 90s','具帖 30s（3 票）+ 心法','结算 20s'],
+    b:['全场皆为炼气，开纳灵的阈值只有 4——<b>两个人合谋就能杀掉一个人</b>。而这一天谁都不知道谁是谁：你有能力杀人，却还没有理由。',
+       '传功长老今日投出的三票将被系统锁定，其胜利条件以此三票为准，之后无法更改。']},
+ 2:{t:'第二日 · 对坐',m:'议事阶段拆为两段',
+    h:['对坐 3 分钟','议事 90s','具帖 30s（3 票）+ 心法','结算 20s'],
+    b:['<b>对坐</b>：系统随机两两配对，共五组，全员覆盖，各组进入独立私聊频道。三分钟后再进入公共议事。本日因此约 8 分钟，其余四日不变。',
+       '第一批数据已经落地——谁被喂了五票、谁一票没有，全在明面上。这是联盟成型的一天。']},
+ 3:{t:'第三日 · 分野',m:'结算后核定外门杂役',
+    h:['议事 90s','具帖 30s（3 票）+ 心法','结算 20s','核定杂役'],
+    b:['结算后，境界最低的 2 人沦为外门杂役，从此可查看全场完整荐帖明细。<b>宗门自此分为两个阶级，而底层握着上层没有的东西。</b>',
+       '<b>夺舍者</b>须在本日结算前秘密指定一名「容器」，指定后不可更改，且不占用其荐帖。']},
+ 4:{t:'第四日 · 定谳',m:'大比够不够，算得出来了',
+    h:['议事 90s','具帖 30s（3 票）+ 心法','结算 20s'],
+    b:['本日结算后，前三名分值和是否够得着 9 分，已可掰指头算出。冲刺派与保命派在这一天正式撕破脸。',
+       '这是最后一个能改变名次的整日。第五日的票投出去时，多数人的命运已经定了。']},
+ 5:{t:'第五日 · 清算',m:'按次序逐条结算',
+    h:['议事 90s','具帖 30s（3 票）+ 心法','完整结算','启封公示'],
+    b:['<b>丹师的回魂丹仅限本日使用。</b>',
+       '结算次序：① 执事朱批改票 ② 卧底暗中灌顶 ③ 苦修过手转赠 ④ 护道人代受转移 ⑤ 结算荐帖与侵蚀 ⑥ 判定走火（剑心自守优先）⑦ 丹师回魂丹 ⑧ 计算最终境界与总分 ⑨ 判定宗门存续 ⑩ 若失败，卧底与全体心魔获胜 ⑪ 若存续，逐一判定各人目标，可多人同时获胜 ⑫ 单独判定夺舍者 ⑬ 启封公示全部身份牌与完整荐帖记录',
+       '最后一步不可省略：<b>所有人必须在结束后看到自己被谁喂、被谁骗。</b>']}
+};
+function drawDay(d){
+  var x=DAY[d];
+  document.getElementById('daybody').innerHTML=
+    '<div class="mark">'+x.m+'</div><h3>'+x.t+'</h3><ol>'+
+    x.h.map(function(i){return '<li>'+i+'</li>';}).join('')+'</ol>'+
+    x.b.map(function(i){return '<p>'+i+'</p>';}).join('');
+}
+var days=document.getElementById('days');
+days.addEventListener('click',function(e){
+  var b=e.target.closest('.day');if(!b)return;
+  days.querySelectorAll('.day').forEach(function(x){x.setAttribute('aria-selected',String(x===b));});
+  drawDay(b.dataset.d);
+});
+drawDay(1);
+
+/* ── 判定器 ── */
+var T=[[26,'化神',13],[16,'元婴',11],[9,'金丹',9],[4,'筑基',7],[0,'炼气',5]];
+function tier(q){for(var i=0;i<T.length;i++)if(q>=T[i][0])return T[i];return T[4];}
+var qi=document.getElementById('qi'),vt=document.getElementById('vt'),art='纳灵';
+function calc(){
+  var q=+qi.value,R=+vt.value,gain,adj,imm=false;
+  if(art==='纳灵'){gain=R;adj=-1;}
+  else if(art==='固本'){gain=Math.floor(R/2);adj=2;}
+  else{gain=0;adj=0;imm=true;}
+  var af=q+gain,t=tier(af),th=t[2]+adj,burn=!imm&&R>0&&R>=th;
+  document.getElementById('qv').textContent=q;
+  document.getElementById('qr').textContent='（'+tier(q)[1]+'）';
+  document.getElementById('vv').textContent=R;
+  document.getElementById('g').textContent=gain;
+  document.getElementById('af').textContent=af;
+  document.getElementById('rm').textContent=t[1];
+  document.getElementById('th').textContent=imm?'免疫':th;
+  var m=document.getElementById('mk');
+  m.textContent=imm?'观 道':(burn?'走 火':'安 然');
+  m.className=burn?'burn':'';
+}
+qi.addEventListener('input',calc);vt.addEventListener('input',calc);
+document.getElementById('arts').addEventListener('click',function(e){
+  var b=e.target.closest('.seg');if(!b)return;art=b.dataset.a;
+  this.querySelectorAll('.seg').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});
+  calc();
+});
+calc();
+
+/* ── 名册 ── */
+var R=[
+['壹','魔道卧底','你在名册上，但不在道统里。',1,
+ '宗门大比失败。',
+ '<b>传音</b>　与全体心魔共享私密频道。他们的胜利条件与你完全一致——你每炸掉一个人，就多一个队友。<br><b>暗中灌顶</b>　全局一次，不占荐帖。指定一人，其当日走火值 +2，且不计入任何人的公开票数。<br><b>执事堂内应</b>　每日可查一人当日心法；全局两次，可将所见提交系统公示，全场可见且保真。',
+ '力量不在破坏，在招募与立信。前三天用真情报把自己立成执事堂的内线，让别人主动来找你要消息；第四天用那一次假的。暗中灌顶最大的价值不是杀人，是制造一起没有凶手的事故。'],
+['贰','夺舍者','你不需要自己成器，你需要一个足够好的容器。',1,
+ '你在第三日秘密指定的那名玩家，在第五日成为唯一的全场境界最高者。',
+ '可查看全场累计灵力的精确数值，他人只见境界档位。',
+ '你是全场最努力的「好人」，会真心把某人捧上顶点，然后收割。你不在乎宗门存亡，最后一天可能突然停止配合。要紧的是必须第三日就下注——那时头名还没定型，押早了赌运气，押晚了没得押。'],
+['叁','丹师','药石之道，向来是在活人身上试出来的。',0,
+ '宗门存续，全场累计 ≥2 人走火入魔，且你用掉了回魂丹。（累计计算，被救回的人依然算他炸过。）',
+ '<b>望气</b>　每日可查一人当前境界与今日得票数，精确判断谁在悬崖边。<br><b>回魂丹</b>　全局一次，仅第五日可用。指定一名心魔恢复常人身份，脱离魔道频道，恢复本来的胜利条件，代价是其灵力 −3。',
+ '你是唯一一个需要主动制造事故的好人，会怂恿别人开纳灵，而且你的话听起来非常有道理。但胜利条件逼你把事做完整——推下悬崖的是你，唯一能拉回来的也是你。回魂丹只能第五日用，救回的人已来不及为大比出力：你拉回来的是一条命，不是一份战力。全场心魔都知道你手里有药，他们会来找你。'],
+['肆','剑修','剑无第二。',0,
+ '宗门存续，且你的累计灵力<b>精确数值</b>严格高于全场所有其他人；或你成功使用剑心自守 ≥2 次。',
+ '每日 50% 概率额外获得 1 点灵力——这是你唯一不依赖他人的成长来源。<br><b>剑心自守</b>　当日走火值达阈值时不走火，但当日吸收全部归零，且系统公示「某某剑心自守」。',
+ '你杀不死，但每用一次自守就自曝身份、白扔一天。捧杀对你依然有效，只是从「杀你」变成「废你」。另外，那 50% 的自增长让你成了全场唯一不靠人情也能往上爬的人——大比能不能过，实际上系在你身上。'],
+['伍','苦修','他人予我的，皆非我有。',0,
+ '宗门存续，累计受票 ≤6，且境界达筑基。',
+ '走火阈值永久 +1。<br><b>过手</b>　收到的票可在结算前转赠他人，每日至多 2 点。转出部分按一半计入你自己的累计受票（向下取整），且档案上举荐人记为你。',
+ '筑基只需 4 点，而阈值 +1 让你能在一天内安全吃下 4 点直接筑基——那个 +1 不是锦上添花，是唯一解。过手让你从必须躲票的人变成全场唯一的洗票通道：别人想暗中喂某人又不想在最终公示里留名，就投给你让你转。你是全场唯一可以出租的名字。但转得越多，离自己的红线越近。你也是唯一会公开求人别投你的人，而这看起来极像卧底示弱。'],
+['陆','执事','灵脉的账，总要有人记。',0,
+ '宗门存续，且传功长老走火入魔。',
+ '你知道传功长老的技能是什么，可据此认人。<br><b>朱批</b>　全局一次，指定 2 张他人荐帖，强制改投。<br>每日结算后可见当日得票最高与最低者各一名。',
+ '你是全场唯一一个猎杀好人的好人。这是藏在明牌之下的私人决斗，而猎物毫不知情。提防丹师——他的回魂丹救的往往正是最强的那个心魔，也就是你刚刚杀掉的人。'],
+['柒','护道人','你并非为自己修行。',0,
+ '宗门存续，且开局随机绑定的同门进入最终境界前三。',
+ '<b>代受</b>　当绑定对象当日走火值达其阈值时，自动将其中 2 点转移到你身上，双方按转移后的数值各自结算走火。',
+ '你可以为他去死，而且是自动触发的。你是全场最稳的盟友——但你的忠诚是给某一个特定的人的，不是给在座各位的。'],
+['捌','器修','一件法宝胜过十柄凡剑；但一宗只有一件法宝，是要亡宗的。',0,
+ '宗门存续，且全场 ≥5 人达金丹以上。',
+ '每日 50% 概率可额外投出 1 票。',
+ '你是唯一一个反对资源集中的好人，会持续把票投给中层，而这在冲刺阶段看起来像在破坏大比。你与剑修天然对立，而你们俩都是好人。'],
+['玖','游方散人','出头的椽子先烂，垫底的柴火先烧。',0,
+ '宗门存续，且你的最终境界既非全场最高，也非全场最低。',
+ '免疫第三日的外门杂役降级判定。',
+ '这是最容易达成的一张。它存在的意义是提供一个无害的、可被信任的中间人——顺带，它也是全场最好的伪装身份，所有人都会声称自己是散人。'],
+['拾','传功长老','你已无进境可言，你只剩下眼光。',0,
+ '宗门存续，且你第一日荐帖的三人中，至少两人进入最终境界前三。',
+ '开局得知一名确定的好人（随机指认一名非卧底、非夺舍者的玩家）。',
+ '你在第一天押下全部赌注，之后五天都在为第一天的判断辩护，天然是话事人。但执事也在猎杀好人，所以「我知道某某是好人」这条情报，价值远比听上去暧昧。']
+];
+document.getElementById('cards').innerHTML=R.map(function(c){
+  return '<button class="cd'+(c[3]?' evil':'')+'" aria-expanded="false">'+
+    '<div class="cd-h"><div class="cd-no">'+c[0]+'</div><div class="cd-nm">'+c[1]+'</div>'+
+    '<div class="cd-q">'+c[2]+'</div></div>'+
+    '<div class="cd-more">点击展开</div>'+
+    '<div class="cd-body"><div class="cd-lb">个人任务</div>'+c[4]+
+    '<div class="cd-lb">技能</div>'+c[5]+
+    '<div class="cd-lb">玩法</div>'+c[6]+'</div></button>';
+}).join('');
+document.getElementById('cards').addEventListener('click',function(e){
+  var b=e.target.closest('.cd');if(!b)return;
+  b.setAttribute('aria-expanded',b.getAttribute('aria-expanded')==='true'?'false':'true');
+});
+
+/* ── 补遗 ── */
+var RU=[
+['心魔的境界，是否计入大比前三？','<b>计入。</b>宗门只看名册上的修为，不问道心。所以完全可能出现这种局面：宗门靠一个心魔的境界撑过了九分，而那个心魔自己是判负的。'],
+['同一日多人走火，如何结算？','同时判定，互不影响。前一个人的走火不改变后一个人的阈值。'],
+['心魔的侵蚀能否把灵力扣成负数？','不能，灵力下限为 0。'],
+['侵蚀能否作用于心魔？','不能。心魔不再受任何举荐与侵蚀影响，投给心魔的票与侵蚀一律作废。'],
+['剑心自守触发时，当日的侵蚀还扣吗？','扣。自守只使当日<b>吸收</b>归零，不阻止侵蚀造成的扣减。'],
+['护道人代受之后自己走火了，怎么办？','照常入魔。这条技能的设计原意就是他可以替人去死。'],
+['绑定对象已经入魔，代受还生效吗？','不生效。心魔不再受灵，也不再判定走火。'],
+['苦修能否把票转赠给心魔？','不能。心魔不受灵，此类转赠视为无效操作，票留在苦修自己账上照常结算。'],
+['卧底暗中灌顶的那 2 点，计入苦修的累计受票吗？','计入。它在数值上与普通得票无异，只是不出现在公开票数里。'],
+['执事朱批能否把一张荐帖改成投给该帖的举荐人自己？','不能。任何情况下都不产生自荐。若唯一可改目标为其本人，则该帖不变。'],
+['被朱批改过的荐帖，按谁的意思算胜利条件？','按<b>最终生效</b>的荐帖计。传功长老若第一日的票被改，其胜利条件以改后的三人为准。'],
+['丹师能否用回魂丹救回魔道卧底？','可以，如果卧底自己也走火入魔了。救回后他恢复卧底身份，胜利条件仍是宗门大比失败——你救了一个正在拆你台的人。'],
+['杂役核定时境界并列怎么办？','先取累计受票较少者，仍并列则取灵力较低者，再并列则随机。'],
+['具帖超时未投怎么办？','系统随机投出 3 票，不投自己。心法按固本处理。'],
+['剑修每日 50% 的额外灵力，会让他走火值 +1 吗？','不会。那不是票，只增加灵力，不增加走火值。'],
+['器修额外投出的那一票呢？','是票。会使被投者走火值 +1。']
+];
+document.getElementById('rulings').innerHTML=RU.map(function(q){
+  return '<div class="qa"><button aria-expanded="false">'+q[0]+'</button><div>'+q[1]+'</div></div>';
+}).join('');
+
+/* ── 疑问 ── */
+var FQ=[
+['第一天我该投谁？','没有正确答案，这正是第一天的意思——你有能力杀人，却还没有理由。多数人会投给看起来敢说话的人。要留意的是：全场都是炼气，开纳灵的阈值只有 4，你和另一个人合起来就能弄死一个新人。这件事第一天就已经可以做了。'],
+['为什么不能投自己？','自荐即贪念，道心已失，宗规不受自荐之帖。机制上的原因更重要：一旦能自投，整个游戏就退化成各自刷分，社交博弈不复存在。'],
+['走火了是不是就输了？','不是。你换了一边。心魔不再需要讨好任何人，三票转为侵蚀，且自动加入卧底的私密频道——你从一个求人的人，变成一个不必看谁脸色的人。很多人觉得这是全场最爽的位置。'],
+['我是好人，该开纳灵还是固本？','固本只吸收一半，光靠它是修不上金丹的。所以问题不是选哪个，是<b>什么时候</b>开纳灵。理想情况是在别人不注意你的那天开，而不是在你已经成为焦点的那天。'],
+['怎么判断谁是卧底？','很难，而且这不是本作的主要乐趣。更实际的做法是盯住<b>票型</b>：谁在持续把票投给注定上不去的人，谁在关键日突然改喂头名。卧底的破绽在他的举荐记录里，不在他的话里。'],
+['沦为杂役是惩罚吗？','是也不是。你的境界确实垫底了，但你拿到了全场唯一的完整荐帖明细——你知道谁投了谁。后两天你是最抢手的谈判对象。用信息换实力，这笔买卖不一定亏。'],
+['我的个人任务和宗门存续冲突了，怎么办？','除了卧底和夺舍者，所有人的任务都必须<b>先</b>满足宗门存续。也就是说冲突时没得选：宗门倒了，你的任务再漂亮也不算。这条正是十个人能凑在一起谈判的原因。'],
+['为什么我喂人反而害了他？','因为走火判定的是<b>流速</b>，不是总量。同样 12 点灵力，分五天给是恩情，一天给是杀人。而这两件事写在荐帖上，是同一个名字。'],
+['第五天还有翻盘的可能吗？','有，但要看类型。境界上的翻盘基本没有——四日结算完，分值和已经可以掰指头算。真正会在第五天翻的是<b>身份判定</b>：丹师的回魂丹、夺舍者的收割、执事的最后一击，都在这一天落地。']
+];
+document.getElementById('faq').innerHTML=FQ.map(function(q){
+  return '<div class="qa"><button aria-expanded="false">'+q[0]+'</button><div>'+q[1]+'</div></div>';
+}).join('');
+
+document.addEventListener('click',function(e){
+  var b=e.target.closest('.qa button');if(!b)return;
+  b.setAttribute('aria-expanded',b.getAttribute('aria-expanded')==='true'?'false':'true');
+});
+})();
+</script>
+</body>
+</html>
