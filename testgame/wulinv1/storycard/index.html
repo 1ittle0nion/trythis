@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>天门 · 弟子记事</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --su:#E4E7E2;--zhi:#F3F4F0;--mo:#1B1F1D;--dai:#5C6660;
+  --zhu:#B0342A;--qing:#5F8272;--jin:#8A7B4F;
+  --xian:rgba(27,31,29,.14);--xian2:rgba(27,31,29,.07);
+  --serif:"Noto Serif SC","Songti SC",serif;
+  --sans:"Noto Sans SC","PingFang SC",sans-serif;
+  --mono:"JetBrains Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--su);color:var(--mo);font-family:var(--sans);font-size:14px;line-height:1.8;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+::selection{background:var(--zhu);color:var(--zhi)}
+:focus-visible{outline:2px solid var(--zhu);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:34px 26px 130px}
+
+/* head */
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--xian);flex-wrap:wrap}
+.top h1{font-family:var(--serif);font-size:24px;font-weight:900;margin:0;letter-spacing:.08em}
+.top .sub{font-size:11.5px;color:var(--dai);font-family:var(--mono);letter-spacing:.1em;margin-top:4px}
+.tg{display:flex;gap:7px;align-items:center}
+.tg button{background:none;border:1px solid var(--xian);color:var(--dai);font-size:11px;padding:5px 11px;font-family:var(--mono);letter-spacing:.06em;transition:.16s}
+.tg button:hover{border-color:var(--dai);color:var(--mo)}
+.tg button.on{border-color:var(--zhu);color:var(--zhu);background:rgba(176,52,42,.06)}
+
+/* disciple tabs */
+.picks{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:20px 0 0}
+.pick{background:var(--zhi);border:1px solid var(--xian);padding:13px 14px;text-align:left;transition:.16s;position:relative}
+.pick:hover{border-color:var(--dai)}
+.pick.on{border-color:var(--zhu);box-shadow:inset 2px 0 0 var(--zhu)}
+.pick b{display:block;font-family:var(--serif);font-size:17px;font-weight:600}
+.pick i{display:block;font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--qing);margin-top:3px}
+.pick u{display:block;text-decoration:none;font-family:var(--mono);font-size:11px;color:var(--dai);margin-top:7px}
+.pick u b{display:inline;font-family:var(--mono);font-size:13px;color:var(--mo)}
+
+/* profile */
+.prof{background:var(--zhi);border:1px solid var(--xian);padding:20px 22px;margin-top:16px}
+.prof .nm{font-family:var(--serif);font-size:26px;font-weight:900;letter-spacing:.06em}
+.prof .rl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--qing);margin-left:11px}
+.tags{margin:11px 0 0}
+.tag{display:inline-block;font-size:11.5px;padding:1px 9px;border:1px solid var(--xian);color:var(--dai);margin:0 5px 5px 0;background:rgba(255,255,255,.5)}
+.unsolved{font-family:var(--serif);font-size:15px;line-height:1.9;border-left:2px solid var(--jin);padding:4px 0 4px 15px;margin:14px 0 0;color:var(--mo)}
+.unsolved em{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--jin);display:block;margin-bottom:3px}
+.sts{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-top:18px;padding-top:16px;border-top:1px solid var(--xian2)}
+.st{text-align:center}
+.st span{display:block;font-size:10.5px;color:var(--dai)}
+.st b{display:block;font-family:var(--mono);font-size:16px;font-weight:600;margin-top:1px}
+.yz{margin-top:16px;padding:13px 16px;background:rgba(95,130,114,.08);border:1px solid rgba(95,130,114,.25);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.yz .l b{font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.08em}
+.yz .l span{display:block;font-size:11.5px;color:var(--dai);margin-top:2px}
+.yz .v{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--qing)}
+body.truth .yz{background:rgba(176,52,42,.07);border-color:rgba(176,52,42,.3)}
+body.truth .yz .v{color:var(--zhu)}
+
+/* journal */
+.jh{display:flex;justify-content:space-between;align-items:baseline;margin:30px 0 4px;gap:12px;flex-wrap:wrap}
+.jh b{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.06em}
+.jh span{font-family:var(--mono);font-size:10.5px;color:var(--dai);letter-spacing:.08em}
+.day{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--qing);margin:24px 0 9px;padding-bottom:5px;border-bottom:1px solid var(--xian2)}
+.ent{
+  display:flex;gap:13px;background:var(--zhi);border:1px solid var(--xian);
+  padding:14px 16px;margin-bottom:7px;cursor:pointer;transition:.14s;align-items:flex-start;
+}
+.ent:hover{border-color:var(--dai)}
+.ent.sel{border-color:var(--zhu);box-shadow:inset 2px 0 0 var(--zhu);background:rgba(176,52,42,.04)}
+.ck{width:13px;height:13px;border:1px solid var(--dai);flex:none;margin-top:6px;transition:.14s}
+.ent.sel .ck{background:var(--zhu);border-color:var(--zhu)}
+.ent p{margin:0;font-family:var(--serif);font-size:15.5px;line-height:1.95;flex:1}
+.bg{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:1px 6px;border:1px solid var(--xian);color:var(--dai);flex:none;margin-top:5px}
+.bg.bian{color:var(--zhu);border-color:rgba(176,52,42,.4)}
+.shown{font-family:var(--mono);font-size:9px;color:var(--jin);flex:none;margin-top:6px}
+.fu{display:none}
+body.truth .ent.fuok{border-color:rgba(176,52,42,.45);background:rgba(176,52,42,.05)}
+body.truth .ent.fuok .fu{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--zhu);flex:none;margin-top:6px}
+
+/* show bar */
+.bar{
+  position:fixed;left:0;right:0;bottom:0;background:var(--zhi);border-top:1px solid var(--mo);
+  padding:14px 26px;display:none;z-index:40;
+}
+.bar.on{display:block}
+.bar .in{max-width:760px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bar b{font-family:var(--serif);font-size:15px}
+.bar select{font-family:inherit;font-size:13px;padding:6px 10px;background:var(--su);border:1px solid var(--xian);color:var(--mo)}
+.bar .go{background:var(--mo);color:var(--su);border:0;padding:9px 20px;font-size:13.5px;letter-spacing:.1em;margin-left:auto}
+.bar .cx{background:none;border:1px solid var(--xian);color:var(--dai);padding:8px 14px;font-size:12.5px}
+.bar .warn{width:100%;font-size:11.5px;color:var(--zhu);margin:0}
+
+/* truth note */
+.tn{display:none;background:rgba(176,52,42,.07);border:1px solid rgba(176,52,42,.3);padding:15px 18px;margin:18px 0 0;font-size:13px;line-height:1.85}
+body.truth .tn{display:block}
+.tn b{color:var(--zhu)}
+.tn code{font-family:var(--mono);font-size:12px;background:rgba(176,52,42,.1);padding:1px 5px}
+
+.note{background:rgba(138,123,79,.09);border:1px solid rgba(138,123,79,.3);padding:12px 16px;font-size:12px;color:var(--dai);margin:18px 0 0;line-height:1.8}
+.note b{color:var(--jin)}
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:var(--mo);color:var(--su);
+  padding:10px 20px;font-size:13px;z-index:60;opacity:0;transition:.3s;pointer-events:none;
+}
+.toast.on{opacity:1}
+
+@media(max-width:620px){
+  .wrap{padding:22px 16px 140px}
+  .picks{grid-template-columns:1fr;gap:7px}
+  .sts{grid-template-columns:repeat(3,1fr);gap:12px}
+  .prof .nm{font-size:22px}
+  .ent p{font-size:14.5px}
+  .bar{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top">
+  <div>
+    <h1>弟子记事</h1>
+    <div class="sub">青冥剑宗 · 第三日</div>
+  </div>
+  <div class="tg">
+    <button id="reroll">重新抽取</button>
+    <button id="truth">KP · 真相视角</button>
+  </div>
+</div>
+
+<div class="picks" id="picks"></div>
+<div id="prof"></div>
+
+<div class="tn">
+  <b>真相视角已开启（玩家看不到这一层）</b><br>
+  「引重」的真名是<b>引力</b>：<code>修为×0.4 ＋ 心境×0.2 ＋ 羁绊×0.4</code>，而羁绊＝记事条数＋你对他的行动次数。<br>
+  标红的那几条，是从 D1 起就埋在记事里的伏笔。玩家读过，只是当时不知道自己在读什么。
+</div>
+
+<div class="jh"><b>记事</b><span id="cnt"></span></div>
+<div id="log"></div>
+
+<div class="note"><b>原型说明</b>　数据由记事池随机抽取生成，可点「重新抽取」看不同结果。点任意一条可选中，最多三条，然后出示给其他宗门。</div>
+
+</div>
+
+<div class="bar" id="bar"><div class="in">
+  <b>出示 <span id="n">0</span> 条</b>
+  <span style="color:var(--dai);font-size:12.5px">给</span>
+  <select id="to">
+    <option>落霜剑派</option><option>丹霞谷</option><option>药王宗</option>
+    <option>万宝行</option><option>通天商盟</option><option>玄鹤宫</option>
+  </select>
+  <button class="cx" id="cancel">取消</button>
+  <button class="go" id="send">出示</button>
+  <p class="warn">出示后对方可完整看到这几条，且无法撤回。留意有没有你不想让他看见的。</p>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========== 记事池 ========== */
+const POOL={
+daily:[
+{id:"d001",t:"{name}在演武场练到掌灯，剑穗磨断了一根。",c:"修行"},
+{id:"d002",t:"今日晨课，{name}的剑意比昨日沉了半分，{elder}看了两眼，没说话。",c:"修行"},
+{id:"d003",t:"{name}把一式基础剑法拆成七段，说要一段一段重新学。",c:"修行",f:["木讷","重诺"]},
+{id:"d004",t:"{name}闭关三个时辰，出来时脸色发白，只说还差一点。",c:"修行"},
+{id:"d005",t:"{name}在瀑布下站了一夜。回来后只字未提，是{other}说漏的。",c:"修行",f:["慕强"]},
+{id:"d006",t:"{name}的功法卡在第三重，已经卡了半个月。今日仍是。",c:"修行",f:["自卑"]},
+{id:"d007",t:"{name}偷偷改了{elder}给的运功路子，说那样更顺，被骂了一顿。",c:"修行",f:["渴望自由"]},
+{id:"d008",t:"{name}练废了两柄木剑，第三柄没敢再要。",c:"修行",f:["自卑","木讷"]},
+{id:"d009",t:"今日{name}第一次接住了{other}的全力一击。两人都愣了一下。",c:"修行"},
+{id:"d010",t:"{name}把自己关在藏经阁一整天，抄了三十页。",c:"修行"},
+{id:"d011",t:"{name}说想学别宗的路子，被{elder}打断了。",c:"修行",f:["渴望自由"]},
+{id:"d012",t:"{name}练剑时走了神，划伤了手背，没跟任何人说。",c:"修行"},
+{id:"d013",t:"{name}天没亮就在山道上跑，遇见挑水的杂役，替人挑了半程。",c:"修行",f:["心善"]},
+{id:"d014",t:"{name}的修为涨了一线。{ta}自己似乎没察觉。",c:"修行"},
+{id:"d015",t:"{name}问{elder}，什么时候才算入门。{elder}说，你早就入了。",c:"修行",f:["自卑"]},
+{id:"d016",t:"{name}背功法背到子时，被巡夜的撞见，说自己只是睡不着。",c:"修行"},
+{id:"d017",t:"{name}在雪地里站桩，睫毛结了霜，姿势一直没变。",c:"修行",f:["慕强"]},
+{id:"d018",t:"{name}把师兄的旧剑谱翻烂了，边角都起了毛。",c:"修行"},
+{id:"d019",t:"今日{name}没有练剑。谁也没问为什么。",c:"修行"},
+{id:"d020",t:"{name}说昨夜梦见自己出剑很快，快到看不见。",c:"修行"},
+
+{id:"d021",t:"{name}和{other}为一句话吵了起来，晚饭时又坐在了一起。",c:"往来"},
+{id:"d022",t:"{other}病了，{name}守了半宿，第二天照常上早课。",c:"往来",f:["心善","护短"]},
+{id:"d023",t:"{name}把自己那份灵果分了一半给{other}，说自己不爱吃。",c:"往来",f:["心善"]},
+{id:"d024",t:"{name}和{other}三日没说话了。原因无人知晓。",c:"往来"},
+{id:"d025",t:"{name}替{other}顶了罚，跪了两个时辰。",c:"往来",f:["重诺","护短"]},
+{id:"d026",t:"外门弟子背后议论{name}，被{other}听见，动了手。",c:"往来"},
+{id:"d027",t:"{name}教外门的小弟子握剑，教得很慢，很有耐心。",c:"往来",f:["心善","木讷"]},
+{id:"d028",t:"{name}和{other}比了一场，没分胜负，两人都很高兴。",c:"往来"},
+{id:"d029",t:"{name}把{other}落下的东西送了回去，什么也没说。",c:"往来"},
+{id:"d030",t:"有人问{name}和{other}谁更强。{name}说，问这个做什么。",c:"往来"},
+{id:"d031",t:"{name}最近总躲着{other}。",c:"往来",f:["自卑"]},
+{id:"d032",t:"{other}赢了{name}一次。{name}笑着道贺，夜里去演武场练到很晚。",c:"往来",f:["慕强","自卑"]},
+{id:"d033",t:"{name}替{elder}跑腿，回来时手里多了一包点心，分给了外门的孩子。",c:"往来",f:["心善"]},
+{id:"d034",t:"{name}和杂役老周下了三盘棋，输了两盘。",c:"往来"},
+{id:"d035",t:"{name}把自己的房间让给了新来的师弟，搬去了偏院。",c:"往来",f:["心善"]},
+{id:"d036",t:"{name}说不喜欢{other}，可{other}受伤时第一个赶到的是{ta}。",c:"往来"},
+{id:"d037",t:"有外门弟子求{name}指点，{name}指点了整整一下午。",c:"往来"},
+{id:"d038",t:"{name}在饭堂替{other}留了位子。{other}没来。",c:"往来"},
+{id:"d039",t:"{name}和{other}约好一起下山，最后谁也没去。",c:"往来"},
+{id:"d040",t:"{name}把{other}的错处替{ta}瞒了下来。{elder}似乎知道。",c:"往来",f:["护短"]},
+{id:"d041",t:"门中传言{name}与{other}不合。两人听说后都笑了。",c:"往来"},
+{id:"d042",t:"{name}给外门的师妹编了个新剑穗，说是随手做的。",c:"往来",f:["心善"]},
+
+{id:"d043",t:"今日大雨，{name}把伞给了外门师妹，自己淋着回来。",c:"性情",f:["心善"]},
+{id:"d044",t:"{name}把你上月赏的剑穗拆了，重新编过，说原来那个太扎眼。",c:"性情",f:["自卑","渴望自由"]},
+{id:"d045",t:"{name}捡了只断腿的雀儿，养在袖子里，一天喂三回。",c:"性情",f:["心善"]},
+{id:"d046",t:"{name}不吃甜的。有人问起，{ta}说小时候吃够了。",c:"性情",f:["身世成谜"]},
+{id:"d047",t:"{name}写字很慢，一笔一画，像怕写错。",c:"性情",f:["木讷","自卑"]},
+{id:"d048",t:"{name}的房里没有多余的东西，干净得像没人住。",c:"性情"},
+{id:"d049",t:"{name}说话时总看着地面，只有握剑的时候才抬头。",c:"性情",f:["自卑","木讷"]},
+{id:"d050",t:"{name}笑得很少。笑起来的时候，眼角有一道很浅的疤。",c:"性情",f:["身世成谜"]},
+{id:"d051",t:"{name}怕水。这件事只有{other}知道。",c:"性情"},
+{id:"d052",t:"{name}把攒了半年的月例全换成灵石，藏在床下。",c:"性情",f:["渴望自由","身世成谜"]},
+{id:"d053",t:"{name}喜欢站在山门口看云，一看就是半个时辰。",c:"性情",f:["渴望自由"]},
+{id:"d054",t:"{name}从不问别人的来历，也从不说自己的。",c:"性情",f:["身世成谜"]},
+{id:"d055",t:"{name}的剑鞘上刻了一个字，被磨得看不清了。",c:"性情",f:["身世成谜"]},
+{id:"d056",t:"{name}睡觉时枕着剑。{other}说{ta}从入门起就这样。",c:"性情"},
+{id:"d057",t:"{name}听不得别人提「家」这个字。",c:"性情",f:["身世成谜"]},
+{id:"d058",t:"{name}走路很轻，常常吓到人。",c:"性情"},
+{id:"d059",t:"{name}会哼一支没人听过的调子，问起就说忘了从哪听来的。",c:"性情",f:["身世成谜"]},
+{id:"d060",t:"{name}对谁都客气，客气得让人不敢靠近。",c:"性情"},
+{id:"d061",t:"{name}把剩饭喂了山下的野狗，被{elder}说了句「妇人之仁」。",c:"性情",f:["心善"]},
+{id:"d062",t:"{name}的袖口磨破了三次，缝了三次，不肯换新的。",c:"性情",f:["木讷"]},
+{id:"d063",t:"{name}第一次拿到弟子牌那天，攥了一路，手心全是汗。",c:"性情",f:["崇拜宗主","自卑"]},
+{id:"d064",t:"{name}说最喜欢的时辰是天刚亮的时候，山里没有人。",c:"性情",f:["渴望自由"]},
+{id:"d065",t:"{name}不会说谎。这既是{ta}最好的地方，也是最麻烦的地方。",c:"性情",f:["木讷","重诺"]},
+{id:"d066",t:"{name}把一封没写完的信烧了。",c:"性情",f:["身世成谜"]},
+{id:"d067",t:"{name}最近瘦了。问起来说是天热。",c:"性情"},
+
+{id:"d068",t:"{name}在议事厅外站了很久，最终什么也没说就走了。",c:"宗主"},
+{id:"d069",t:"{name}问了你一个很奇怪的问题。你当时没在意。",c:"宗主"},
+{id:"d070",t:"{name}把你随口夸过的那一式练了三百遍。",c:"宗主",f:["崇拜宗主","慕强"]},
+{id:"d071",t:"{name}说，掌门若有一日不要{ta}了，{ta}就回山下去。",c:"宗主",f:["自卑"]},
+{id:"d072",t:"你路过演武场，{name}停下行了个礼。礼很规矩，也很生分。",c:"宗主"},
+{id:"d073",t:"{name}替你挡了一句难听的话。你不在场，是别人说的。",c:"宗主",f:["护短","崇拜宗主"]},
+{id:"d074",t:"{name}记得你说过的每一句话。这件事你今天才发现。",c:"宗主",f:["崇拜宗主"]},
+{id:"d075",t:"{name}问你，弟子当到什么份上，才算没辜负师门。",c:"宗主",f:["重诺"]},
+{id:"d076",t:"你赏了{name}一样东西，{ta}没舍得用，收了起来。",c:"宗主",f:["崇拜宗主"]},
+{id:"d077",t:"{name}在你面前从不喊累。",c:"宗主",f:["慕强"]},
+{id:"d078",t:"{name}问你，飞升是什么样子。你说你也没见过。",c:"宗主",fu:1},
+{id:"d079",t:"{name}说，掌门这几日看着比往常忙。",c:"宗主"},
+{id:"d080",t:"{name}把你的旧佩剑擦了一遍，放回原处，没告诉任何人。",c:"宗主",f:["崇拜宗主"]},
+{id:"d081",t:"{name}听说你要闭关，在门外守了一夜。",c:"宗主",f:["崇拜宗主"]},
+{id:"d082",t:"{name}说，{ta}这条命是掌门给的。你想不起是哪一件事。",c:"宗主",f:["重诺","身世成谜"]},
+{id:"d083",t:"{name}今日看你的眼神有些不一样。你说不上来哪里不一样。",c:"宗主"},
+{id:"d084",t:"{name}提起你时用的词是「我们掌门」。语气很轻，也很硬。",c:"宗主"},
+{id:"d085",t:"{name}问，如果只能带一个人走，掌门会带谁。",c:"宗主",fu:1},
+{id:"d086",t:"你训了{name}几句。{ta}低头听着，回去后练到天亮。",c:"宗主",f:["慕强"]},
+{id:"d087",t:"{name}偷偷改了作息表，让年纪小的多睡半个时辰。",c:"宗主",f:["心善"]},
+
+{id:"d088",t:"后山的桃树今年开得早，{name}折了一枝插在窗前。",c:"山门"},
+{id:"d089",t:"山门外的溪水涨了，{name}和{other}架了块木板。",c:"山门"},
+{id:"d090",t:"今日大雾，{name}在山道上迷了半个时辰的路。",c:"山门"},
+{id:"d091",t:"藏经阁的灯又灭了，{name}摸黑抄完了最后半页。",c:"山门"},
+{id:"d092",t:"厨下的老张病了，{name}顶了三天的火。",c:"山门",f:["心善"]},
+{id:"d093",t:"{name}和{other}在后山拾到一只旧铜铃，来历不明，挂在了廊下。",c:"山门"},
+{id:"d094",t:"山里下了今年第一场雪。{name}起得最早，把台阶扫干净了。",c:"山门"},
+{id:"d095",t:"演武场的青石裂了一道缝。{name}每天绕开走。",c:"山门"},
+{id:"d096",t:"{name}养的那盆兰花死了。{ta}沉默了一整天。",c:"山门"},
+{id:"d097",t:"春汛过后山道塌了一段，{name}带人修了两日。",c:"山门"},
+{id:"d098",t:"门中新到一批灵米，{name}把好的挑出来给了伤号。",c:"山门",f:["心善"]},
+{id:"d099",t:"夜里山上起风，{name}起来关了所有的窗。",c:"山门"},
+{id:"d100",t:"{name}在墙角发现了自己三年前刻的划痕，已经很浅了。",c:"山门"},
+{id:"d101",t:"今年的月例发得晚了。{name}没有问。",c:"山门",f:["木讷"]},
+{id:"d102",t:"山下集市开集，{name}下山一趟，什么也没买。",c:"山门"},
+{id:"d103",t:"廊下的灯笼破了，{name}换了新的，用的是自己的钱。",c:"山门"},
+{id:"d104",t:"{name}把去年的旧衣拆了，给外门的孩子改小了穿。",c:"山门",f:["心善"]},
+{id:"d105",t:"阴雨连日，{name}的旧伤又疼了。{ta}没有说。",c:"山门"},
+{id:"d106",t:"{name}把宗门牌匾擦了一遍，站在下面看了很久。",c:"山门",f:["崇拜宗主"]},
+
+{id:"f107",t:"{name}问你，飞升的人上去之后，留下的人怎么办。你说没人问过这个。",c:"伏笔",fu:1},
+{id:"f108",t:"藏经阁最底下那一格是空的，签子上写着一个「引」字，纸已经黄透了。",c:"伏笔",fu:1},
+{id:"f109",t:"{name}说梦见自己站在很亮的地方，浑身发烫，却不疼。",c:"伏笔",fu:1},
+{id:"f110",t:"山门外的旧碑上凿掉了一行字。凿痕比碑要新得多。",c:"伏笔",fu:1},
+{id:"f111",t:"{elder}最近总盯着{name}看，看得很久，看的不像是弟子。",c:"伏笔",fu:1},
+{id:"f112",t:"{name}问，一个人的修为能不能给别人。你说不能。{ta}「哦」了一声。",c:"伏笔",fu:1},
+{id:"f113",t:"门中老人说，上一次天门开的时候，山上少了很多人，没人记得是谁。",c:"伏笔",fu:1},
+{id:"f114",t:"{name}今日量了身量，比上月高了半寸。{elder}把这个记进了册子。",c:"伏笔",fu:1},
+{id:"f115",t:"{name}拾到一枚旧玉牌，上面刻着一个宗门名。那宗门早已不在了。",c:"伏笔",fu:1},
+{id:"f116",t:"你翻开自己功法的末页，发现有一行小字被人用朱笔划掉了。",c:"伏笔",fu:1},
+{id:"f117",t:"{name}说昨夜听见有人叫{ta}的名字，声音是从山顶传下来的。",c:"伏笔",fu:1},
+{id:"f118",t:"记录弟子姓名的册子上，{name}的名字旁边被人点了一个墨点。",c:"伏笔",fu:1},
+{id:"f119",t:"{name}问，掌门若飞升了，这宗门交给谁。你说这话说得太早。",c:"伏笔",fu:1},
+{id:"f120",t:"后山那口枯井，{name}说底下有风。",c:"伏笔",fu:1},
+{id:"f121",t:"{elder}近来常问起{name}的修为进境，问得比往年细。",c:"伏笔",fu:1},
+{id:"f122",t:"{name}把自己的生辰记错了一年。改口时，神色慌了一下。",c:"伏笔",fu:1}
+],
+incident:[
+{id:"i01",n:"走火之兆",t:"{name}在演武场发了半刻的怔，剑掉在地上也没察觉。{elder}说，心不定，不宜再进。",cond:"心境<40 或 连续三日专培同一人",eff:"心境 −10，开启〈心魔〉链"},
+{id:"i02",n:"顿悟",t:"讲道散后，{name}独自坐到天黑，忽然起身出剑，一式而成。",cond:"开坛讲道后 且 资质≥70",eff:"修为 +12，羁绊 +2"},
+{id:"i03",n:"首徒之争",t:"{name}在议事厅外站着不肯走，说只求一个说法。{other}就在廊下，也没有走。",cond:"两名弟子修为差 <10",eff:"落选方嫉妒 +8，偏宠 +1"},
+{id:"i04",n:"旧伤",t:"变天了。{name}半夜起来走了很久，第二天照常上早课，只是握剑的手偏了一点。",cond:"伤势 ≥1",eff:"修为 −4，心境 −5"},
+{id:"i05",n:"家书",t:"山下捎来一封信，没有落款。{name}读完就烧了，灰烬扫得很干净。",cond:"标签含〈身世成谜〉",eff:"心境 −6，开启〈来历〉链"},
+{id:"i06",n:"夜半下山",t:"守山弟子说，昨夜三更，{name}独自下了山，天亮前才回来。",cond:"忠诚 <50",eff:"离心 +2，开启〈去意〉链"},
+{id:"i07",n:"剑穗",t:"{name}收到一枚剑穗，编法不是本宗的。{ta}没有戴，也没有丢。",cond:"与他宗弟子存在缘分",eff:"缘分 +1，开启〈两宗〉链"},
+{id:"i08",n:"替罪",t:"事情查到{name}头上时，{ta}认了。可你知道{ta}那天根本不在。",cond:"门内存在未解之事",eff:"忠诚 +6，隐患 +4"},
+{id:"i09",n:"长老召见",t:"{elder}单独留下{name}说了半个时辰的话。{name}出来后什么也没说。",cond:"结党 ≥5",eff:"结党 +2，忠诚 −5"},
+{id:"i10",n:"私斗",t:"演武场夜里有动静。第二天{name}的袖子上有血，不是{ta}自己的。",cond:"尚武 ≥5",eff:"修为 +6，纪律 −5，伤势 +1"},
+{id:"i11",n:"罚跪",t:"{name}跪在阶前，从午后跪到掌灯。没人替{ta}求情。",cond:"苛政 ≥5",eff:"忠诚 −8，离心 +3"},
+{id:"i12",n:"偏心",t:"{other}说了一句「反正掌门眼里只有一个人」，说完就走了。",cond:"偏宠 ≥6",eff:"凝聚 −6，{other} 忠诚 −10"},
+{id:"i13",n:"有人在打听",t:"守山弟子来报，昨日有两名外乡修士在山门外徘徊，问的尽是门中弟子的事。",cond:"被他宗探查后必触发",eff:"警觉 +1"},
+{id:"i14",n:"来信",t:"别宗给{name}来了一封信，指名要{ta}亲启。{ta}拿着信找到你。",cond:"与他宗关系 ≥略有交情",eff:"开启〈邀约〉链"},
+{id:"i15",n:"残卷",t:"{name}从藏经阁最下一格摸出半卷残书。纸太脆，一碰就掉渣。上头有个字反复出现，是「引」。",cond:"彻查典籍",eff:"★ 获得天门线索 ×1"},
+{id:"i16",n:"井底有风",t:"{name}说后山枯井底下有风。你让人放绳下去，绳子到底了，风还在。",cond:"记事中出现过〈枯井〉",eff:"★ 获得天门线索 ×1"},
+{id:"i17",n:"老人的话",t:"门中最老的杂役喝多了，说上回天门开那年，山上一夜之间空了三成。你问是谁，他说不记得了，真的不记得了。",cond:"D3 起，声望 ≥50",eff:"★ 获得天门线索 ×1"},
+{id:"i18",n:"失踪一夜",t:"{name}一夜未归。天亮时自己回来了，衣服湿透，说迷了路。",cond:"心境 <45",eff:"心境 −8，隐患 +3"},
+{id:"i19",n:"表白",t:"{name}托人捎了封信出去。信没有署名，但字是{ta}的。",cond:"缘分 ≥3",eff:"开启〈情动〉链"},
+{id:"i20",n:"被拒",t:"{name}回来得很晚，谁也没说话，第二天照常练剑，练得比平时狠。",cond:"〈情动〉链失败",eff:"心境 −12，修为 +6"},
+{id:"i21",n:"生辰",t:"今日是{name}的生辰。{ta}没有说，是{other}记得。",cond:"随机，每宗每局至多一次",eff:"羁绊 +3，心境 +6"},
+{id:"i22",n:"立誓",t:"{name}在祖师像前立了誓。誓词{ta}没有说给任何人听。",cond:"忠诚 ≥80",eff:"忠诚 +10，开启〈守诺〉链"},
+{id:"i23",n:"病",t:"{name}病了三日，起不来床。{ta}让人不要惊动你。",cond:"心境 <35 或 伤势 ≥2",eff:"修为 −5，若前往探视则 羁绊 +4"},
+{id:"i24",n:"挑衅",t:"他宗弟子在坊市指名要与{name}比试，话说得很难听。",cond:"与他宗 ≥心存芥蒂",eff:"开启〈宿敌〉链"},
+{id:"i25",n:"认亲",t:"山下来了个人，说是{name}的什么人。{name}没有见，让人把他打发走了。",cond:"标签含〈身世成谜〉且已开〈来历〉链",eff:"心境 −10，隐患 +5"},
+{id:"i26",n:"去意",t:"{name}把东西收拾好了，又拆开放回去。这样反复了三次。",cond:"忠诚 <35",eff:"开启〈离宗〉抉择"},
+{id:"i27",n:"求带我去",t:"{name}说，掌门去天门那日，能不能带上{ta}。{ta}说只想看一眼。",cond:"D3 起，羁绊 ≥25",eff:"★ 羁绊 +5（引力同步上升）"},
+{id:"i28",n:"梦话",t:"同屋的师弟说，{name}这几夜总说梦话，翻来覆去一句：别烧我。",cond:"D3 起，引力全场前五",eff:"★ 获得天门线索 ×1，心境 −8"}
+]};
+
+/* ========== 弟子 ========== */
+const DISC=[
+ {id:0,nm:"沈砚",role:"首徒",ta:"他",tags:["慕强","重诺","沉默"],
+  st:{修为:68,资质:74,忠诚:81,心境:55,野心:62,伤势:1},
+  unsolved:"入门时随身带着一枚不属于本宗的令牌，从不离身。",acts:9},
+ {id:1,nm:"柳窈",role:"变数",ta:"她",tags:["自卑","渴望自由","身世成谜"],
+  st:{修为:61,资质:79,忠诚:43,心境:38,野心:71,伤势:0},
+  unsolved:"每月十五必独自下山，从不说去了哪里。",acts:4},
+ {id:2,nm:"阿罗",role:"素人",ta:"她",tags:["崇拜宗主","心善","木讷"],
+  st:{修为:29,资质:66,忠诚:70,心境:72,野心:20,伤势:0},
+  unsolved:"三年前山下那场火，她是唯一活着回来的。",acts:12}
+];
+const ELDER="谢无咎";
+const DAYS=["第一日","第二日","第三日"];
+const PER=[4,3,3];
+
+/* ========== 生成 ========== */
+let seed=20260729, cur=0, sel=[], shown={};
+function rnd(){seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return((seed>>>0)/4294967296)}
+function fill(t,d){
+  const o=DISC.filter(x=>x.id!==d.id)[Math.floor(rnd()*2)];
+  return t.replace(/\{name\}/g,d.nm).replace(/\{ta\}/g,d.ta)
+          .replace(/\{other\}/g,o.nm).replace(/\{elder\}/g,ELDER);
+}
+function gen(d){
+  const fits=POOL.daily.filter(e=>!e.f||e.f.some(x=>d.tags.includes(x)));
+  const rest=POOL.daily.filter(e=>!fits.includes(e));
+  const log=[];const used={};
+  DAYS.forEach((dn,di)=>{
+    const items=[];
+    for(let i=0;i<PER[di];i++){
+      // 三成从贴合标签的池子里抽，保证角色感；伏笔单独控频
+      let pool = rnd()<0.55 ? fits : rest;
+      let pick,guard=0;
+      do{ pick=pool[Math.floor(rnd()*pool.length)]; guard++ }while(pick&&used[pick.id]&&guard<40);
+      if(!pick) continue;
+      used[pick.id]=1;
+      items.push({id:pick.id,t:fill(pick.t,d),fu:!!pick.fu,kind:"日常"});
+    }
+    // 每人每局约插入一条变故
+    if(di===1&&d.id!==2 || di===2&&d.id===2){
+      const inc=POOL.incident[Math.floor(rnd()*POOL.incident.length)];
+      items.push({id:inc.id,t:fill(inc.t,d),fu:false,kind:"变故",n:inc.n});
+    }
+    log.push({day:dn,items});
+  });
+  return log;
+}
+let LOGS=DISC.map(gen);
+
+/* ========== 渲染 ========== */
+const $=s=>document.querySelector(s);
+function yinzhong(d,log){
+  const n=log.reduce((a,b)=>a+b.items.length,0);
+  const jiban=n*2+d.acts;
+  return{n,jiban,v:Math.round(d.st.修为*0.4+d.st.心境*0.2+jiban*0.4)};
+}
+function draw(){
+  const d=DISC[cur],log=LOGS[cur],y=yinzhong(d,log);
+
+  $('#picks').innerHTML=DISC.map((x,i)=>{
+    const yy=yinzhong(x,LOGS[i]);
+    return `<button class="pick ${i===cur?'on':''}" data-p="${i}">
+      <b>${x.nm}</b><i>${x.role}</i>
+      <u>引重 <b>${yy.v}</b>　记事 ${yy.n} 条</u></button>`;
+  }).join('');
+
+  $('#prof').innerHTML=`<div class="prof">
+    <span class="nm">${d.nm}</span><span class="rl">${d.role}</span>
+    <div class="tags">${d.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    <div class="unsolved"><em>一件未解之事</em>${d.unsolved}</div>
+    <div class="sts">${Object.entries(d.st).map(([k,v])=>
+      `<div class="st"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
+    <div class="yz">
+      <div class="l"><b id="yzn">引重</b><span id="yzd">此子在天门前为你增添的分量</span></div>
+      <div class="v">${y.v}</div>
+    </div>
+  </div>`;
+  if(document.body.classList.contains('truth')){
+    $('#yzn').textContent='引力';
+    $('#yzd').textContent=`修为 ${d.st.修为}×0.4 ＋ 心境 ${d.st.心境}×0.2 ＋ 羁绊 ${y.jiban}×0.4`;
+  }
+
+  $('#cnt').textContent=`共 ${y.n} 条　已选 ${sel.length}/3`;
+  $('#log').innerHTML=log.map(g=>`
+    <div class="day">${g.day}</div>
+    ${g.items.map(it=>{
+      const k=cur+'|'+it.id;
+      return `<div class="ent ${sel.includes(k)?'sel':''} ${it.fu?'fuok':''}" data-k="${k}">
+        <div class="ck"></div>
+        <p>${it.t}</p>
+        ${it.kind==='变故'?`<span class="bg bian">变故 · ${it.n}</span>`:''}
+        ${shown[k]?`<span class="shown">已出示 ${shown[k]}</span>`:''}
+        <span class="fu">伏笔</span>
+      </div>`}).join('')}`).join('');
+
+  $('#bar').classList.toggle('on',sel.length>0);
+  $('#n').textContent=sel.length;
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)}
+
+document.addEventListener('click',e=>{
+  const p=e.target.closest('[data-p]');
+  if(p){cur=+p.dataset.p;sel=[];draw();return}
+  const en=e.target.closest('[data-k]');
+  if(en){
+    const k=en.dataset.k,i=sel.indexOf(k);
+    if(i>=0) sel.splice(i,1);
+    else if(sel.length>=3){toast('一次最多出示三条');return}
+    else sel.push(k);
+    draw();return;
+  }
+  if(e.target.id==='cancel'){sel=[];draw();return}
+  if(e.target.id==='send'){
+    const to=$('#to').value;
+    sel.forEach(k=>shown[k]=to);
+    toast(`已向${to}出示 ${sel.length} 条，无法撤回`);
+    sel=[];draw();return;
+  }
+  if(e.target.id==='reroll'){seed=Date.now()&0x7fffffff;LOGS=DISC.map(gen);sel=[];draw();return}
+  if(e.target.id==='truth'){
+    document.body.classList.toggle('truth');
+    e.target.classList.toggle('on');
+    draw();return;
+  }
+});
+draw();
+</script>
+</body>
+</html>
