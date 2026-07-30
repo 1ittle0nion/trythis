@@ -1,0 +1,86 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "admins": {
+      ".read": "auth != null && data.child(auth.uid).exists()",
+      ".write": false
+    },
+
+    "usernames": {
+      ".read": true,
+      "$name": {
+        ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
+      }
+    },
+
+    "users": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && (($uid === auth.uid && !data.exists()) || root.child('admins').child(auth.uid).val() === true)",
+        ".validate": "newData.hasChildren(['name'])"
+      }
+    },
+
+    "game": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+
+    "public": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+
+    "private": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)",
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      }
+    },
+
+    "roles": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)",
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      }
+    },
+
+    "inbox": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)",
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      }
+    },
+
+    "actions": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$day": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || (auth.uid === $uid && root.child('game/phase').val() === '具帖' && root.child('game/dayKey').val() === $day && root.child('game/phaseEndsAt').val() > now && root.child('public').child($uid).child('demon').val() === false))",
+          ".validate": "!newData.exists() || (newData.hasChildren(['art','votes']) && newData.child('art').isString() && newData.child('votes').hasChildren(['0','1','2']) && !newData.child('votes').hasChild('3') && newData.child('votes/0').val() !== $uid && newData.child('votes/1').val() !== $uid && newData.child('votes/2').val() !== $uid && newData.child('votes/0').val() !== newData.child('votes/1').val() && newData.child('votes/1').val() !== newData.child('votes/2').val() && newData.child('votes/0').val() !== newData.child('votes/2').val())"
+        }
+      }
+    },
+
+    "log": {
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$day": {
+        "public": { ".read": "auth != null" },
+        "raw":    { ".read": "auth != null && root.child('admins').child(auth.uid).val() === true" }
+      }
+    },
+
+    "reveal": {
+      ".read": "auth != null && root.child('game/revealed').val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+
+    "audit": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    }
+  }
+}
