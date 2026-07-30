@@ -49,6 +49,10 @@ button{font-family:inherit;cursor:pointer}
 .sumleg span{display:flex;align-items:center;gap:6px}
 .sumleg u{width:8px;height:8px;text-decoration:none;flex:none}
 .sumleg b{font-family:var(--mono);font-size:12px;color:var(--mo);font-weight:600}
+.fld{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:2px 14px;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--dai)}
+.fld span{display:flex;justify-content:space-between;gap:8px;padding:1px 0}
+.fld span.me{color:var(--zhu);font-weight:600}
+.fld b{font-weight:600}
 .thr{margin-top:11px;padding-top:10px;border-top:1px solid var(--xian2);font-size:11.5px;color:var(--dai);font-family:var(--mono)}
 body.truth .sum{background:rgba(176,52,42,.06);border-color:rgba(176,52,42,.28)}
 body.truth .sumtop .v{color:var(--zhu)}
@@ -191,7 +195,7 @@ body.truth .tn{display:block}
 
 <div class="tn">
   <b>真相视角（玩家看不到这一层）</b><br>
-  「引重」的真名是<b>引力</b>：<code>修为×0.4 ＋ 心境×0.2 ＋ 羁绊×0.4 ＋ 标签修正</code>。羁绊＝记事条数＋你对他的行动次数。<br>
+  「引重」的真名是<b>引力</b>：<code>道行×0.4 ＋ 心境×0.2 ＋ 羁绊×0.4 ＋ 标签修正</code>，道行＝（修为＋资质）/2。羁绊＝记事条数＋你对他的行动次数。<br>
   标红的记事是从 D1 起就埋着的伏笔。另外注意标签池里的两张牌：<b>〈天门有名〉引力 +20</b>，<b>〈无根之人〉引力 −15</b>——真相揭开后，后者会变成全场最贵的东西。
 </div>
 
@@ -525,10 +529,19 @@ function fig(d,glow){
 /* ================= 计算 ================= */
 const T=n=>TAGS.find(x=>x.n===n);
 function yin(d,log){
- const n=log.reduce((a,b)=>a+b.items.length,0);
+ const n=log?log.reduce((a,b)=>a+b.items.length,0):11;
  const jb=n*2+d.acts;
  const tg=d.tags.reduce((a,x)=>a+(T(x)?T(x).y:0),0);
- return{n,jb,tg,v:Math.round(d.st.修为*.4+d.st.心境*.2+jb*.4+tg)};
+ const dh=(d.st.修为+d.st.资质)/2;
+ return{n,jb,tg,dh,v:Math.round(dh*.4+d.st.心境*.2+jb*.4+tg)};
+}
+// 全场十宗（六宗真实计算 ＋ 四宗模拟），用于真实排位
+const MOCK={落霜剑派:141,通天商盟:132,灵犀宗:119,万兽岭:128};
+function field(){
+ const f=Object.keys(SETS).map(k=>({s:SETS[k].sect,v:SETS[k].disc.reduce((a,d)=>a+yin(d,null).v,0),me:k===DAOX}));
+ Object.keys(MOCK).forEach(k=>f.push({s:k,v:MOCK[k],me:false}));
+ f.sort((a,b)=>b.v-a.v);
+ return f;
 }
 
 /* ================= 生成 ================= */
@@ -579,9 +592,9 @@ function draw(){
  // ---- 综合引重 ----
  const vs=DISC.map((x,i)=>yin(x,LOGS[i]).v);
  const tot=vs.reduce((a,b)=>a+b,0);
- const REF=320, COL=truth?['#B0342A','#C4694F','#D69C86']:['#1B1F1D','#5F8272','#8A7B4F'];
- const rank=tot>=240?'第一':tot>=210?'第二':tot>=180?'第三':tot>=150?'第五':'第八';
- const pct=Math.round(tot/600*100);
+ const REF=200, COL=truth?['#B0342A','#C4694F','#D69C86']:['#1B1F1D','#5F8272','#8A7B4F'];
+ const F=field(), pos=F.findIndex(x=>x.me)+1, all=F.reduce((a,b)=>a+b.v,0);
+ const band=pos<=3?'诸宗之中，你这一门颇受人注目。':pos<=7?'诸宗之中，你这一门不算显眼，也不算轻。':'诸宗之中，你这一门算不得显眼。';
  $('#sum').innerHTML=`<div class="sum">
   <div class="sumtop">
    <div class="l"><b>宗门总${truth?'引力':'引重'}</b>
@@ -591,8 +604,9 @@ function draw(){
   <div class="sumbar">${vs.map((v,i)=>`<i style="width:${(v/REF*100).toFixed(1)}%;background:${COL[i]}"></i>`).join('')}</div>
   <div class="sumleg">${DISC.map((x,i)=>`<span><u style="background:${COL[i]}"></u>${x.nm} <b>${vs[i]}</b></span>`).join('')}</div>
   <div class="thr">${truth
-    ? `开启天门需全场引力 ≥ 600　本宗现可提供 ${tot}（${pct}%）　贡献愈多，天门认可度愈高`
-    : `分量愈重，你在天门前愈有资格　全场估位 ${rank}`}</div>
+    ? `全场排位 第${pos} / 10　开启天门需引力 ≥ 420　全场现有 ${all}，本宗持 ${tot}<br>世上的引绰绰有余，问题只在于烧谁的。`
+    : `分量愈重，你在天门前愈有资格。${band}`}</div>
+  ${truth?`<div class="fld">${F.map((x,i)=>`<span class="${x.me?'me':''}">${i+1}. ${x.s} <b>${x.v}</b></span>`).join('')}</div>`:''}
  </div>`;
 
  $('#crew').innerHTML=DISC.map((x,i)=>{
@@ -619,7 +633,7 @@ function draw(){
   </div></div>
   <div class="sts">${Object.entries(d.st).map(([k,v])=>`<div class="st"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
   <div class="yz"><div class="l"><b>${truth?'引力':'引重'}</b>
-   <span>${truth?`修为 ${d.st.修为}×0.4 ＋ 心境 ${d.st.心境}×0.2 ＋ 羁绊 ${y.jb}×0.4 ＋ 标签 ${y.tg>=0?'+':''}${y.tg}`:'此子在天门前为你增添的分量'}</span></div>
+   <span>${truth?`道行 ${Math.round(y.dh)}×0.4 ＋ 心境 ${d.st.心境}×0.2 ＋ 羁绊 ${y.jb}×0.4 ＋ 标签 ${y.tg>=0?'+':''}${y.tg}`:'此子在天门前为你增添的分量'}</span></div>
    <div class="v">${y.v}</div></div>
  </div>`;
 
