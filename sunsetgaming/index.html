@@ -116,8 +116,24 @@ nav button:focus-visible{outline:2px solid var(--zhu);outline-offset:-4px}
     <div class="who" id="who"></div>
   </div>
 
+<div id="bootErr" class="box" style="display:none;border-color:var(--zhu)">
+  <h3 style="color:var(--zhu)">载入失败</h3>
+  <div class="mini" id="bootErrMsg"></div>
+  <div class="mini" style="margin-top:10px">请把以上文字截图发出以便排查。</div>
+</div>
+<script>
+window.__boot=function(m){var e=document.getElementById('bootErr');if(!e)return;
+  e.style.display='';document.getElementById('bootErrMsg').textContent=String(m);};
+window.addEventListener('error',function(ev){
+  window.__boot('脚本错误：'+(ev.message||'')+'　'+(ev.filename||'')+' 第'+(ev.lineno||'?')+' 行');});
+window.addEventListener('unhandledrejection',function(ev){
+  window.__boot('异步错误：'+((ev.reason&&ev.reason.message)||ev.reason||''));});
+setTimeout(function(){ if(!window.__ok)
+  window.__boot('Firebase SDK 未能载入。常见原因：① 不是通过 http(s) 网址访问，而是直接打开了本地文件或编辑器预览；② 网络无法访问 CDN（gstatic.com 在中国大陆不通）。');},8000);
+</script>
+
   <!-- 认证 -->
-  <div id="scAuth" style="display:none">
+  <div id="scAuth">
     <div class="box">
       <h3 id="authTitle">登录</h3>
       <div class="lbl">用户名</div>
@@ -161,7 +177,6 @@ nav button:focus-visible{outline:2px solid var(--zhu);outline-offset:-4px}
 /* ══════════════════════════════════════════
    ① 配置：替换为你的 Firebase 项目配置
    ══════════════════════════════════════════ */
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCL7iyuhzK99TjVISxM4eut7_Da01J_Y6c",
   authDomain: "my-test-game-starts.firebaseapp.com",
@@ -173,11 +188,29 @@ const firebaseConfig = {
 };
 const MAIL_DOMAIN = "wurida.local";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-         onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, onValue, get, set, remove, update }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+async function loadFirebase(){
+  const srcs=[
+    ['https://cdn.jsdelivr.net/npm/firebase@10.12.0/app/+esm',
+     'https://cdn.jsdelivr.net/npm/firebase@10.12.0/auth/+esm',
+     'https://cdn.jsdelivr.net/npm/firebase@10.12.0/database/+esm'],
+    ['https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js',
+     'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js',
+     'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js']
+  ];
+  let last;
+  for(const [a,b,c] of srcs){
+    try{ const [A,B,C]=await Promise.all([import(a),import(b),import(c)]);
+         return {app:A,auth:B,db:C}; }
+    catch(e){ last=e; }
+  }
+  window.__boot('无法载入 Firebase SDK：'+((last&&last.message)||last));
+  throw last;
+}
+const F = await loadFirebase();
+const { initializeApp } = F.app;
+const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } = F.auth;
+const { getDatabase, ref, onValue, get, set, remove, update } = F.db;
+window.__ok = true;
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -602,7 +635,7 @@ function renderNum() {
 
 /* ── 说明书 ── */
 const DOC = [
-  ['每天做什么','议事 即大群→ 具帖 每人投出 3 票并秘密择定心法 → 结算，公示各人得票数与境界，但不公示举荐人。<br><br>议事后自由「对坐」，即私约。’],
+  ['每天做什么','议事在 QQ 大群进行 → 具帖，每人投出 3 票并秘密择定心法 → 结算，公示各人得票数与境界，但不公示举荐人。<br><br>议事后可自由「对坐」，即私下约谈。'],
   ['举荐','每人每日 3 票，一票等于一点灵力，不可弃权，不可投自己。全场每日固定产出 30 点，五天共 150 点。想让某人变强，就必须有人变弱。'],
   ['心法','<b>纳灵</b>　全额吸收，走火阈值 −1。<br><b>固本</b>　只吸收一半（向下取整），走火阈值 +2。<br><b>观道</b>　不吸收，免疫走火，可指定 2 人看到其今日荐帖去向。<br><br>超时未选按固本处理。固本只吸收一半，光靠苟是修不上去的。'],
   ['走火入魔','每收到一票，当日走火值 +1，每日归零。达到阈值即走火。<br><br><b>阈值按当日吸收完成后的境界计算</b>，不是吸收之前。边吃边涨，容量跟着涨。'],
