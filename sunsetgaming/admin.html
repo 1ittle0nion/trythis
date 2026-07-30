@@ -195,7 +195,7 @@ const thOf = (q, art, role) => {
   return t + (art === '纳灵' ? -1 : 2);
 };
 const PHASES = d => d === 2 ? ['对坐','议事','具帖','结算'] : ['议事','具帖','结算'];
-const DUR = {对坐:180, 议事:90, 具帖:30, 结算:0};
+const DEF_DUR = {对坐:300, 议事:180, 具帖:90};  // 秒；0 表示不限时
 const CN = '〇一二三四五';
 
 /* ═════ ③ 状态 ═════ */
@@ -207,6 +207,10 @@ const nameOf = u => S.users[u]?.name || '—';
 const players = () => Object.keys(S.roles);
 const shuffle = a => { for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; };
 const roleOwner = r => players().find(u => S.roles[u]?.role === r);
+const durOf = p => { const d = (S.game.dur||{}); return d[p] !== undefined ? d[p] : (DEF_DUR[p] ?? 0); };
+// 0 秒视为不限时：写入 24 小时后的时间戳，安全规则的 phaseEndsAt > now 才能继续放行
+const endAt = p => DEF_DUR[p] === undefined ? null
+              : (durOf(p) > 0 ? Date.now() + durOf(p)*1000 : Date.now() + 86400000);
 
 /* ═════ ④ 认证 ═════ */
 $('btnGo').onclick = async () => {
@@ -546,7 +550,7 @@ function renderDeal() {
       up['public/'+u]  = { name:nameOf(u), realm:'炼气', demon:false, votesToday:0, servant:false };
     });
     up['actions'] = null; up['inbox'] = null; up['log'] = null; up['reveal'] = null;
-    up['game'] = { status:'running', day:1, dayKey:'1', phase:'议事', phaseEndsAt:Date.now()+DUR.议事*1000, revealed:false, burnCount:0, pairs:null };
+    up['game'] = { status:'running', day:1, dayKey:'1', phase:'议事', phaseEndsAt:endAt('议事'), revealed:false, burnCount:0, pairs:null };
     await update(ref(db), up);
     await push(ref(db,'audit'), { at:Date.now(), adminUid:S.uid, action:'deal' });
   };
@@ -557,13 +561,13 @@ function renderFlow() {
   if (g.status === 'lobby') return void ($('pgFlow').innerHTML = banner() + `<div class="box"><div class="mini">尚未开局，请先发牌。</div></div>`);
   const seq = PHASES(g.day), idx = seq.indexOf(g.phase);
   let h = banner() + `<div class="box"><h3>第${CN[g.day]}日 · 阶段</h3><div class="tb">` +
-    seq.map((p,i) => `<div class="tr"><span>${p}</span><span class="n">${DUR[p]?DUR[p]+'s':'—'}</span>` +
+    seq.map((p,i) => `<div class="tr"><span>${p}</span><span class="n">${DEF_DUR[p]===undefined?'—':(durOf(p)>0?durOf(p)+'s':'不限时')}</span>` +
       `<span class="n ${i===idx?'bad':''}">${i<idx||g.phase==='已结算'?'已完成':(i===idx?'进行中':'未开始')}</span></div>`).join('') +
     `</div></div>`;
 
   h += `<div class="box"><h3>推进</h3>
     <div class="mini" style="margin-bottom:11px">半自动：倒计时归零后玩家侧提交自动失效（由安全规则的阶段判断实现），结算仍需手动。</div>
-    <div class="row"><button class="btn ghost" id="btnAdd">延 时 30 秒</button><button class="btn ghost" id="btnLock">立 即 结 束 本 阶 段</button></div>
+    <div class="row"><button class="btn ghost" id="btnAdd">延 时 60 秒</button><button class="btn ghost" id="btnLock">立 即 结 束 本 阶 段</button></div>
     <div style="height:8px"></div>
     <button class="btn" id="btnNext">进 入 下 一 阶 段</button></div>`;
 
@@ -571,23 +575,37 @@ function renderFlow() {
     (g.pairs ? `<div class="tb">` + g.pairs.map(p => `<div class="tr"><span>${esc(nameOf(p[0]))} — ${esc(nameOf(p[1]))}</span></div>`).join('') + `</div>` : '<div class="mini">尚未生成。</div>') +
     `<div style="height:11px"></div><button class="btn ghost" id="btnPair">${g.pairs?'重新配对':'生成配对'}</button></div>`;
 
+  h += `<div class="box"><h3>阶段时长</h3>
+    <div class="mini" style="margin-bottom:12px">单位为秒，填 0 表示不限时（由你手动点「立即结束本阶段」）。修改后从下一个阶段起生效，不影响正在进行的阶段。</div>
+    <div class="lbl">对坐（仅第二日）</div><input class="fld" id="dPair" type="number" min="0" value="${durOf('对坐')}">
+    <div class="lbl">议事</div><input class="fld" id="dTalk" type="number" min="0" value="${durOf('议事')}">
+    <div class="lbl">具帖</div><input class="fld" id="dVote" type="number" min="0" value="${durOf('具帖')}">
+    <button class="btn ghost" id="btnDur">保 存 时 长</button>
+    <div class="err" id="durErr"></div></div>`;
+
   h += `<div class="note"><b>硬约束</b>　结算在本浏览器内执行。结算期间请勿关闭本页。</div>`;
   $('pgFlow').innerHTML = h;
 
-  $('btnAdd').onclick  = () => update(ref(db,'game'), { phaseEndsAt:(S.game.phaseEndsAt||Date.now())+30000 });
+  $('btnAdd').onclick  = () => update(ref(db,'game'), { phaseEndsAt:(S.game.phaseEndsAt||Date.now())+60000 });
   $('btnLock').onclick = () => update(ref(db,'game'), { phaseEndsAt:Date.now() });
   $('btnNext').onclick = async () => {
     const seq2 = PHASES(S.game.day), i = seq2.indexOf(S.game.phase);
     if (S.game.phase === '已结算') {
       if (S.game.day >= 5) return alert('第五日已结算，牌局结束。');
       const d = S.game.day + 1;
-      const patch = { day:d, dayKey:String(d), phase:PHASES(d)[0], phaseEndsAt:Date.now()+DUR[PHASES(d)[0]]*1000 };
+      const patch = { day:d, dayKey:String(d), phase:PHASES(d)[0], phaseEndsAt:endAt(PHASES(d)[0]) };
       if (d === 2) patch.pairs = makePairs();
       return update(ref(db,'game'), patch);
     }
     if (i < 0 || i >= seq2.length-1) return alert('本日阶段已走完，请前往「结算」页。');
     const np = seq2[i+1];
-    await update(ref(db,'game'), { phase:np, phaseEndsAt: DUR[np] ? Date.now()+DUR[np]*1000 : null });
+    await update(ref(db,'game'), { phase:np, phaseEndsAt: endAt(np) });
+  };
+  $('btnDur').onclick = async () => {
+    const v = { 对坐:Math.max(0,+$('dPair').value||0), 议事:Math.max(0,+$('dTalk').value||0), 具帖:Math.max(0,+$('dVote').value||0) };
+    await update(ref(db,'game'), { dur:v });
+    await push(ref(db,'audit'), { at:Date.now(), adminUid:S.uid, action:'setDur', payload:v });
+    $('durErr').textContent = '已保存，下一阶段起生效。';
   };
   const bp = $('btnPair'); if (bp) bp.onclick = () => update(ref(db,'game'), { pairs:makePairs() });
 }
