@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>五日大比 · 执事堂</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --paper:#E3E4DA;--deep:#D5D6CA;--card:rgba(255,255,255,.3);--sunk:rgba(27,30,37,.045);
+  --ink:#1B1E25;--soft:#565A63;--faint:#8A8E93;
+  --zhu:#B23A32;--zi:#584C7E;
+  --rule:rgba(27,30,37,.2);--grid:rgba(178,58,50,.085);
+  --song:"Songti SC","SimSun",serif;--fang:"FangSong","STFangsong","Songti SC","SimSun",serif;
+  --hei:"PingFang SC","Heiti SC","Microsoft YaHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#16181D;--deep:#1F222A;--card:rgba(255,255,255,.05);--sunk:rgba(255,255,255,.03);
+  --ink:#DFDDD2;--soft:#9B9E9A;--faint:#6B6E72;--zhu:#CE6A5C;--zi:#9B8BCB;
+  --rule:rgba(223,221,210,.22);--grid:rgba(206,106,92,.075);
+}}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--fang);font-size:15.5px;line-height:1.8;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px}
+.wrap{max-width:820px;margin:0 auto;padding:0 16px 90px}
+.hd{padding:24px 0 12px;display:flex;align-items:baseline;gap:12px}
+.hd h1{font-family:var(--song);font-weight:700;font-size:22px;letter-spacing:.16em;margin:0}
+.hd .who{margin-left:auto;font-family:var(--hei);font-size:12px;color:var(--soft)}
+.hd .who button{background:none;border:none;color:var(--zhu);font-family:var(--hei);font-size:12px;cursor:pointer}
+nav{position:sticky;top:0;z-index:20;background:var(--paper);border-top:1px solid var(--rule);
+  border-bottom:3px double var(--rule);display:flex;overflow-x:auto}
+nav button{flex:none;background:none;border:none;cursor:pointer;font-family:var(--song);font-size:15px;
+  letter-spacing:.16em;color:var(--soft);padding:12px 16px;border-bottom:2px solid transparent}
+nav button[aria-selected=true]{color:var(--zhu);border-bottom-color:var(--zhu)}
+.pg{display:none;padding-top:20px}.pg.on{display:block}
+.box{border:1px solid var(--rule);background:var(--card);padding:18px 16px;margin-bottom:12px}
+.box h3{font-family:var(--song);font-weight:700;font-size:16.5px;letter-spacing:.1em;margin:0 0 10px}
+.lbl{font-family:var(--hei);font-size:10.5px;letter-spacing:.22em;color:var(--faint);margin:0 0 6px}
+.mini{font-family:var(--hei);font-size:12.5px;color:var(--soft);line-height:1.75}
+.fld{width:100%;padding:10px 12px;border:1px solid var(--rule);background:var(--sunk);color:var(--ink);
+  font-family:var(--fang);font-size:15.5px;margin-bottom:10px}
+.btn{width:100%;padding:12px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  font-family:var(--song);font-size:15.5px;letter-spacing:.18em;cursor:pointer}
+.btn.ghost{background:none;color:var(--ink)}
+.btn.warn{background:var(--zhu);border-color:var(--zhu);color:#fff}
+.btn:disabled{opacity:.32;cursor:not-allowed}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.err{color:var(--zhu);font-family:var(--hei);font-size:12.5px;min-height:1.3em}
+.phase{border:1px solid var(--ink);padding:11px 14px;margin-bottom:13px;display:flex;align-items:center;gap:11px}
+.phase b{font-family:var(--song);font-size:17px;font-weight:700;letter-spacing:.12em}
+.phase .cd{margin-left:auto;font-family:var(--hei);font-size:20px;font-variant-numeric:tabular-nums}
+.tb{font-family:var(--hei);font-size:12.5px}
+.tr{display:flex;gap:8px;padding:7px 2px;border-bottom:1px dotted var(--rule);align-items:center}
+.tr:first-child{border-top:1px solid var(--rule);font-size:10px;letter-spacing:.14em;color:var(--faint)}
+.tr>span{flex:1;min-width:0}.tr>span:first-child{flex:1.2}
+.n{text-align:right;font-variant-numeric:tabular-nums}
+.bad{color:var(--zhu)}.evil{color:var(--zi)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--zhu);margin-right:4px}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:7px}
+.cell{border:1px solid var(--rule);padding:11px 8px;text-align:center;background:var(--sunk)}
+.cell.done{border-color:var(--ink);background:var(--card)}
+.cell.late{border-color:var(--zhu)}
+.cell b{display:block;font-family:var(--song);font-size:14.5px;margin-bottom:3px}
+.cell i{font-style:normal;font-family:var(--hei);font-size:10px;letter-spacing:.1em;color:var(--faint)}
+.cell.done i{color:var(--ink)}.cell.late i{color:var(--zhu)}
+.segs{display:flex;gap:6px;flex-wrap:wrap}
+.seg{font-family:var(--song);font-size:14px;padding:7px 14px;border:1px solid var(--rule);background:none;color:var(--soft);cursor:pointer}
+.seg[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--song);font-size:14px;padding:7px 12px;border:1px solid var(--rule);background:none;color:var(--soft);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--zi);border-color:var(--zi);color:#fff}
+.note{border-left:2px solid var(--zhu);padding-left:13px;margin:13px 0;color:var(--soft);font-size:14px}
+.note b{color:var(--zhu);font-weight:400}
+.qa{border-bottom:1px solid var(--rule)}
+.qa>button{width:100%;background:none;border:none;text-align:left;cursor:pointer;font-family:var(--song);
+  font-size:15.5px;color:var(--ink);padding:13px 24px 13px 0;position:relative;line-height:1.6}
+.qa>button::after{content:"＋";position:absolute;right:2px;top:13px;color:var(--zhu);font-family:var(--hei)}
+.qa>button[aria-expanded=true]::after{content:"－"}
+.qa>div{display:none;padding:0 0 15px;color:var(--soft);font-size:14.5px}
+.qa>button[aria-expanded=true]+div{display:block}
+pre{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--sunk);padding:12px;overflow-x:auto;border:1px solid var(--rule)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd"><h1>执事堂</h1><div class="who" id="who"></div></div>
+
+  <div id="scAuth" style="display:none">
+    <div class="box">
+      <h3>执事登录</h3>
+      <div class="lbl">用户名</div><input class="fld" id="inName">
+      <div class="lbl">密码</div><input class="fld" id="inPw" type="password">
+      <div class="err" id="authErr"></div>
+      <button class="btn" id="btnGo">登 录</button>
+      <div class="mini" style="margin-top:12px">本页仅限管理员。管理员需在 Firebase 控制台于 <code>/admins/&lt;uid&gt;</code> 写入 true。</div>
+    </div>
+  </div>
+
+  <div id="scDeny" style="display:none">
+    <div class="box"><h3>无权访问</h3>
+      <div class="mini">当前账号不是管理员。你的 UID 为：<br><code id="myUid"></code><br><br>请在 Firebase 控制台的 Realtime Database 中新增 <code>/admins/&lt;上述 UID&gt;</code> = <code>true</code>，然后刷新本页。</div>
+      <div style="height:12px"></div><button class="btn ghost" id="btnOut2">登 出</button>
+    </div>
+  </div>
+
+  <div id="scMain" style="display:none">
+    <nav role="tablist">
+      <button role="tab" aria-selected="true" data-p="pgMon">监控</button>
+      <button role="tab" data-p="pgDeal">发牌</button>
+      <button role="tab" data-p="pgFlow">流程</button>
+      <button role="tab" data-p="pgSet">结算</button>
+      <button role="tab" data-p="pgFix">修正</button>
+      <button role="tab" data-p="pgDoc">手册</button>
+    </nav>
+    <div class="pg on" id="pgMon"></div>
+    <div class="pg" id="pgDeal"></div>
+    <div class="pg" id="pgFlow"></div>
+    <div class="pg" id="pgSet"></div>
+    <div class="pg" id="pgFix"></div>
+    <div class="pg" id="pgDoc"></div>
+  </div>
+</div>
+
+<script type="module">
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCL7iyuhzK99TjVISxM4eut7_Da01J_Y6c",
+  authDomain: "my-test-game-starts.firebaseapp.com",
+  databaseURL: "https://my-test-game-starts-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "my-test-game-starts",
+  storageBucket: "my-test-game-starts.firebasestorage.app",
+  messagingSenderId: "91882719391",
+  appId: "1:91882719391:web:0c0fcc8bfbe249fe18faaa"
+};
+const MAIL_DOMAIN = "wurida.local";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, onValue, get, set, update, remove, push }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getDatabase(app);
+
+/* ═════ ② 规则常量 ═════ */
+const TIERS = [[26,'化神',5],[16,'元婴',4],[9,'金丹',3],[4,'筑基',2],[0,'炼气',1]];
+const BURN  = {炼气:5,筑基:7,金丹:9,元婴:11,化神:13};
+const ROLES = ['魔道卧底','夺舍者','丹师','剑修','苦修','护道人','执事','器修','游方散人','传功长老'];
+const EVIL  = ['魔道卧底','夺舍者'];
+const GATE  = 9;
+const tierOf   = q => TIERS.find(t => q >= t[0]) || TIERS[4];
+const realmOf  = q => tierOf(q)[1];
+const valOf    = q => tierOf(q)[2];
+const thOf = (q, art, role) => {
+  if (art === '观道') return Infinity;
+  let t = BURN[realmOf(q)];
+  if (role === '苦修') t += 1;
+  return t + (art === '纳灵' ? -1 : 2);
+};
+const PHASES = d => d === 2 ? ['对坐','议事','具帖','结算'] : ['议事','具帖','结算'];
+const DUR = {对坐:180, 议事:90, 具帖:30, 结算:0};
+const CN = '〇一二三四五';
+
+/* ═════ ③ 状态 ═════ */
+const S = { uid:null, admin:false, users:{}, pub:{}, priv:{}, roles:{}, game:{status:'lobby',day:0,phase:'议事'},
+            actions:{}, log:{}, tab:'pgMon', fixUid:null, preview:null };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nameOf = u => S.users[u]?.name || '—';
+const players = () => Object.keys(S.roles);
+const shuffle = a => { for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; };
+const roleOwner = r => players().find(u => S.roles[u]?.role === r);
+
+/* ═════ ④ 认证 ═════ */
+$('btnGo').onclick = async () => {
+  $('authErr').textContent = '';
+  try { await signInWithEmailAndPassword(auth, `${encodeURIComponent($('inName').value.trim())}@${MAIL_DOMAIN}`, $('inPw').value); }
+  catch (e) { $('authErr').textContent = '登录失败：' + e.code; }
+};
+$('inPw').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnGo').click(); });
+$('btnOut2').onclick = () => signOut(auth);
+$('who').onclick = e => { if (e.target.tagName === 'BUTTON') signOut(auth); };
+
+onAuthStateChanged(auth, async u => {
+  if (!u) { S.uid = null; screen('auth'); return; }
+  S.uid = u.uid;
+  const ok = await get(ref(db, 'admins/' + u.uid)).then(s => s.val() === true).catch(() => false);
+  S.admin = ok;
+  if (!ok) { $('myUid').textContent = u.uid; screen('deny'); return; }
+  bind(); screen('main');
+});
+function screen(w) {
+  $('scAuth').style.display = w === 'auth' ? '' : 'none';
+  $('scDeny').style.display = w === 'deny' ? '' : 'none';
+  $('scMain').style.display = w === 'main' ? '' : 'none';
+}
+
+let bound = false;
+function bind() {
+  if (bound) return; bound = true;
+  onValue(ref(db,'users'),   s => { S.users = s.val()||{}; render(); });
+  onValue(ref(db,'public'),  s => { S.pub   = s.val()||{}; render(); });
+  onValue(ref(db,'private'), s => { S.priv  = s.val()||{}; render(); });
+  onValue(ref(db,'roles'),   s => { S.roles = s.val()||{}; render(); });
+  onValue(ref(db,'game'),    s => { S.game  = Object.assign({},S.game,s.val()||{}); render(); });
+  onValue(ref(db,'actions'), s => { S.actions = s.val()||{}; render(); });
+  onValue(ref(db,'log'),     s => { S.log   = s.val()||{}; render(); });
+}
+document.querySelector('nav').addEventListener('click', e => {
+  const b = e.target.closest('button[data-p]'); if (!b) return;
+  S.tab = b.dataset.p;
+  document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-selected', String(x===b)));
+  document.querySelectorAll('.pg').forEach(p => p.classList.toggle('on', p.id===S.tab));
+  window.scrollTo({top:0}); render();
+});
+
+/* ═════ ⑤ 结算引擎（纯函数） ═════ */
+function settle(snap, day, dry) {
+  const { roles, priv, pub, actions, game } = snap;
+  const P = Object.keys(roles);
+  const rnd = dry ? (seed => { let x = seed*9301+49297; return (x%233280)/233280; }) : Math.random;
+  const st = {}; // 工作副本
+  P.forEach((u,i) => st[u] = {
+    uid:u, role:roles[u].role, qi:priv[u]?.qi??0, recvTotal:priv[u]?.recvTotal??0,
+    selfguard:priv[u]?.selfguard??0, demon:!!pub[u]?.demon, used:Object.assign({},roles[u].skillsUsed||{}),
+    pos:0, neg:0, seed:i+day*17
+  });
+  const act = {}, autofilled = [];
+  P.forEach(u => {
+    let a = (actions[day]||{})[u];
+    if (!a && !st[u].demon) {
+      const pool = shuffle(P.filter(x => x!==u));
+      a = { art:'固本', votes:pool.slice(0,3), _auto:true };
+      autofilled.push(u);
+    }
+    act[u] = a || { art:'固本', votes:[] };
+  });
+  const notices = [], inbox = {}, put = (u,o) => { (inbox[u] = inbox[u]||[]).push(o); };
+
+  /* 1 朱批 */
+  const clerk = P.find(u => st[u].role==='执事');
+  if (clerk && !st[clerk].demon && !st[clerk].used.朱批) {
+    const sk = act[clerk]?.skill||{}, tg = sk.朱批目标||[], to = (sk.朱批改投||[])[0];
+    if (tg.length===2 && to) {
+      tg.forEach((v,k) => {
+        const votes = act[v]?.votes; if (!votes||!votes.length) return;
+        const i = Math.floor(rnd(st[clerk].seed+k)*votes.length);
+        if (votes[i] !== to) votes[i] = to;
+      });
+      st[clerk].used.朱批 = true;
+      notices.push('执事堂另有朱批一道，若干荐帖已依例改投。');
+    }
+  }
+  /* 2 汇总票 */
+  P.forEach(u => {
+    (act[u].votes||[]).forEach(t => {
+      if (!st[t]) return;
+      if (st[u].demon) st[t].neg -= 1; else st[t].pos += 1;
+    });
+  });
+  /* 3 器修额外票 */
+  const smith = P.find(u => st[u].role==='器修');
+  if (smith && !st[smith].demon) {
+    const t = (act[smith]?.skill?.额票||[])[0];
+    if (t && st[t] && rnd(st[smith].seed) < .5) st[t].pos += 1;
+  }
+  /* 4 卧底暗中灌顶 */
+  const mole = P.find(u => st[u].role==='魔道卧底');
+  if (mole && !st[mole].demon && !st[mole].used.灌顶) {
+    const t = (act[mole]?.skill?.灌顶||[])[0];
+    if (t && st[t] && !st[t].demon) { st[t].pos += 2; st[mole].used.灌顶 = true; }
+  }
+  /* 5 苦修过手 */
+  const ascet = P.find(u => st[u].role==='苦修');
+  let give = 0;
+  if (ascet && !st[ascet].demon) {
+    const t = (act[ascet]?.skill?.过手||[])[0];
+    if (t && st[t] && !st[t].demon) {
+      give = Math.min(2, Math.max(0, st[ascet].pos));
+      if (give > 0) { st[ascet].pos -= give; st[t].pos += give; }
+    }
+  }
+  /* 6 剑修自增长 */
+  const sword = P.find(u => st[u].role==='剑修');
+  const swordBonus = (sword && !st[sword].demon && rnd(st[sword].seed) < .5) ? 1 : 0;
+
+  /* 7 护道人代受 */
+  const guard = P.find(u => st[u].role==='护道人');
+  if (guard && !st[guard].demon) {
+    const b = roles[guard]?.bondUid;
+    if (b && st[b] && !st[b].demon) {
+      const bq = st[b].qi, ba = act[b].art;
+      const gain = ba==='纳灵' ? st[b].pos : ba==='固本' ? Math.floor(st[b].pos/2) : 0;
+      if (st[b].pos > 0 && st[b].pos >= thOf(Math.max(0,bq+gain+st[b].neg), ba, st[b].role)) {
+        st[b].pos -= 2; st[guard].pos += 2;
+        notices.push('有弟子代人受气，其名不录。');
+      }
+    }
+  }
+  /* 8 逐人吸收与走火判定 */
+  const burned = [];
+  P.forEach(u => {
+    const s = st[u]; if (s.demon) return;
+    const a = act[u], pos = Math.max(0, s.pos), neg = s.neg;
+    s.recvTotal += pos + (u===ascet ? Math.floor(give/2) : 0);
+    const gain  = a.art==='纳灵' ? pos : a.art==='固本' ? Math.floor(pos/2) : 0;
+    const bonus = u===sword ? swordBonus : 0;
+    const qAfter = Math.max(0, s.qi + gain + neg + bonus);
+    const th = thOf(qAfter, a.art, s.role);
+    const over = a.art!=='观道' && pos>0 && pos >= th;
+    if (over && s.role==='剑修') {
+      s.selfguard += 1; s.qi = Math.max(0, s.qi + neg + bonus);
+      notices.push(`${nameOf(u)}剑心自守。`);
+    } else if (over) {
+      s.demon = true; s.qi = Math.max(0, qAfter - 4); burned.push(u);
+      notices.push(`${realmOf(qAfter)}弟子${nameOf(u)}，擅开${a.art}，经查其单日纳气逾限。已按例除名。`);
+    } else s.qi = qAfter;
+    s.th = th; s.gain = gain; s.qAfter = qAfter; s.over = over;
+  });
+  /* 9 回魂丹 */
+  const alch = P.find(u => st[u].role==='丹师');
+  if (day===5 && alch && !st[alch].demon && !st[alch].used.回魂) {
+    const t = (act[alch]?.skill?.回魂||[])[0];
+    if (t && st[t] && st[t].demon && !burned.includes(t)) {
+      st[t].demon = false; st[t].qi = Math.max(0, st[t].qi - 3);
+      st[alch].used.回魂 = true;
+      notices.push(`${nameOf(t)}服丹醒神，心魔已散。`);
+    }
+  }
+  /* 10 查询单 */
+  P.forEach(u => {
+    const a = act[u], s = st[u];
+    if (a.art==='观道' && a.observe) a.observe.forEach(t => {
+      if (st[t]) put(u, {type:'观道', text:`${nameOf(t)}今日荐帖投向：${(act[t].votes||[]).map(nameOf).join('、')||'无'}。`});
+    });
+    if (s.role==='魔道卧底' && !s.demon) {
+      const t = (a.skill?.内应||[])[0];
+      if (t && act[t]) {
+        put(u, {type:'执事堂内应', text:`${nameOf(t)}今日所择心法为「${act[t].art}」。`});
+        if (a.skill?.盖章 && (s.used.盖章||0) < 2) {
+          s.used.盖章 = (s.used.盖章||0) + 1;
+          notices.push(`执事堂查验：${nameOf(t)}本日所择心法确为「${act[t].art}」。`);
+        }
+      }
+    }
+    if (s.role==='丹师' && !s.demon) {
+      const t = (a.skill?.望气||[])[0];
+      if (t && st[t]) put(u, {type:'望气', text:`${nameOf(t)}当前境界${realmOf(st[t].qi)}，今日得票${Math.max(0,st[t].pos)}。`});
+    }
+    if (s.role==='执事' && !s.demon) {
+      const rank = P.filter(x => !st[x].demon).sort((x,y) => st[y].pos - st[x].pos);
+      if (rank.length) put(u, {type:'账房', text:`今日得票最多者${nameOf(rank[0])}，最少者${nameOf(rank[rank.length-1])}。`});
+    }
+    if (s.role==='夺舍者' && !s.demon)
+      put(u, {type:'洞察', text:P.map(x => `${nameOf(x)} ${st[x].qi}`).join('　')});
+  });
+  /* 11 杂役 */
+  let servants = Object.entries(pub).filter(([,v]) => v.servant).map(([u]) => u);
+  if (day===3) {
+    const drifter = P.find(u => st[u].role==='游方散人');
+    servants = P.filter(u => u!==drifter)
+      .sort((a,b) => valOf(st[a].qi)-valOf(st[b].qi) || st[a].recvTotal-st[b].recvTotal || st[a].qi-st[b].qi)
+      .slice(0,2);
+    notices.push(`名册末位二人，${servants.map(nameOf).join('、')}，着充外门杂役。`);
+  }
+  servants.forEach(u => put(u, {type:'杂役所见',
+    text:P.map(x => `${nameOf(x)} → ${(act[x].votes||[]).map(nameOf).join('、')||'—'}`).join('；')}));
+
+  /* 12 终局判定 */
+  let final = null;
+  if (day===5) {
+    const vals = P.map(u => valOf(st[u].qi)).sort((a,b) => b-a);
+    const total = vals.slice(0,3).reduce((a,b) => a+b, 0), survive = total >= GATE;
+    const byQi = P.slice().sort((a,b) => st[b].qi - st[a].qi), top3 = byQi.slice(0,3);
+    const mx = Math.max(...P.map(u => valOf(st[u].qi))), mn = Math.min(...P.map(u => valOf(st[u].qi)));
+    const uniqMax = P.filter(u => st[u].qi === st[byQi[0]].uid ? true : false);
+    const maxQi = st[byQi[0]].qi, tiedTop = P.filter(u => st[u].qi === maxQi);
+    const burnTotal = (game.burnCount||0) + burned.length;
+    const win = {};
+    P.forEach(u => {
+      const s = st[u], R = s.role, r = roles[u];
+      if (R==='魔道卧底') return void (win[u] = !survive);
+      if (R==='夺舍者')   return void (win[u] = tiedTop.length===1 && tiedTop[0]!==u && tiedTop[0]===r.vesselUid);
+      if (!survive) return void (win[u] = s.demon ? true : false);
+      if (s.demon) return void (win[u] = false);
+      switch (R) {
+        case '丹师':    win[u] = burnTotal>=2 && !!s.used.回魂; break;
+        case '剑修':    win[u] = s.qi > Math.max(...P.filter(x=>x!==u).map(x=>st[x].qi)) || s.selfguard>=2; break;
+        case '苦修':    win[u] = s.recvTotal<=6 && valOf(s.qi)>=2; break;
+        case '护道人':  win[u] = top3.includes(r.bondUid); break;
+        case '执事':    win[u] = !!st[roleOwner('传功长老')]?.demon; break;
+        case '器修':    win[u] = P.filter(x=>valOf(st[x].qi)>=3).length>=5; break;
+        case '游方散人':win[u] = valOf(s.qi)!==mx && valOf(s.qi)!==mn; break;
+        case '传功长老':{
+          const d1 = ((actions[1]||{})[u]||{}).votes||[];
+          win[u] = d1.filter(x => top3.includes(x)).length>=2; break;
+        }
+        default: win[u] = false;
+      }
+    });
+    final = { total, survive, top3, win, burnTotal };
+  }
+
+  /* 13 组装多路更新 */
+  const up = {}, pubOut = {};
+  P.forEach(u => {
+    const s = st[u];
+    up[`private/${u}/qi`] = s.qi;
+    up[`private/${u}/recvTotal`] = s.recvTotal;
+    up[`private/${u}/selfguard`] = s.selfguard;
+    up[`public/${u}/name`]   = nameOf(u);
+    up[`public/${u}/realm`]  = realmOf(s.qi);
+    up[`public/${u}/demon`]  = s.demon;
+    up[`public/${u}/votesToday`] = Math.max(0, s.pos);
+    up[`public/${u}/servant`] = servants.includes(u);
+    up[`roles/${u}/skillsUsed`] = s.used;
+    pubOut[u] = { realm:realmOf(s.qi), demon:s.demon, votes:Math.max(0,s.pos) };
+  });
+  Object.entries(inbox).forEach(([u,arr]) => arr.forEach((o,i) => up[`inbox/${u}/${day}/${i}`] = o));
+  up[`log/${day}/public`] = { notices, roster:pubOut, at:Date.now() };
+  up[`log/${day}/raw`] = { actions:act, autofilled, burned };
+  up['game/burnCount'] = (game.burnCount||0) + burned.length;
+  if (day===5) { up['game/status'] = 'ended'; up['game/phase'] = '已结算'; up['game/revealed'] = true;
+    up['reveal'] = { roles, result:final, allActions:actions, at:Date.now() }; }
+  else { up['game/phase'] = '已结算'; up['game/phaseEndsAt'] = null; }
+
+  return { up, preview:{ st, act, autofilled, burned, notices, final, servants } };
+}
+
+/* ═════ ⑥ 渲染 ═════ */
+let tick = null;
+function render() {
+  if (!S.admin) return;
+  $('who').innerHTML = `执事 <button>登出</button>`;
+  ({ pgMon:renderMon, pgDeal:renderDeal, pgFlow:renderFlow, pgSet:renderSet, pgFix:renderFix, pgDoc:renderDoc }[S.tab]||(()=>{}))();
+  clearInterval(tick); tick = setInterval(paintClock, 250); paintClock();
+}
+function paintClock() {
+  document.querySelectorAll('[data-clock]').forEach(el => {
+    if (!S.game.phaseEndsAt) return el.textContent = '—';
+    const left = Math.max(0, S.game.phaseEndsAt - Date.now());
+    el.textContent = `${Math.floor(left/60000)}:${String(Math.floor(left%60000/1000)).padStart(2,'0')}`;
+  });
+}
+const banner = () => `<div class="phase"><b>${S.game.status==='lobby'?'未开局':`第${CN[S.game.day]||''}日 · ${esc(S.game.phase)}`}</b><span class="cd" data-clock></span></div>`;
+
+function renderMon() {
+  const P = players();
+  if (!P.length) return void ($('pgMon').innerHTML = banner() + `<div class="box"><div class="mini">尚未发牌。请前往「发牌」页。</div></div>`);
+  const day = S.game.day, subs = S.actions[day]||{};
+  const done = P.filter(u => subs[u] || S.pub[u]?.demon).length;
+  let h = banner() + `<div class="box"><h3>呈递状况　${done} / ${P.length}</h3><div class="wall">` +
+    P.map(u => {
+      const ok = !!subs[u], dm = S.pub[u]?.demon;
+      return `<div class="cell ${ok?'done':(dm?'':'late')}"><b>${esc(nameOf(u))}</b><i>${dm?'心魔':(ok?'已呈递':'未呈递')}</i></div>`;
+    }).join('') + `</div></div>`;
+
+  h += `<div class="box"><h3>全量总览</h3><div class="tb">
+    <div class="tr"><span>弟子</span><span>身份</span><span class="n">灵力</span><span class="n">境界</span><span class="n">今日</span><span class="n">心法</span><span class="n">累计受票</span></div>` +
+    P.slice().sort((a,b)=>(S.priv[b]?.qi||0)-(S.priv[a]?.qi||0)).map(u => {
+      const r = S.roles[u].role, a = subs[u];
+      return `<div class="tr"><span>${S.pub[u]?.demon?'<span class="dot"></span>':''}${esc(nameOf(u))}${S.pub[u]?.servant?'<small> 杂役</small>':''}</span>` +
+        `<span class="${EVIL.includes(r)?'evil':''}">${esc(r)}</span>` +
+        `<span class="n">${S.priv[u]?.qi??0}</span><span class="n">${esc(S.pub[u]?.realm||'炼气')}</span>` +
+        `<span class="n">${S.pub[u]?.demon?'—':(S.pub[u]?.votesToday??0)}</span>` +
+        `<span class="n">${a?esc(a.art):'—'}</span><span class="n">${S.priv[u]?.recvTotal??0}</span></div>`;
+    }).join('') + `</div></div>`;
+
+  const days = Object.keys(S.log).sort((a,b)=>b-a);
+  if (days.length) h += `<div class="box"><h3>历史公示</h3>` + days.map(d =>
+    `<div class="note"><b>第${CN[d]}日</b>　${(S.log[d].public?.notices||[]).map(esc).join('<br>')||'无'}</div>`).join('') + `</div>`;
+  $('pgMon').innerHTML = h;
+}
+
+function renderDeal() {
+  const cands = Object.keys(S.users).filter(u => u !== S.uid);
+  const dealt = players().length;
+  let h = banner();
+  h += `<div class="box"><h3>候选弟子　${cands.length} / 10</h3>
+    <div class="mini">管理员账号不参与发牌。须恰好 10 名非管理员账号。</div>
+    <div class="chips" style="margin-top:11px">` +
+    cands.map(u => `<button class="chip" disabled>${esc(nameOf(u))}</button>`).join('') + `</div>
+    <div style="height:13px"></div>
+    <button class="btn" id="btnDeal" ${cands.length===10?'':'disabled'}>${dealt?'重 新 发 牌 并 重 置':'随 机 发 牌 并 开 局'}</button>
+    <div class="err" id="dealErr"></div></div>`;
+
+  if (dealt) h += `<div class="box"><h3>当前发牌</h3><div class="tb">
+    <div class="tr"><span>弟子</span><span>身份</span><span class="n">附加</span></div>` +
+    players().map(u => {
+      const r = S.roles[u];
+      const ex = [r.bondUid?'绑定 '+nameOf(r.bondUid):'', r.knownGoodUid?'知 '+nameOf(r.knownGoodUid)+' 为好人':'',
+                  r.vesselUid?'容器 '+nameOf(r.vesselUid):''].filter(Boolean).join(' · ') || '—';
+      return `<div class="tr"><span>${esc(nameOf(u))}</span><span class="${EVIL.includes(r.role)?'evil':''}">${esc(r.role)}</span><span class="n mini">${esc(ex)}</span></div>`;
+    }).join('') + `</div></div>`;
+
+  $('pgDeal').innerHTML = h;
+  const b = $('btnDeal'); if (!b) return;
+  b.onclick = async () => {
+    if (dealt && !confirm('这将清空全部数值、行动与日志，重新发牌。确定？')) return;
+    const rs = shuffle(ROLES.slice()), up = {};
+    const assign = {}; cands.forEach((u,i) => assign[u] = rs[i]);
+    const good = cands.filter(u => !EVIL.includes(assign[u]));
+    cands.forEach(u => {
+      const role = assign[u], o = { role, skillsUsed:{} };
+      if (role === '护道人')   o.bondUid = shuffle(cands.filter(x=>x!==u))[0];
+      if (role === '传功长老') o.knownGoodUid = shuffle(good.filter(x=>x!==u))[0] || null;
+      up['roles/'+u] = o;
+      up['private/'+u] = { qi:0, recvTotal:0, selfguard:0 };
+      up['public/'+u]  = { name:nameOf(u), realm:'炼气', demon:false, votesToday:0, servant:false };
+    });
+    up['actions'] = null; up['inbox'] = null; up['log'] = null; up['reveal'] = null;
+    up['game'] = { status:'running', day:1, dayKey:'1', phase:'议事', phaseEndsAt:Date.now()+DUR.议事*1000, revealed:false, burnCount:0, pairs:null };
+    await update(ref(db), up);
+    await push(ref(db,'audit'), { at:Date.now(), adminUid:S.uid, action:'deal' });
+  };
+}
+
+function renderFlow() {
+  const g = S.game;
+  if (g.status === 'lobby') return void ($('pgFlow').innerHTML = banner() + `<div class="box"><div class="mini">尚未开局，请先发牌。</div></div>`);
+  const seq = PHASES(g.day), idx = seq.indexOf(g.phase);
+  let h = banner() + `<div class="box"><h3>第${CN[g.day]}日 · 阶段</h3><div class="tb">` +
+    seq.map((p,i) => `<div class="tr"><span>${p}</span><span class="n">${DUR[p]?DUR[p]+'s':'—'}</span>` +
+      `<span class="n ${i===idx?'bad':''}">${i<idx||g.phase==='已结算'?'已完成':(i===idx?'进行中':'未开始')}</span></div>`).join('') +
+    `</div></div>`;
+
+  h += `<div class="box"><h3>推进</h3>
+    <div class="mini" style="margin-bottom:11px">半自动：倒计时归零后玩家侧提交自动失效（由安全规则的阶段判断实现），结算仍需手动。</div>
+    <div class="row"><button class="btn ghost" id="btnAdd">延 时 30 秒</button><button class="btn ghost" id="btnLock">立 即 结 束 本 阶 段</button></div>
+    <div style="height:8px"></div>
+    <button class="btn" id="btnNext">进 入 下 一 阶 段</button></div>`;
+
+  if (g.day === 2) h += `<div class="box"><h3>对坐配对</h3>` +
+    (g.pairs ? `<div class="tb">` + g.pairs.map(p => `<div class="tr"><span>${esc(nameOf(p[0]))} — ${esc(nameOf(p[1]))}</span></div>`).join('') + `</div>` : '<div class="mini">尚未生成。</div>') +
+    `<div style="height:11px"></div><button class="btn ghost" id="btnPair">${g.pairs?'重新配对':'生成配对'}</button></div>`;
+
+  h += `<div class="note"><b>硬约束</b>　结算在本浏览器内执行。结算期间请勿关闭本页。</div>`;
+  $('pgFlow').innerHTML = h;
+
+  $('btnAdd').onclick  = () => update(ref(db,'game'), { phaseEndsAt:(S.game.phaseEndsAt||Date.now())+30000 });
+  $('btnLock').onclick = () => update(ref(db,'game'), { phaseEndsAt:Date.now() });
+  $('btnNext').onclick = async () => {
+    const seq2 = PHASES(S.game.day), i = seq2.indexOf(S.game.phase);
+    if (S.game.phase === '已结算') {
+      if (S.game.day >= 5) return alert('第五日已结算，牌局结束。');
+      const d = S.game.day + 1;
+      const patch = { day:d, dayKey:String(d), phase:PHASES(d)[0], phaseEndsAt:Date.now()+DUR[PHASES(d)[0]]*1000 };
+      if (d === 2) patch.pairs = makePairs();
+      return update(ref(db,'game'), patch);
+    }
+    if (i < 0 || i >= seq2.length-1) return alert('本日阶段已走完，请前往「结算」页。');
+    const np = seq2[i+1];
+    await update(ref(db,'game'), { phase:np, phaseEndsAt: DUR[np] ? Date.now()+DUR[np]*1000 : null });
+  };
+  const bp = $('btnPair'); if (bp) bp.onclick = () => update(ref(db,'game'), { pairs:makePairs() });
+}
+function makePairs() {
+  const p = shuffle(players().slice()), out = [];
+  for (let i = 0; i+1 < p.length; i += 2) out.push([p[i], p[i+1]]);
+  return out;
+}
+
+function renderSet() {
+  const g = S.game;
+  if (g.status === 'lobby') return void ($('pgSet').innerHTML = banner() + `<div class="box"><div class="mini">尚未开局。</div></div>`);
+  if (g.phase === '已结算') return void ($('pgSet').innerHTML = banner() +
+    `<div class="box"><h3>第${CN[g.day]}日已结算</h3><div class="mini">请前往「流程」页进入次日。</div></div>` +
+    `<div class="box"><h3>本日公示</h3><div class="mini">${(S.log[g.day]?.public?.notices||[]).map(esc).join('<br>')||'无'}</div></div>`);
+
+  const snap = { roles:S.roles, priv:S.priv, pub:S.pub, actions:S.actions, game:S.game };
+  let pv; try { pv = settle(JSON.parse(JSON.stringify(snap)), g.day, true).preview; }
+  catch (e) { return void ($('pgSet').innerHTML = banner() + `<div class="box"><h3>预演失败</h3><pre>${esc(e.message)}</pre></div>`); }
+
+  let h = banner() + `<div class="box"><h3>第${CN[g.day]}日 · 若此刻结算</h3><div class="tb">
+    <div class="tr"><span>弟子</span><span class="n">受票</span><span class="n">心法</span><span class="n">吸收后</span><span class="n">阈值</span><span class="n">判定</span></div>` +
+    players().map(u => {
+      const s = pv.st[u], a = pv.act[u];
+      if (s.demon && !pv.burned.includes(u)) return `<div class="tr"><span><span class="dot"></span>${esc(nameOf(u))}</span><span class="n">—</span><span class="n">心魔</span><span class="n">${s.qi}</span><span class="n">—</span><span class="n">—</span></div>`;
+      return `<div class="tr ${s.over?'bad':''}"><span>${esc(nameOf(u))}${pv.autofilled.includes(u)?'<small class="bad"> 代填</small>':''}</span>` +
+        `<span class="n">${Math.max(0,s.pos)}</span><span class="n">${esc(a.art)}</span>` +
+        `<span class="n">${s.qAfter??s.qi}</span><span class="n">${s.th===Infinity?'免疫':s.th}</span>` +
+        `<span class="n">${s.over?(s.role==='剑修'?'自守':'走火'):'安然'}</span></div>`;
+    }).join('') + `</div>`;
+
+  const vals = players().map(u => valOf(pv.st[u].qi)).sort((a,b)=>b-a);
+  const tot = vals.slice(0,3).reduce((a,b)=>a+b,0);
+  h += `<div class="note">预计入魔 <b>${pv.burned.length}</b> 人　大比总分 <b>${tot}</b>　${tot>=GATE?'已达九分':'距九分尚差 '+(GATE-tot)}</div>`;
+  if (pv.autofilled.length) h += `<div class="note"><b>代填</b>　${pv.autofilled.map(nameOf).map(esc).join('、')} 未呈递，将按「固本 + 随机三票」补入。</div>`;
+  h += `</div>`;
+
+  h += `<div class="box"><h3>待执行动作</h3><div class="mini">${pv.notices.length?pv.notices.map(esc).join('<br>'):'无特殊动作。'}</div>
+    <div style="height:13px"></div>
+    <button class="btn warn" id="btnSettle">确 认 结 算 · 不 可 撤 销</button>
+    <div class="mini" style="margin-top:9px;text-align:center">将以单次原子多路更新写入</div>
+    <div class="err" id="setErr"></div></div>`;
+  $('pgSet').innerHTML = h;
+
+  $('btnSettle').onclick = async () => {
+    if (!confirm(`确认结算第${CN[g.day]}日？此操作不可撤销。`)) return;
+    $('btnSettle').disabled = true;
+    try {
+      const fresh = { roles:S.roles, priv:S.priv, pub:S.pub, actions:S.actions, game:S.game };
+      const { up } = settle(JSON.parse(JSON.stringify(fresh)), g.day, false);
+      await update(ref(db), up);
+      await push(ref(db,'audit'), { at:Date.now(), adminUid:S.uid, action:'settle', payload:{ day:g.day } });
+    } catch (e) { $('setErr').textContent = '结算失败：' + e.message; $('btnSettle').disabled = false; }
+  };
+}
+
+function renderFix() {
+  const P = players();
+  if (!P.length) return void ($('pgFix').innerHTML = `<div class="box"><div class="mini">尚未发牌。</div></div>`);
+  if (!S.fixUid || !P.includes(S.fixUid)) S.fixUid = P[0];
+  const u = S.fixUid, pr = S.priv[u]||{}, pb = S.pub[u]||{}, ro = S.roles[u]||{};
+  let h = `<div class="box"><h3>选择弟子</h3><div class="chips" id="fixPick">` +
+    P.map(x => `<button class="chip" data-u="${x}" aria-pressed="${x===u}">${esc(nameOf(x))}</button>`).join('') + `</div></div>`;
+
+  h += `<div class="box"><h3>${esc(nameOf(u))} · ${esc(ro.role||'')}</h3>
+    <div class="lbl">累计灵力</div><input class="fld" id="fQi" type="number" value="${pr.qi??0}">
+    <div class="lbl">累计受票</div><input class="fld" id="fRecv" type="number" value="${pr.recvTotal??0}">
+    <div class="lbl">剑心自守次数</div><input class="fld" id="fSg" type="number" value="${pr.selfguard??0}">
+    <div class="lbl">心魔状态</div>
+    <div class="segs" id="fDemon"><button class="seg" data-v="0" aria-pressed="${!pb.demon}">常人</button><button class="seg" data-v="1" aria-pressed="${!!pb.demon}">心魔</button></div>
+    <div style="height:10px"></div>
+    <div class="lbl">外门杂役</div>
+    <div class="segs" id="fServ"><button class="seg" data-v="0" aria-pressed="${!pb.servant}">否</button><button class="seg" data-v="1" aria-pressed="${!!pb.servant}">是</button></div>
+    <div style="height:10px"></div>
+    <div class="lbl">技能已用（JSON）</div><input class="fld" id="fUsed" value='${esc(JSON.stringify(ro.skillsUsed||{}))}'>
+    <div style="height:6px"></div>
+    <button class="btn warn" id="btnSave">保 存 修 正</button>
+    <div class="err" id="fixErr"></div>
+    <div class="mini" style="margin-top:9px">所有修正写入审计日志。</div></div>`;
+
+  const a = (S.actions[S.game.day]||{})[u];
+  h += `<div class="box"><h3>本日行动</h3>` + (a
+    ? `<pre>${esc(JSON.stringify(a,null,1))}</pre><div style="height:8px"></div><button class="btn ghost" id="btnDrop">删 除 其 本 日 行 动</button>`
+    : `<div class="mini">未呈递。结算时将自动代填「固本 + 随机三票」。</div>`) + `</div>`;
+
+  h += `<div class="box"><h3>牌局</h3>
+    <div class="mini" style="margin-bottom:11px">重置将清空全部数值、行动与日志，并回到未开局状态。发牌需重新进行。</div>
+    <button class="btn ghost" id="btnReset">重 置 整 局</button></div>`;
+  $('pgFix').innerHTML = h;
+
+  $('fixPick').onclick = e => { const b = e.target.closest('.chip'); if (b) { S.fixUid = b.dataset.u; renderFix(); } };
+  ['fDemon','fServ'].forEach(id => $(id).onclick = e => {
+    const b = e.target.closest('.seg'); if (!b) return;
+    $(id).querySelectorAll('.seg').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+  });
+  $('btnSave').onclick = async () => {
+    try {
+      const used = JSON.parse($('fUsed').value || '{}');
+      const qi = +$('fQi').value, demon = $('fDemon').querySelector('[aria-pressed=true]').dataset.v === '1';
+      await update(ref(db), {
+        [`private/${u}/qi`]:qi, [`private/${u}/recvTotal`]:+$('fRecv').value, [`private/${u}/selfguard`]:+$('fSg').value,
+        [`public/${u}/demon`]:demon, [`public/${u}/realm`]:realmOf(qi),
+        [`public/${u}/servant`]:$('fServ').querySelector('[aria-pressed=true]').dataset.v === '1',
+        [`roles/${u}/skillsUsed`]:used
+      });
+      await push(ref(db,'audit'), { at:Date.now(), adminUid:S.uid, action:'fix', payload:{ uid:u, qi, demon } });
+      $('fixErr').textContent = '已保存。';
+    } catch (e) { $('fixErr').textContent = '保存失败：' + e.message; }
+  };
+  const bd = $('btnDrop'); if (bd) bd.onclick = () => remove(ref(db, `actions/${S.game.day}/${u}`));
+  $('btnReset').onclick = async () => {
+    if (!confirm('重置整局？全部数值、行动、日志将被清空。')) return;
+    await update(ref(db), { roles:null, private:null, public:null, actions:null, inbox:null, log:null, reveal:null,
+      game:{ status:'lobby', day:0, dayKey:'0', phase:'议事', phaseEndsAt:null, revealed:false, burnCount:0, pairs:null } });
+    await push(ref(db,'audit'), { at:Date.now(), adminUid:S.uid, action:'reset' });
+  };
+}
+
+const KPDOC = [
+  ['结算的硬约束','结算逻辑在 KP 浏览器内执行，写入为单次原子多路更新。执行期间请勿关闭页面。若中途失败，数据不会处于半更新状态，可重试。'],
+  ['心魔的境界，是否计入大比前三？','计入。宗门只看名册上的修为，不问道心。完全可能出现宗门靠一个心魔的境界撑过九分、而那个心魔自己判负的局面。'],
+  ['同一日多人走火如何结算？','同时判定，互不影响。前一人的走火不改变后一人的阈值。'],
+  ['心魔的侵蚀能否扣成负数？','不能，灵力下限为 0。侵蚀对心魔无效，投给心魔的票一律作废。'],
+  ['剑心自守触发时侵蚀还扣吗？','扣。自守只使当日吸收归零，不阻止侵蚀造成的扣减。'],
+  ['护道人代受后自己走火？','照常入魔。这条技能的设计原意就是他可以替人去死。绑定对象已入魔则代受不生效。'],
+  ['苦修过手能否转给心魔？','不能，系统会忽略此类声明。转出部分按一半（向下取整）计入其累计受票。'],
+  ['卧底暗中灌顶的 2 点计入累计受票吗？','计入。它在数值上与普通得票无异，只是不出现在公开票数里。'],
+  ['朱批的实现','执事指定 2 名玩家与 1 个改投对象，系统各随机抽取其一张荐帖强制改投。不产生自荐。'],
+  ['丹师能否救回卧底？','可以，若卧底自己也走火。救回后他恢复卧底身份，胜利条件仍是宗门大比失败。回魂丹仅第五日可用，且只能救第四日结束时已存在的心魔。'],
+  ['杂役核定并列如何处理？','先取境界低者，再取累计受票少者，再取灵力低者。游方散人免疫此判定。'],
+  ['超时未提交如何处理？','结算时自动补「固本 + 随机三票」，并在预演页以「代填」标出。KP 可在结算前于「修正」页代为提交。'],
+  ['剑修的额外灵力会增加走火值吗？','不会。那不是票，只加灵力。器修额外投出的那一票则是票，会使被投者走火值 +1。'],
+  ['数值总表','境界 炼气 0 / 筑基 4 / 金丹 9 / 元婴 16 / 化神 26　分值 1–5<br>阈值 5 / 7 / 9 / 11 / 13　纳灵 −1，固本 +2，观道免疫，苦修 +1<br>阈值按当日吸收完成后的境界计算　大比门槛 前三分值和 ≥ 9']
+];
+let docDone = false;
+function renderDoc() {
+  if (docDone) return; docDone = true;
+  $('pgDoc').innerHTML = KPDOC.map(([q,a]) => `<div class="qa"><button aria-expanded="false">${q}</button><div>${a}</div></div>`).join('');
+  $('pgDoc').onclick = e => { const b = e.target.closest('.qa>button'); if (b) b.setAttribute('aria-expanded', b.getAttribute('aria-expanded')==='true'?'false':'true'); };
+}
+
+screen('auth');
+</script>
+</body>
+</html>
