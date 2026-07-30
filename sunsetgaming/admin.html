@@ -88,7 +88,23 @@ pre{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--s
 <div class="wrap">
   <div class="hd"><h1>执事堂</h1><div class="who" id="who"></div></div>
 
-  <div id="scAuth" style="display:none">
+<div id="bootErr" class="box" style="display:none;border-color:var(--zhu)">
+  <h3 style="color:var(--zhu)">载入失败</h3>
+  <div class="mini" id="bootErrMsg"></div>
+  <div class="mini" style="margin-top:10px">请把以上文字截图发出以便排查。</div>
+</div>
+<script>
+window.__boot=function(m){var e=document.getElementById('bootErr');if(!e)return;
+  e.style.display='';document.getElementById('bootErrMsg').textContent=String(m);};
+window.addEventListener('error',function(ev){
+  window.__boot('脚本错误：'+(ev.message||'')+'　'+(ev.filename||'')+' 第'+(ev.lineno||'?')+' 行');});
+window.addEventListener('unhandledrejection',function(ev){
+  window.__boot('异步错误：'+((ev.reason&&ev.reason.message)||ev.reason||''));});
+setTimeout(function(){ if(!window.__ok)
+  window.__boot('Firebase SDK 未能载入。常见原因：① 不是通过 http(s) 网址访问，而是直接打开了本地文件或编辑器预览；② 网络无法访问 CDN（gstatic.com 在中国大陆不通）。');},8000);
+</script>
+
+  <div id="scAuth">
     <div class="box">
       <h3>执事登录</h3>
       <div class="lbl">用户名</div><input class="fld" id="inName">
@@ -125,7 +141,7 @@ pre{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--s
 </div>
 
 <script type="module">
-// Your web app's Firebase configuration
+/* ═════ ① 配置：与 index.html 保持一致 ═════ */
 const firebaseConfig = {
   apiKey: "AIzaSyCL7iyuhzK99TjVISxM4eut7_Da01J_Y6c",
   authDomain: "my-test-game-starts.firebaseapp.com",
@@ -137,11 +153,29 @@ const firebaseConfig = {
 };
 const MAIL_DOMAIN = "wurida.local";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, onValue, get, set, update, remove, push }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+async function loadFirebase(){
+  const srcs=[
+    ['https://cdn.jsdelivr.net/npm/firebase@10.12.0/app/+esm',
+     'https://cdn.jsdelivr.net/npm/firebase@10.12.0/auth/+esm',
+     'https://cdn.jsdelivr.net/npm/firebase@10.12.0/database/+esm'],
+    ['https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js',
+     'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js',
+     'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js']
+  ];
+  let last;
+  for(const [a,b,c] of srcs){
+    try{ const [A,B,C]=await Promise.all([import(a),import(b),import(c)]);
+         return {app:A,auth:B,db:C}; }
+    catch(e){ last=e; }
+  }
+  window.__boot('无法载入 Firebase SDK：'+((last&&last.message)||last));
+  throw last;
+}
+const F = await loadFirebase();
+const { initializeApp } = F.app;
+const { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } = F.auth;
+const { getDatabase, ref, onValue, get, set, update, remove, push } = F.db;
+window.__ok = true;
 
 const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getDatabase(app);
 
