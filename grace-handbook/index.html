@@ -383,6 +383,8 @@ button{cursor:pointer}
   content:"";position:absolute;inset:5px;border:1.5px dashed rgba(44,33,28,.18);border-radius:7px
 }
 .tile-art svg{width:62%;height:62%;stroke:#2f241e;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;z-index:1}
+.tile-art img{width:92%;height:92%;object-fit:contain;display:block;position:relative;z-index:1;filter:drop-shadow(0 4px 2px rgba(44,33,28,.12));transition:transform .18s ease}
+.item-tile:hover .tile-art img{transform:scale(1.04) rotate(.5deg)}
 .tile-meta{margin-top:8px}
 .tile-name{font-size:14px;font-weight:980;line-height:1.2}
 .tile-tag{font-size:10px;font-weight:950;color:var(--muted);margin-top:3px}
@@ -430,6 +432,7 @@ button{cursor:pointer}
 }
 .big-art:before{content:"";position:absolute;inset:10px;border:2px dashed rgba(44,33,28,.18);border-radius:11px}
 .big-art svg{width:64%;height:64%;stroke:#2d221c;fill:none;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round;z-index:1}
+.big-art img{width:90%;height:90%;object-fit:contain;display:block;position:relative;z-index:1;filter:drop-shadow(0 8px 4px rgba(44,33,28,.14))}
 .detail-copy{padding-top:4px}
 .rule-pill{
   display:inline-block;background:var(--accent);color:#fff3db;border:2px solid #2f211a;border-radius:999px;
@@ -672,6 +675,7 @@ img,svg{
   .item-tile{min-height:136px}
 }
 
+.art-fallback{font-size:48px;font-weight:980;color:var(--muted);opacity:.55;position:relative;z-index:2}
 </style>
 </head>
 <body>
@@ -791,19 +795,19 @@ img,svg{
 
 <script>
 const items = [
- {id:"shotgun",cat:"attack",name:"老式猎枪",qty:"×1",tag:"攻击 +5",icon:"shotgun",desc:"一把让你的攻击稳定提升 5 数值的武器。",rule:"攻击稳定 +5"},
- {id:"bob-scissors",cat:"attack",name:"鲍勃的剪刀",qty:"×1",tag:"RD15",icon:"scissors",desc:"这是一把真正的理发剪刀，让你的攻击提升，RD15 决定攻击数值。",rule:"RD15 决定攻击数值"},
- {id:"wrench",cat:"attack",name:"扳手",qty:"×1",tag:"攻击 +3",icon:"wrench",desc:"让你的攻击稳定提升 3 数值。",rule:"攻击稳定 +3"},
- {id:"pliers",cat:"attack",name:"钳子",qty:"×1",tag:"攻击 +3",icon:"pliers",desc:"让你的攻击稳定提升 3 数值。",rule:"攻击稳定 +3"},
- {id:"screwdriver",cat:"attack",name:"螺丝刀",qty:"×1",tag:"攻击 +3",icon:"screwdriver",desc:"让你的攻击稳定提升 3 数值。",rule:"攻击稳定 +3"},
- {id:"angel-tip",cat:"attack",name:"铸铁天使翼尖",qty:"—",tag:"RD25",icon:"wing",desc:"也许是圣灵意志的加成，你的攻击变得飘忽而灵动，RD25 决定攻击数值。",rule:"RD25 决定攻击数值"},
- {id:"bandage",cat:"heal",name:"OK绷",qty:"×1",tag:"HP +5",icon:"bandage",desc:"小小的布面可以完美地贴合细小的创口，使用后恢复 5 点生命值。",rule:"恢复 5 点生命值"},
- {id:"almond",cat:"heal",name:"杏仁糖",qty:"×5",tag:"HP +5",icon:"candy",desc:"用锡纸包装的小小甜蜜宇宙，使用后恢复 5 点生命值。",rule:"恢复 5 点生命值"},
- {id:"rootbeer",cat:"heal",name:"冰镇A&W根啤",qty:"×2",tag:"HP +10",icon:"bottle",desc:"口感极其完美的千禧年美式根啤，甜得能麻痹你的味蕾。",rule:"饮用后恢复 10 点生命值"},
- {id:"fish",cat:"boost",name:"老麦克的煎腌鱼",qty:"不定",tag:"2 回合",icon:"fish",desc:"植物汁液和油脂的混合气味，吃下它，热流会让你的肌肉紧绷。",rule:"未来两回合获得攻击倍数加成"},
- {id:"tequila",cat:"boost",name:"奇迹龙舌兰",qty:"×1 · 3/3",tag:"RA 运气",icon:"tequila",desc:"半瓶也许让你亢奋、也许让你晕厥的神秘液体。饮用后的结果交给运气。",rule:"未来两回合攻击 ×2，或未来两回合无法行动"},
- {id:"camera",cat:"story",name:"迷你摄像机",qty:"—",tag:"用途未知",icon:"camera",desc:"档案中暂时没有留下更多说明。",rule:"剧情道具"},
- {id:"rusty-key",cat:"story",name:"锈掉的钥匙",qty:"—",tag:"KEY ITEM",icon:"key",desc:"也许，它可以打开格雷斯成千上万个锁中的一个。",rule:"用途未知"}
+ {id:"shotgun",cat:"attack",name:"老式猎枪",qty:"×1",tag:"攻击 +5",art:"assets/handbook/items/shotgun.webp",desc:"一把让你的攻击稳定提升 5 数值的武器。",rule:"攻击稳定 +5"},
+ {id:"bob-scissors",cat:"attack",name:"鲍勃的剪刀",qty:"×1",tag:"RD15",art:"assets/handbook/items/bob-scissors.webp",desc:"这是一把真正的理发剪刀，让你的攻击提升，RD15 决定攻击数值。",rule:"RD15 决定攻击数值"},
+ {id:"wrench",cat:"attack",name:"扳手",qty:"×1",tag:"攻击 +3",art:"assets/handbook/items/wrench.webp",desc:"让你的攻击稳定提升 3 数值。",rule:"攻击稳定 +3"},
+ {id:"pliers",cat:"attack",name:"钳子",qty:"×1",tag:"攻击 +3",art:"assets/handbook/items/pliers.webp",desc:"让你的攻击稳定提升 3 数值。",rule:"攻击稳定 +3"},
+ {id:"screwdriver",cat:"attack",name:"螺丝刀",qty:"×1",tag:"攻击 +3",art:"assets/handbook/items/screwdriver.webp",desc:"让你的攻击稳定提升 3 数值。",rule:"攻击稳定 +3"},
+ {id:"angel-tip",cat:"attack",name:"铸铁天使翼尖",qty:"—",tag:"RD25",art:"assets/handbook/items/angel-wing-tip.webp",desc:"也许是圣灵意志的加成，你的攻击变得飘忽而灵动，RD25 决定攻击数值。",rule:"RD25 决定攻击数值"},
+ {id:"bandage",cat:"heal",name:"OK绷",qty:"×1",tag:"HP +5",art:"assets/handbook/items/bandage.webp",desc:"小小的布面可以完美地贴合细小的创口，使用后恢复 5 点生命值。",rule:"恢复 5 点生命值"},
+ {id:"almond",cat:"heal",name:"杏仁糖",qty:"×5",tag:"HP +5",art:"assets/handbook/items/almond-candy.webp",desc:"用锡纸包装的小小甜蜜宇宙，使用后恢复 5 点生命值。",rule:"恢复 5 点生命值"},
+ {id:"rootbeer",cat:"heal",name:"冰镇A&W根啤",qty:"×2",tag:"HP +10",art:"assets/handbook/items/rootbeer.webp",desc:"口感极其完美的千禧年美式根啤，甜得能麻痹你的味蕾。",rule:"饮用后恢复 10 点生命值"},
+ {id:"fish",cat:"boost",name:"老麦克的煎腌鱼",qty:"不定",tag:"2 回合",art:"assets/handbook/items/fried-pickled-fish.webp",desc:"植物汁液和油脂的混合气味，吃下它，热流会让你的肌肉紧绷。",rule:"未来两回合获得攻击倍数加成"},
+ {id:"tequila",cat:"boost",name:"奇迹龙舌兰",qty:"×1 · 3/3",tag:"RA 运气",art:"assets/handbook/items/miracle-tequila.webp",desc:"半瓶也许让你亢奋、也许让你晕厥的神秘液体。饮用后的结果交给运气。",rule:"未来两回合攻击 ×2，或未来两回合无法行动"},
+ {id:"camera",cat:"story",name:"迷你摄像机",qty:"—",tag:"用途未知",art:"assets/handbook/items/mini-camera.webp",desc:"档案中暂时没有留下更多说明。",rule:"剧情道具"},
+ {id:"rusty-key",cat:"story",name:"锈掉的钥匙",qty:"—",tag:"KEY ITEM",art:"assets/handbook/items/rusty-key.webp",desc:"也许，它可以打开格雷斯成千上万个锁中的一个。",rule:"用途未知"}
 ];
 
 const cats = {
@@ -814,21 +818,6 @@ const cats = {
  story:{title:"剧情类",desc:"用途不一定立刻显现，但通常不会只是摆设。",accent:"#5f84a9",symbol:"?"}
 };
 
-const icons = {
- shotgun:`<svg viewBox="0 0 64 64"><path d="M8 29h31l9 5h8"/><path d="M43 34l-7 12M21 29l-5-8"/><path d="M8 29H4"/></svg>`,
- scissors:`<svg viewBox="0 0 64 64"><circle cx="17" cy="18" r="7"/><circle cx="17" cy="46" r="7"/><path d="M23 22l29 16M23 42l29-16"/></svg>`,
- wrench:`<svg viewBox="0 0 64 64"><path d="M40 11a11 11 0 0 0-4 13L18 42l5 5 18-18a11 11 0 0 0 13-4l-9-4z"/><path d="M20 44l-8 8"/></svg>`,
- pliers:`<svg viewBox="0 0 64 64"><path d="M20 18c6 3 9 8 12 14M44 18c-6 3-9 8-12 14"/><path d="M24 30l-6 21M40 30l6 21"/><path d="M26 52h12"/></svg>`,
- screwdriver:`<svg viewBox="0 0 64 64"><path d="M17 18l11 11"/><path d="M25 10l8 8"/><path d="M28 29l22 22"/><path d="M49 49l4-4"/></svg>`,
- wing:`<svg viewBox="0 0 64 64"><path d="M17 43c8-23 24-25 30-25-5 5-8 10-8 13 5-1 10 0 14 3-7 1-12 3-16 7 4 0 8 1 11 4-11 0-20 1-31-2z"/></svg>`,
- bandage:`<svg viewBox="0 0 64 64"><path d="M21 17h22a9 9 0 0 1 9 9v12a9 9 0 0 1-9 9H21a9 9 0 0 1-9-9V26a9 9 0 0 1 9-9z"/><path d="M26 32h12M32 26v12"/><path d="M18 23l28 18"/></svg>`,
- candy:`<svg viewBox="0 0 64 64"><path d="M22 24l6-6h8l6 6v16l-6 6h-8l-6-6z"/><path d="M22 24l-8 4 6 6M42 24l8 4-6 6M22 40l-8-4 6-6M42 40l8-4-6-6"/></svg>`,
- bottle:`<svg viewBox="0 0 64 64"><path d="M26 10h12M28 10v8l-6 8v22a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6V26l-6-8v-8"/><path d="M24 32h16"/></svg>`,
- fish:`<svg viewBox="0 0 64 64"><path d="M10 32c10-12 22-14 34-8l10-6-4 10 4 10-10-6c-12 6-24 4-34-8z"/><circle cx="20" cy="30" r="1.6"/></svg>`,
- tequila:`<svg viewBox="0 0 64 64"><path d="M26 10h12M30 10v8l-8 12v16a8 8 0 0 0 8 8h4a8 8 0 0 0 8-8V30l-8-12V10"/><path d="M32 26v24"/><path d="M22 34h20"/></svg>`,
- camera:`<svg viewBox="0 0 64 64"><rect x="12" y="20" width="40" height="28" rx="5"/><circle cx="32" cy="34" r="9"/><path d="M22 20l4-6h12l4 6"/></svg>`,
- key:`<svg viewBox="0 0 64 64"><circle cx="20" cy="26" r="8"/><path d="M28 26h24"/><path d="M42 26v8h6v-8M50 26v6h6v-6"/></svg>`
-};
 
 let currentFilter = "all";
 let currentItem = null;
@@ -850,7 +839,7 @@ function renderGrid(){
 
   grid.innerHTML = list.map(i=>`
     <button class="item-tile" data-id="${i.id}" id="tile-${i.id}" style="--accent:${accentFor(i.cat)}">
-      <div class="tile-art">${icons[i.icon]}</div>
+      <div class="tile-art"><img src="${i.art}" alt="${i.name}" loading="lazy" decoding="async"></div>
       <div class="tile-meta">
         <div class="tile-name">${i.name}</div>
         <div class="tile-tag">${i.tag}</div>
@@ -910,7 +899,7 @@ function openDetail(id){
     document.getElementById("detailDesc").textContent = item.desc;
     document.getElementById("detailRule").textContent = item.rule;
     document.getElementById("detailQty").textContent = "数量 " + item.qty;
-    document.getElementById("bigArt").innerHTML = icons[item.icon];
+    document.getElementById("bigArt").innerHTML = `<img src="${item.art}" alt="${item.name}" decoding="async">`;
     document.getElementById("detailCard").style.setProperty("--accent",c.accent);
     document.getElementById("bigArt").style.setProperty("--accent",c.accent);
     document.getElementById("detailStamp").style.setProperty("--accent",c.accent);
@@ -1013,6 +1002,17 @@ if(location.hash){
     setTimeout(()=>openDetail(id),120);
   }
 }
+
+// Keep cards usable if an image path breaks.
+document.addEventListener("error", (e)=>{
+  if(e.target && e.target.tagName === "IMG"){
+    const img=e.target; img.style.display="none";
+    const host=img.parentElement;
+    if(host && !host.querySelector(".art-fallback")){
+      const f=document.createElement("span"); f.className="art-fallback"; f.textContent="?"; host.appendChild(f);
+    }
+  }
+}, true);
 </script>
 </body>
 </html>
