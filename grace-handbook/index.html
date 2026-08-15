@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>格雷斯今日晚报 · 物件手册</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>格雷斯今日晚报 · 道具手册</title>
 <style>
 :root{
   --desk:#2f2a28;
@@ -231,6 +231,37 @@ button{cursor:pointer}
   background-size:contain;background-repeat:no-repeat
 }
 
+
+.mobile-search-wrap{
+  display:none;
+  position:relative;
+  margin:0 0 14px;
+}
+.mobile-search-wrap input{
+  width:100%;
+  border:2px solid #33251e;
+  border-radius:13px;
+  background:#f3dfb8;
+  padding:12px 44px 12px 14px;
+  outline:0;
+  font-size:17px;
+  font-weight:900;
+  box-shadow:inset 0 -3px 0 rgba(44,33,28,.08);
+}
+.mobile-search-wrap input:focus{
+  box-shadow:0 0 0 4px rgba(95,132,169,.16),inset 0 -3px 0 rgba(44,33,28,.08);
+}
+.mobile-search-ico{
+  position:absolute;
+  right:14px;
+  top:11px;
+  font-size:20px;
+  font-weight:980;
+}
+.mobile-suggest{
+  top:calc(100% + 5px);
+}
+
 /* tabs */
 .side-tabs{
   position:absolute;right:-76px;top:56px;display:flex;flex-direction:column;gap:8px;z-index:12
@@ -370,33 +401,209 @@ button{cursor:pointer}
 }
 
 @media(max-width:930px){
-  .scene{width:min(100% - 12px,1260px);margin-top:18px}
+  .mobile-search-wrap{display:block}
+
+  .scene{
+    width:100%;
+    max-width:100%;
+    margin:12px 0 36px;
+    padding:0 8px;
+    overflow:hidden;
+  }
+
   .desk-note,.paperclip{display:none}
-  .book-shell{padding:14px 12px 18px;border-radius:24px}
-  .book{grid-template-columns:1fr}
+
+  .book-shell{
+    width:100%;
+    max-width:100%;
+    padding:10px 8px 14px;
+    border-width:3px;
+    border-radius:20px;
+    overflow:hidden;
+  }
+
+  .book-titlebar{
+    width:100%;
+    max-width:100%;
+    padding:0 4px 10px;
+    overflow:hidden;
+  }
+
+  .brand{
+    min-width:0;
+    max-width:100%;
+    font-size:12px;
+    gap:8px;
+  }
+
+  .brand span:last-child{
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+
+  .brand-mark{
+    flex:0 0 36px;
+    width:36px;
+    height:25px;
+  }
+
+  .book{
+    width:100%;
+    max-width:100%;
+    grid-template-columns:minmax(0,1fr);
+    overflow:hidden;
+  }
+
   .spine,.page-left{display:none}
-  .page-right{border-radius:18px;padding:22px 24px 30px;min-height:720px}
+
+  .page-right{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    border-radius:16px;
+    padding:18px 14px 28px;
+    min-height:680px;
+    overflow:hidden;
+  }
+
+  .mobile-search-wrap{
+    width:100%;
+    max-width:100%;
+  }
+
+  .mobile-search-wrap input{
+    width:100%;
+    min-width:0;
+  }
+
   .side-tabs{
-    position:static;flex-direction:row;overflow:auto;margin:0 0 16px;
-    padding:2px 0 8px
+    position:static;
+    width:100%;
+    max-width:100%;
+    flex-direction:row;
+    overflow-x:auto;
+    overflow-y:hidden;
+    margin:0 0 14px;
+    padding:2px 0 8px;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
   }
+
+  .side-tabs::-webkit-scrollbar{display:none}
+
   .tab-btn{
-    flex:0 0 auto;width:auto;min-width:78px;height:42px;border-radius:11px;border-left-width:3px;
-    transform:none
+    flex:0 0 auto;
+    width:auto;
+    min-width:72px;
+    height:42px;
+    border-radius:11px;
+    border-left-width:3px;
+    padding:8px 10px;
+    transform:none;
   }
+
   .tab-btn:hover,.tab-btn.active{transform:translateY(-2px)}
-  .grid{grid-template-columns:repeat(3,1fr)}
-  .book-titlebar{padding-left:4px;padding-right:4px}
+
+  .page-top{
+    min-width:0;
+  }
+
+  .page-top .title{
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+
+  .grid{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+  }
+
+  .item-tile{
+    min-width:0;
+    width:100%;
+  }
+
+  .tile-name,
+  .tile-tag{
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+
+  .detail-card{
+    min-width:0;
+  }
+
+  .detail-copy{
+    min-width:0;
+  }
+
+  .detail-name,
+  .detail-section p,
+  .effect-box strong{
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
 }
 @media(max-width:620px){
-  .grid{grid-template-columns:repeat(2,1fr)}
-  .item-tile{min-height:148px}
-  .detail-card{grid-template-columns:1fr}
-  .big-art{min-height:260px}
-  .page-right{padding:18px 16px 30px}
-  .page-top .title{font-size:24px}
+  .scene{padding:0 5px}
+  .book-shell{padding:8px 6px 12px}
+  .page-right{padding:16px 10px 28px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .item-tile{min-width:0;min-height:142px;padding:7px}
+  .tile-name{font-size:13px}
+  .tile-tag{font-size:9px}
+  .detail-card{grid-template-columns:minmax(0,1fr)}
+  .big-art{min-height:240px}
+  .page-top .title{font-size:23px}
   .detail-stamp{display:none}
 }
+
+/* V3 mobile-fit safeguards */
+html{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+.scene,
+.book-shell,
+.book,
+.page,
+.page-right,
+.index-page,
+.detail-page,
+.grid,
+.side-tabs,
+.mobile-search-wrap{
+  min-width:0;
+  max-width:100%;
+}
+img,svg{
+  max-width:100%;
+}
+
+
+@media(max-width:390px){
+  .tab-btn{
+    min-width:64px;
+    padding:7px 8px;
+    font-size:13px;
+  }
+  .page-right{
+    padding-left:8px;
+    padding-right:8px;
+  }
+  .grid{gap:7px}
+  .item-tile{min-height:136px}
+}
+
 </style>
 </head>
 <body>
@@ -411,9 +618,9 @@ button{cursor:pointer}
     <div class="book-titlebar">
       <div class="brand">
         <span class="brand-mark"></span>
-        <span>格雷斯今日晚报 · 物件手册</span>
+        <span>格雷斯今日晚报 · 道具手册</span>
       </div>
-      <div class="edition">HANDBOOK / VOL. 01</div>
+      
     </div>
 
     <div class="book">
@@ -422,7 +629,7 @@ button{cursor:pointer}
         <div class="left-head">
           <div>
             <div class="manual-kicker">GRACE ITEM HANDBOOK</div>
-            <h1>随身物件手册</h1>
+            <h1>随身道具手册</h1>
           </div>
           <div class="issue-tag">13 ITEMS</div>
         </div>
@@ -437,8 +644,8 @@ button{cursor:pointer}
         <div class="category-note" id="categoryNote" style="--accent:#5d534c">
           <div class="category-icon" id="catIcon">✦</div>
           <div>
-            <h2 id="catTitle">全部物件</h2>
-            <p id="catDesc">从攻击、治疗、加成与剧情物件中翻找你要的那一件。</p>
+            <h2 id="catTitle">全部道具</h2>
+            <p id="catDesc">从攻击、治疗、加成与剧情道具中翻找你要的那一件。</p>
           </div>
         </div>
 
@@ -458,6 +665,13 @@ button{cursor:pointer}
       <main class="page page-right">
         <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
 
+
+        <div class="mobile-search-wrap">
+          <input id="mobileSearch" autocomplete="off" placeholder="搜索道具名称">
+          <span class="mobile-search-ico">⌕</span>
+          <div class="suggest mobile-suggest" id="mobileSuggest"></div>
+        </div>
+
         <nav class="side-tabs">
           <button class="tab-btn all active" data-filter="all">全部</button>
           <button class="tab-btn attack" data-filter="attack">攻击</button>
@@ -468,7 +682,7 @@ button{cursor:pointer}
 
         <section class="index-page" id="indexPage">
           <div class="page-top">
-            <div class="title" id="pageTitle">全部物件</div>
+            <div class="title" id="pageTitle">全部道具</div>
             <div class="count" id="pageCount">13 件</div>
           </div>
           <div class="grid" id="grid"></div>
@@ -489,7 +703,7 @@ button{cursor:pointer}
             <div class="detail-copy">
               <div class="rule-pill" id="detailTag"></div>
               <div class="detail-section">
-                <div class="label">物件记录</div>
+                <div class="label">道具记录</div>
                 <p id="detailDesc"></p>
               </div>
               <div class="effect-box">
@@ -520,12 +734,12 @@ const items = [
  {id:"rootbeer",cat:"heal",name:"冰镇A&W根啤",qty:"×2",tag:"HP +10",icon:"bottle",desc:"口感极其完美的千禧年美式根啤，甜得能麻痹你的味蕾。",rule:"饮用后恢复 10 点生命值"},
  {id:"fish",cat:"boost",name:"老麦克的煎腌鱼",qty:"不定",tag:"2 回合",icon:"fish",desc:"植物汁液和油脂的混合气味，吃下它，热流会让你的肌肉紧绷。",rule:"未来两回合获得攻击倍数加成"},
  {id:"tequila",cat:"boost",name:"奇迹龙舌兰",qty:"×1 · 3/3",tag:"RA 运气",icon:"tequila",desc:"半瓶也许让你亢奋、也许让你晕厥的神秘液体。饮用后的结果交给运气。",rule:"未来两回合攻击 ×2，或未来两回合无法行动"},
- {id:"camera",cat:"story",name:"迷你摄像机",qty:"—",tag:"用途未知",icon:"camera",desc:"档案中暂时没有留下更多说明。",rule:"剧情物件"},
+ {id:"camera",cat:"story",name:"迷你摄像机",qty:"—",tag:"用途未知",icon:"camera",desc:"档案中暂时没有留下更多说明。",rule:"剧情道具"},
  {id:"rusty-key",cat:"story",name:"锈掉的钥匙",qty:"—",tag:"KEY ITEM",icon:"key",desc:"也许，它可以打开格雷斯成千上万个锁中的一个。",rule:"用途未知"}
 ];
 
 const cats = {
- all:{title:"全部物件",desc:"从攻击、治疗、加成与剧情物件中翻找你要的那一件。",accent:"#5d534c",symbol:"✦"},
+ all:{title:"全部道具",desc:"从攻击、治疗、加成与剧情道具中翻找你要的那一件。",accent:"#5d534c",symbol:"✦"},
  attack:{title:"攻击类",desc:"直接提高攻击，或让你的攻击结果变得更不可预测。",accent:"#66547f",symbol:"×"},
  heal:{title:"治疗类",desc:"糖、汽水和创口贴：能活下来就算好药。",accent:"#708f67",symbol:"+"},
  boost:{title:"加成类",desc:"短时间改变战局的东西。收益和风险经常写在同一行。",accent:"#bd743c",symbol:"↗"},
@@ -554,6 +768,8 @@ let currentItem = null;
 const grid = document.getElementById("grid");
 const search = document.getElementById("search");
 const suggest = document.getElementById("suggest");
+const mobileSearch = document.getElementById("mobileSearch");
+const mobileSuggest = document.getElementById("mobileSuggest");
 const indexPage = document.getElementById("indexPage");
 const detailPage = document.getElementById("detailPage");
 
@@ -650,32 +866,50 @@ function matches(q){
   return items.filter(i=>i.name.toLowerCase().includes(q)).slice(0,7);
 }
 
-search.addEventListener("input",()=>{
-  const rs=matches(search.value);
-  suggest.innerHTML=rs.map(i=>`
+function renderSuggestions(inputEl, suggestEl){
+  const rs=matches(inputEl.value);
+  suggestEl.innerHTML=rs.map(i=>`
     <button data-id="${i.id}">
       <span>${i.name}</span>
       <small>${cats[i.cat].title}</small>
     </button>
   `).join("");
-  suggest.classList.toggle("open",search.value.trim() && rs.length>0);
-  suggest.querySelectorAll("button").forEach(b=>b.onclick=()=>locateItem(b.dataset.id));
+  suggestEl.classList.toggle("open",inputEl.value.trim() && rs.length>0);
+  suggestEl.querySelectorAll("button").forEach(b=>b.onclick=()=>locateItem(b.dataset.id));
+}
+
+function syncSearchValue(value, source){
+  if(source !== search) search.value = value;
+  if(source !== mobileSearch) mobileSearch.value = value;
+}
+
+[search,mobileSearch].forEach((inputEl)=>{
+  inputEl.addEventListener("input",()=>{
+    syncSearchValue(inputEl.value,inputEl);
+    renderSuggestions(inputEl, inputEl===search ? suggest : mobileSuggest);
+    if(inputEl===search) mobileSuggest.classList.remove("open");
+    else suggest.classList.remove("open");
+  });
+  inputEl.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){
+      const rs=matches(inputEl.value);
+      if(rs[0]) locateItem(rs[0].id);
+    }
+  });
 });
-search.addEventListener("keydown",e=>{
-  if(e.key==="Enter"){
-    const rs=matches(search.value);
-    if(rs[0]) locateItem(rs[0].id);
-  }
-});
+
 document.addEventListener("click",e=>{
   if(!e.target.closest(".search-wrap")) suggest.classList.remove("open");
+  if(!e.target.closest(".mobile-search-wrap")) mobileSuggest.classList.remove("open");
 });
 
 function locateItem(id){
   const item=items.find(i=>i.id===id);
   if(!item)return;
   search.value=item.name;
+  mobileSearch.value=item.name;
   suggest.classList.remove("open");
+  mobileSuggest.classList.remove("open");
   setFilter(item.cat);
   setTimeout(()=>{
     const tile=document.getElementById("tile-"+id);
