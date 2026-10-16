@@ -107,6 +107,7 @@ textarea::placeholder{color:#829072}
 }
 .falling-heart{
   position:absolute;top:-40px;
+  color:#ff7fb2;
   font-size:22px;
   image-rendering:pixelated;
   animation:heartFall linear forwards;
@@ -439,6 +440,8 @@ function spawnHeartRain(){
     h.className="falling-heart";
     h.textContent=glyphs[Math.floor(Math.random()*glyphs.length)];
     h.style.left=(Math.random()*96)+"vw";
+    const pinks=["#ff6fae","#ff8fbe","#ffb3d1","#ff77aa","#f48fb1"];
+    h.style.color=pinks[Math.floor(Math.random()*pinks.length)];
     h.style.fontSize=(16+Math.random()*18)+"px";
     h.style.animationDuration=(2.8+Math.random()*2.7)+"s";
     h.style.animationDelay=(Math.random()*.25)+"s";
