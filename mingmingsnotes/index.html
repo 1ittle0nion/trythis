@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>齐一鸣问答器</title>
+<style>
+:root{--bg:#09090a;--card:#141416;--line:#29292e;--text:#f5f5f5;--muted:#8f8f97}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#202024,transparent 34%),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:840px;margin:auto;padding:34px 16px 64px} .head{display:flex;gap:14px;align-items:center;margin-bottom:28px}
+.avatar{width:54px;height:54px;border-radius:15px;background:#f3f3f4;color:#111;display:grid;place-items:center;font-size:23px;font-weight:800}
+.name{font-size:23px;font-weight:780} .sub{font-size:13px;color:var(--muted);margin-top:4px}
+.askbox{background:#131315;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 28px 70px #0005}
+textarea{width:100%;min-height:120px;border:0;outline:0;background:transparent;color:var(--text);resize:vertical;font:inherit;font-size:18px;line-height:1.7}
+textarea::placeholder{color:#5e5e66} .row{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:13px}
+.tip{flex:1;font-size:12px;color:#707078} button{border:0;border-radius:12px;padding:11px 16px;font:inherit;font-weight:720;cursor:pointer}
+.primary{background:#f4f4f5;color:#101011} .secondary{background:#202024;color:#ddd;border:1px solid #303035}
+.label{font-size:12px;color:var(--muted);margin:25px 2px 9px} .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px;margin-top:10px}
+.card.top{border-color:#414149} .answer{font-size:17px;line-height:1.85;white-space:pre-wrap} .meta{font-size:11px;color:#717179;margin-top:10px}
+.small{font-size:13px;color:#a7a7ae;line-height:1.7} .empty{padding:42px 10px 10px;text-align:center;color:#74747b;font-size:14px}
+@media(max-width:620px){.wrap{padding-top:23px}textarea{font-size:16px}.tip{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><div class="avatar">齐</div><div><div class="name">齐一鸣</div><div class="sub">有话就问。</div></div></div>
+  <div class="askbox">
+    <textarea id="q" placeholder="比如：你跟何肇华什么关系？&#10;或者：梁晃他爸是干什么的？"></textarea>
+    <div class="row"><div class="tip">Enter 提问 · Shift + Enter 换行</div><button id="clear" class="secondary">清空</button><button id="ask" class="primary">问他</button></div>
+  </div>
+  <div id="out"><div class="empty">问吧。最好别拐弯抹角。</div></div>
+</div>
+<script>
+const dec=s=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0))));
+const PEOPLE=dec("W3siaWQiOiJsaWFuZ2h1YW5nIiwibmFtZSI6IuaigeaZgyIsImFsaWFzZXMiOlsi5qKB5pmDIiwi5qKB5bCP5YWJIiwi5bCP5pmDIl0sImFnZSI6MTksInN1bW1hcnkiOiLmooHmmYPvvIwxOeWyge+8jOS6uuensOaigeWwj+WFieOAgueItuS6suaigeiwpuWPi+abvuS7u+eJqei1hOWxgOWxgOmVv++8jOWutumHjOmjjuWFieaXtuS7luS5n+aYr+Wkp+mZoumHjOacgOaJjuecvOeahOS4gOaJueS6uuOAguS4ieW5tOWJjeaigeiwpuWPi+iiq+WuoeafpeWFpeeLse+8jOavjeS6suaWveWmgumdnumaj+WQjuemu+WpmuaUueWrge+8m+aigeaZg+WmguS7iuS9j+WcqOiDoeWQjOWnpeWnpeWutu+8jOayoeato+e7j+iQpeeUn++8jOW4uOmqkei9puOAgeS8oOaJi+aKhOS5puOAgeWOu+S7gOWIuea1t+a6nOWGsOOAguWSjOiwiOS6huS4ieW5tOeahOWIneaBi+e9l+Wpt+Wpt+acgOi/keWIhuaJi++8jOS7jeWcqOaLieaJr+OAgiIsImZhbWlseSI6IueItuS6suaigeiwpuWPi++8jOabvuS7u+eJqei1hOWxgOWxgOmVv++8jOWQjuiiq+WuoeafpeWFpeeLse+8m+avjeS6suaWveWmgumdnu+8jOWcqOaigeiwpuWPi+WFpeeLseWQjueUs+ivt+emu+WpmuW5tuaUueWrge+8m+WTpeWTpeaigeaYh+S6lOWFreWygeaXtuaEj+WkluWOu+S4luOAgiIsInJlbGF0aW9uIjoi6b2Q5LiA6bij5ZKM5qKB5pmD55qE5YWz57O75b6I5oun5be044CC5qKB5a626aOO5YWJ5pe277yM5qKB5pmD5Yeg5LmO55yL5LiN5LiK6b2Q5LiA6bij77yb5qKB5a626LSl6JC944CB6b2Q5a625LiK5Y2H5ZCO77yM5qKB5pmD5LuN5rKh5pyJ5Li75Yqo5p2l5o2n6b2Q5LiA6bij77yM6L+Z5q2j5oiz6b2Q5LiA6bij5pyA5pWP5oSf55qE5Zyw5pa544CC6b2Q5LiA6bij5a+55LuW5pei5oG854Gr44CB6L6D5Yqy77yM5Y+I5qC85aSW5Zyo5oSP5LuW5piv5ZCm55yf5q2j5oqK6Ieq5bex5pS+5Zyo55y86YeM44CCIiwib3Bpbmlvbl9hbnN3ZXJzIjpbIuWwj+aZg++8n+S7luacgOS8muaRhumCo+WJr+S7gOS5iOmDveS4jeeogOe9leeahOagt+WtkOOAguS7peWJjeS7luWutumjjuWFieeahOaXtuWAmeeci+S4jeingeaIke+8jOeOsOWcqOmDveS9j+iDoeWQjOWOu+S6hu+8jOecvOedm+i/mOaYr+mVv+WktOmhtuS4iuOAguS9oOivtOawlOS4jeawlOS6uuOAgiIsIuaigeWwj+WFiei/meS6uuWQp++8jOiQveWIsOS7gOS5iOWcsOatpemDveS4jeiCr+S9jumCo+S4quWktOOAguWIq+S6uumDveefpemBk+S7gOS5iOaXtuWAmeivpeaUueWPo++8jOS7luWBj+S4jeefpemBk+KAlOKAlOaIluiAheijheS4jeefpemBk+OAgiJdLCJyZWxhdGlvbl9hbnN3ZXJzIjpbIuWFs+ezu++8n+WPjeato+S4jeaYr+mCo+enjeingemdoueCueS4quWktOWwseeul+WujOeahOWFs+ezu+OAguS7peWJjeS7lueci+S4jeS4iuaIke+8jOeOsOWcqOaIkeS5n+S4jeiDveW9k+ayoei/meWbnuS6i+OAgiIsIuaIkei3n+Wwj+aZg+acieaXp+i0puOAguWAkuS4jeS4gOWumuaYr+iwgeasoOiwge+8jOWwseaYr+S7lumCo+WJr+S4gOebtOayoeaKiuaIkeW9k+WbnuS6i+eahOagt+WtkO+8jOaIkeeci+edgOWwseadpeawlOOAgiJdfSx7ImlkIjoia2V5aWhvbmciLCJuYW1lIjoi5p+v5LiA6bi/IiwiYWxpYXNlcyI6WyLmn6/kuIDpuL8iLCLkuIDpuL8iLCLlsI/kuIDpuL8iXSwiYWdlIjoxOCwic3VtbWFyeSI6Iuafr+S4gOm4v++8jDE45bKB44CC54i25Lqy5p+v5Yab5piv5L+d5Y2r5aSE5aSE6ZW/77yM54i25a2Q5YWz57O76ZW/5pyf57Sn5byg77yb5aeQ5aeQ5p+v5a+76bmt5piv5paH5bel5Zui5paH6Im65YW144CC5p+v5LiA6bi/5rKh5Y675o+S6Zif77yM5Lmf5rKh6L+b5bel5Y6C77yM5bi46aqR5rC45LmF54mM5aSn5p2g5ruh5YyX5Lqs5Lmx6LeR77yM5ZKM5ZOo5YW15YWz57O75LiN6ZSZ77yM5oCn5qC86ZqP5ZKM44CB54ix56yR77yM5Zac5qyi5b6A5aSn6Zmi5ZCE5a625Liy6Zeo44CCIiwiZmFtaWx5Ijoi54i25Lqy5p+v5Yab77yM5L+d5Y2r5aSE5aSE6ZW/77yb5aeQ5aeQ5p+v5a+76bmt77yM5paH5bel5Zui5paH6Im65YW144CC5YWz5LqO5q+N5Lqy77yM6Zmi6YeM5Y+q5rWB5Lyg5aW55pu+5Zyo6IuP6IGU55WZ5a2m44CB5piv572Q5aS05Y6C5oqA5pyv6aqo5bmy77yM5L2G5a626YeM5b6I5bCR5pyJ5Lq66KeB6L+H5aW544CCIiwicmVsYXRpb24iOiLpvZDkuIDpuKPlr7nmn6/kuIDpuL/mnInkuIDngrnlmLTnoazlvI/nmoTkurLov5HjgILku5bkvJrlnKjmn6/lhpvpnaLliY3mlYXmhI/mkYblh7rigJzku6XlkI7miJHmm7/mgqjnrqHmlZnkuIDpuL/igJ3nmoTmoLflrZDvvIzkuZ/kvJrlkozmn6/kuIDpuL/ogYrlsIbmnaXjgILpvZDkuIDpuKPlhbblrp7nvqHmhZXmn6/kuIDpuL/mlaLlkozniLbkurLpobbmkp7jgIHmtLvlvpfoh6rlnKjvvIzov5nkuIDngrnmmK/ku5boh6rlt7HlgZrkuI3liLDnmoTjgIIiLCJvcGluaW9uX2Fuc3dlcnMiOlsi5p+v5LiA6bi/6YKj5bCP5a2Q5LiA5aSp5Yiw5pma6aqR5Liq5aSn5p2g5ruh5YyX5Lqs56qc77yM6LCB5a626YO96IO96L+b5Y675Z2Q5LiA5Lya5YS/44CC55yL552A5rKh5q2j5b2i77yM5YCS5oy66Ieq5Zyo55qE44CCIiwi5LiA6bi/5ZCn77yM6Lef6LCB6YO96IO956yR5Lik5aOw77yM5YGP5YGP6Lef5LuW54i46KeB6Z2i5bCx6Lef5paX6bih5Ly855qE44CC6K+05a6e6K+d77yM5oiR5pyJ5pe25YCZ6L+Y5oy65L2p5pyN5LuW6L+Z5Liq6IOG5a2Q44CCIl0sInJlbGF0aW9uX2Fuc3dlcnMiOlsi5oiR6Lef5LiA6bi/77yf6IO96K+05LiK6K+d44CC5p+v5Y+U5Y+U6KaB5piv5Zyo5peB6L6577yM5oiR5b2T54S25b6X5pu/6ZW/6L6I6K+05Lik5Y+l4oCU4oCU6Iez5LqO5Ye65LqG6Zeo5Zib77yM6YKj5piv5Y+m5LiA5Zue5LqL44CCIiwi5LiA6bi/566X54af55qE44CC5LuW6YKj56eN6Lef5LuW54i46aG2552A5p2l55qE6IS+5rCU77yM5oiR5Zi05LiK6K+05LuW5LiN5oeC5LqL77yM5b+D6YeM5YCS5LiN5LiA5a6a55yf6L+Z5LmI5oOz44CCIl19LHsiaWQiOiJ4aWFfc2hpamllIiwibmFtZSI6IuWkj+S4lua0gSIsImFsaWFzZXMiOlsi5aSP5LiW5rSBIiwi5LiW5rSBIl0sImFnZSI6MTksInN1bW1hcnkiOiLlpI/kuJbmtIHvvIwxOeWygeOAguWHuueUn+aXtuWboOeul+WRveivtOS6lOihjOe8uuawtO+8jOWQjeWtl+S7juKAnOWkj+S4luWQieKAneaUueaIkOKAnOWkj+S4lua0geKAne+8jOWutumHjOS5n+W4uOiuqeS7luepv+a3sea1heS4jeWQjOeahOiTneiho+acjeOAguS7luWBj+WBj+acieS4gOWktOWcqOmYs+WFieS4i+WPkeapmOe6ouOAgeajlee6ouOAgemTgemUiOe6oueahOWktOWPke+8jOWkluihqOW8oOaJrOWPiOelnuenmO+8jOW+iOmavuiuqeS6uuecn+ato+eci+mAj+OAgiIsImZhbWlseSI6IueOsOaciei1hOaWmeWPquaYjuehruaPkOWIsOeItuavjemdnuW4uOWcqOaEj+KAnOS6lOihjOe8uuawtOKAneeahOivtOazle+8jOWboOatpOS7juWQjeWtl+WIsOepv+iho+mDveWbtOe7leKAnOihpeawtOKAneadpeWuieaOkuOAgiIsInJlbGF0aW9uIjoi546w5pyJ6LWE5paZ5rKh5pyJ5piO56Gu5YaZ5Ye66b2Q5LiA6bij5ZKM5aSP5LiW5rSB55qE54m55q6K5YWz57O777yM5Zug5q2k6Zeu562U5Zmo5Y+q5Lya56Gu6K6k5aSP5LiW5rSB55qE5YWs5byA5L+h5oGv77yM5LiN5pu/6b2Q5LiA6bij57yW6YCg5Lqy55aP44CCIiwib3Bpbmlvbl9hbnN3ZXJzIjpbIuWkj+S4lua0geWViu+8n+mCo+WktOe6ouavm+S9oOmalOiAgei/nOmDveiupOW+l+WHuuadpeOAguS6uuWAkuaYr+avlOmCo+WktOWPkemavueci+aYjueZveW+l+WkmuOAgiIsIuS7lumCo+S6uuaMuueOhOeahOOAguWkp+WutumDveinieW+l+iHquW3seWkmuWwkeaHguS7luS4gOeCue+8jOWHkeS4gOWdl+WEv+WPiOiwgemDveivtOS4jeWHuuS4quWHhuivneOAgiJdfSx7ImlkIjoicWlhbmppbiIsIm5hbWUiOiLpkrHov5siLCJhbGlhc2VzIjpbIumSsei/myIsIumYv+WTpSJdLCJhZ2UiOjIwLCJzdW1tYXJ5Ijoi6ZKx6L+b77yMMjDlsoHvvIzlpJblj7fpmL/lk6XjgILniLbkurLpkrHpvpnljp/mmK/ljJfkuqzlhpvljLrph47miJjlhpvluIjplb/jgIHlpKfmoKHjgILlsJHlubTml7blj4LliqDnuqLljavlhbXlubbkuIDluqbmiJDkuLrpooblpLTkurrnianvvJvniLbkurLlj5fnibXov57mkqTogYzlkI7vvIzpkrHov5vkuIDluqbmtojlpLHvvIwxOTcx5bm05Zue5Lqs5pe26Ieq56ew5Y675LqG57yF5YyX5omT5LuX77yM6Lqr5LiK55WZ5LiL5aSa5aSE5Lyk55ak44CC546w5Zyo6Z2g5q+P5pyI55Sf5rS76LS56L+H5rS777yM57uP5bi45Y675piU5pel5pyL5Y+L5a626Lmt6aWt44CCIiwiZmFtaWx5Ijoi54i25Lqy6ZKx6b6Z77yM5pu+5Lu75YyX5Lqs5Yab5Yy66YeO5oiY5Yab5biI6ZW/44CB5aSn5qCh77yM5ZCO5p2l5Y+X54m16L+e6KKr6YCB5Y6755SY6IKD5Yab5Z6m5Yac5Zy65Yqz5Yqo5pS56YCg44CCIiwicmVsYXRpb24iOiLnjrDmnInotYTmlpnmsqHmnInmmI7noa7lhpnlh7rpvZDkuIDpuKPlkozpkrHov5vnmoTnibnmrorlhbPns7vvvIzlm6DmraTlj6rmjInlpKfpmaLnhp/kurrlpITnkIbjgIIiLCJvcGluaW9uX2Fuc3dlcnMiOlsi6Zi/5ZOl5Lul5YmN5aSa6aOO5YWJ77yM546w5Zyo54Wn5qC36IO95Y6a552A6IS455qu5b6A5Lq65a626aWt5qGM5LiK5LiA5Z2Q44CC5o2i5Yir5Lq65pep56uv552A5LqG77yM5LuW5LiN56uv44CCIiwi6ZKx6L+b77yf5LuW6YKj5Lq65pyA5aSn55qE5pys5LqL5Y+v6IO95bCx5piv5LiN566h5pGU5aSa54ug77yM5Zue5p2l6L+Y6IO96Lef5rKh5LqL5Lq65Ly855qE56yR44CCIl19LHsiaWQiOiJoZXpoYW9odWEiLCJuYW1lIjoi5L2V6IKH5Y2OIiwiYWxpYXNlcyI6WyLkvZXogofljY4iLCLogofljY4iLCLljY7lrZAiLCLogofljY7lk6UiXSwiYWdlIjpudWxsLCJzdW1tYXJ5Ijoi5L2V6IKH5Y2O5Zyo5aSn6Zmi6YeM5LiA55u057u05oyB552A5b6I5aW955qE5aSW5Zyo5b2i6LGh77ya54ix5oOc57695q+b44CB5riF6auY44CB5Lya57uZ5LyX5Lq655qE6IOh6Ze55YWc5bqV44CC5L2G54af5Lq65a+55LuW55qE6K+E5Lu35bm25LiN5aW977yM6KeJ5b6X5LuW57K+5LqO566X6K6h44CB6YeN5YmN56iL44CB5Lya6Lip6auY5o2n5L2O44CCIiwiZmFtaWx5Ijoi546w5pyJ6LWE5paZ5piO56Gu5Ye6546w5LqG5L2V6IKH5Y2O55qE5q+N5Lqy4oCc5LqO5aWz5aOr4oCd44CC6b2Q5a625pep5bm05Yia5pCs6L+b5aSn6Zmi44CB5L2P5oi/57Sn5byg5pe277yM6b2Q5a625ZKM5L2V5a625YGa6L+H5LiA6Zi16YK75bGF77yb5LqO5aWz5aOr5bi454Wn6aG+6b2Q5a625ZCD6aWt44CCIiwicmVsYXRpb24iOiLkvZXogofljY7mmK/pvZDkuIDpuKPmnIDmmI7noa7jgIHmnIDmt7HnmoTml6fkuqTkuYvkuIDjgILkuKTlrrbml6nlubTlgZrov4fpgrvlsYXvvIzkuo7lpbPlo6vlr7npvZDkuIDpuKPlvojlpb3vvIzmiYDku6XpvZDkuIDpuKPku47lsI/lsLHlpKnnhLbkurLov5HkvZXogofljY7jgILljbPkvb/pvZDkuIDpuKPlkI7mnaXlvpflir/jgIHotormnaXotoropoHpnaLlrZDvvIzku5blr7nkvZXogofljY7ku43kvJrkuLvliqjkvY7lpLTjgIHnhafpob7jgIHpu4/nnYDvvIzkuZ/lvojlnKjmhI/kvZXogofljY7nmoTnirbmgIHjgIIiLCJvcGluaW9uX2Fuc3dlcnMiOlsi5Y2O5a2Q6YKj5Lq65ZCn77yM5aSW5aS06LCB6YO95oyR5LiN5Ye65LuW55qE6ZSZ5p2l44CC55yf54af5LqG5L2g5bCx55+l6YGT77yM5LuW5b+D6YeM6YKj5p2G56ek5q+U6LCB6YO957K+44CCIiwi5L2V6IKH5Y2O77yf5L2g6Zeu5Yir5Lq677yM5LuW5Lus5pyq5b+F6K+05b6X5Ye65LuW5ZOq5YS/5LiN5aW977yb5L2g6Zeu5oiR4oCm4oCm5oiR6Lef5LuW6K6k6K+G5aSq5LmF5LqG77yM5LiN5aW95LiA5Y+l6K+d6K+05a6M44CCIl0sInJlbGF0aW9uX2Fuc3dlcnMiOlsi5Y2O5a2Q6Lef5Yir5Lq65LiN5LiA5qC344CC5oiR5Lus5Lik5a625pep5YWI6L+Y5b2T6L+H6YK75bGF77yM5LqO6Zi/5aeo5bCP5pe25YCZ5rKh5bCR54Wn6aG+5oiR44CC5Y2B5Yeg5bm055qE5Lqk5oOF77yM5LiN5piv5ZCO5p2l6LCB5p2l5aWX5Lik5Y+l6L+R5LmO6IO95q+U55qE44CCIiwi5oiR6Lef5L2V6IKH5Y2O77yf5LuO5bCP5bCx6K6k6K+G44CC5Yir5Lq66Lef5oiR6aG25Lik5Y+l5oiR6IO96K6w5Y2K5aSp77yM5LuW5LiN5LiA5qC34oCm4oCm5Y+N5q2j5LuW5LiN5LiA5qC344CCIl19LHsiaWQiOiJsaXhpYSIsIm5hbWUiOiLmnY7kvqAiLCJhbGlhc2VzIjpbIuadjuS+oCJdLCJhZ2UiOjIxLCJzdW1tYXJ5Ijoi5p2O5L6g77yMMjHlsoHvvIzmuIXnmKblr6HoqIDvvIzniLHor7vkuabvvIzluLjog4zlhpvmjI7vvIzllpzmrKLmma7luIzph5HnrYnkvZzlk4HvvIzlr7noi4/ogZTjgIHniannkIbjgIHpo57mnLrlkozmm7Tov5znmoTkuJbnlYzmirHmnInlvLrng4jlkJHlvoDjgILnjrDlrp7ph4zku5bluLjpqpHlpKfmnaDjgIHmm7/nhp/kurrlh7rlpLTvvIzlg4/kuKrlm7DlnKjog6HlkIzlkozpmaLlopnph4znmoTigJzkvqDlrqLigJ3jgIIiLCJmYW1pbHkiOiLmr43kurLmnY7pm6/vvIzmmK/pgJrkv6HlhbXlh7rouqvnmoTlpbPlhpvlrpjvvIzluLjlubTku47kuovpm7fovr7nm7jlhbPlt6XkvZzjgIIiLCJyZWxhdGlvbiI6IueOsOaciei1hOaWmeayoeacieaYjuehruWGmeWHuum9kOS4gOm4o+WSjOadjuS+oOeahOeJueauiuWFs+ezu++8jOWboOatpOWPquaMieWkp+mZoueGn+S6uuWkhOeQhuOAgiIsIm9waW5pb25fYW5zd2VycyI6WyLmnY7kvqDmiJDlpKnmirHnnYDkuabvvIzor53kuZ/kuI3lpJrjgILnnJ/mnInkurrlnKjlpJblpLTmjKjmrLrotJ/vvIzku5blgJLmr5TkuI3lsJHlmLTkuIrllorlvpflk43nmoTkurrlhYjliqjjgIIiLCLku5bmgLvmg7PnnYDku4DkuYjojqvmlq/np5HjgIHpo57mnLrjgIHlpJblpLTnmoTkuJbnlYzjgILkurrov5jlnKjpmaLph4zvvIzlv4Pml6nkuI3nn6XpgZPpo57lk6rlhL/ljrvkuobjgIIiXX0seyJpZCI6ImNodXRpbmdzaGVuZyIsIm5hbWUiOiLopJrpnIbljYciLCJhbGlhc2VzIjpbIuikmumchuWNhyIsIumchuWNhyIsIuikmuWTpSIsIuikmuWkp+eCriIsIuW4iOmVvyJdLCJhZ2UiOjIxLCJzdW1tYXJ5Ijoi6KSa6ZyG5Y2H77yMMjHlsoHvvIzljJfkuqzlhpvljLrnrKwzOOWGm+esrDExNOW4iOW4iOmVv+ikmuWyqemVv+WtkOOAgueyl+eyneOAgeS7l+S5ieOAgeaKpOefreOAgeeCueeBq+WwseedgO+8jOS7juWwj+aDueS6i+S4jeaWre+8jOWkluWPt+KAnOikmuWkp+eCruKAneWSjOKAnOW4iOmVv+KAneOAgjE5NjnlubTlm6DniLbkurLlhbPns7vov5vlhaXljJfkuqzlhpvlt6XljoLlvZPlrablvpLjgILmnIDov5HopJrlrrbkvLzkuY7mraPpgYfliLDkuIDkupvpurvng6bjgIIiLCJmYW1pbHkiOiLniLbkurLopJrlsqnvvIzlhpvljLrluIjplb/vvJvmr43kurLkuZTmm7zpnZLvvIzmgLvmlL/mloflt6Xlm6LovazkuJrlubLpg6jjgIHnjrDlhpvljLrmnLrlhbPlubLkuovvvJvlprnlprnopJrpnIboirPvvIwxNeWygeOAgiIsInJlbGF0aW9uIjoi6b2Q5LiA6bij5b6I5Zyo5oSP6KSa6ZyG5Y2H5piv5ZCm55yf5q2j5oqK6Ieq5bex5b2T5oiQ54us56uL55qE5Lq66K6w5L2P77yM6ICM5LiN5piv4oCc5aSn5ZOl6Lqr6L6555qE5LiA576k5bCP5byf5LmL5LiA4oCd44CC5LuW5Lya5a+56KSa6ZyG5Y2H6ICN5bCP6IGq5piO44CB5Yqd6YWS44CB6YW46KiA6YW46K+t77yM5pys6LSo5LiK5piv6Z2e5bi45Zyo5LmO6KSa6ZyG5Y2H5pyJ5rKh5pyJ5oqK6Ieq5bex5pS+5Zyo55y86YeM44CCIiwib3Bpbmlvbl9hbnN3ZXJzIjpbIuikmuWTpemCo+S6uuS7l+S5ieaYr+ecn+S7l+S5ie+8jOWWneWkmuS6huS5n+aYr+ecn+S4jemVv+iusOaAp+OAguS7gOS5iOmDveaDs+abv+WIq+S6uuaJm++8jOaQnuW+l+iwgemDveWDj+W+l+S7lue9qeedgOS8vOeahOOAgiIsIuikmumchuWNh++8n+S7luaci+WPi+WkmuW+l+iDvee7lemZouWtkOS4gOWciOOAgumXrumimOWwseaYr+S6uuWkquWkmuS6hu+8jOacieaXtuWAmeS9oOmDveS4jeefpemBk+S7luWIsOW6leiusOayoeiusOS9j+S9oOOAgiJdLCJyZWxhdGlvbl9hbnN3ZXJzIjpbIuikmuWTpeWvueiwgemDveS4jeW3ru+8jOaIkeWwseaYr+eDpuS7luWvueiwgemDveS4jeW3ruOAguS9oOaYjueZveS5iO+8n+acieaXtuWAmeaIkeWwseaDs+efpemBk++8jOS7luWIsOW6leaYr+iusOW+l+m9kOS4gOm4o++8jOi/mOaYr+WPquiusOW+l+i6q+i+ueWPiOacieS4quWwj+W8n+OAgiIsIuaIkei3n+ikmuWTpeW9k+eEtueGn+OAguWwseaYr+S7lumCo+S4quS6uue8mOWkquWlve+8jOWlveW+l+iuqeS6uueci+edgOacieeCueadpeawlOOAgiJdfSx7ImlkIjoibHVveGlhb2p1biIsIm5hbWUiOiLmtJvlsI/lhpsiLCJhbGlhc2VzIjpbIua0m+Wwj+WGmyIsIuWwj+WGmyIsIua0m+WFrOWtkCJdLCJhZ2UiOjE3LCJzdW1tYXJ5Ijoi5rSb5bCP5Yab77yMMTflsoHjgILniLbkurLlnKjph5Hln47miJjlvbnkuK3nibrnibLvvIzmr43kurLlnKjnlJ/kuIvku5blkI7nl4XpgJ3vvIznlLHniLfniLfmtJvplIvlj4LosIvplb/luKblpKfjgILlpJbooajmuIXnp4DvvIzmgKfmoLzpmo/kvr/jgIHni6zmnaXni6zlvoDvvIzllpzmrKLmuLjms7PjgIHmir3ng5/jgIHlkLnlj6PnkLTvvJvmm77lnKjlhrLnqoHkuK3nlKjlhpvliLrlkozmraboo4XluKbph43liJvlr7nmiYvvvIzlm6DmraTlnKjlpKfpmaLlsI/lrankuK3kuIDmiJjmiJDlkI3jgIIiLCJmYW1pbHkiOiLniLfniLfmtJvplIvvvIzlj4LosIvplb/vvJvniLbkurLlnKjph5Hln47miJjlvbnkuK3nibrnibLlubbov73mjojkuoznrYnlip/vvJvmr43kurLkuqflkI7nl4XpgJ3jgIIiLCJyZWxhdGlvbiI6Ium9kOS4gOm4o+WSjOa0m+Wwj+WGm+WFs+ezu+S6sui/keOAgum9kOS4gOm4o+S8muS4k+mXqOetieS7luWbnuadpeOAgee7meS7lueVmeilv+eTnOOAgeWcqOaEj+S7lue0r+S4jee0r++8jOS5n+S8muWYtOi0q+WcsOmAl+S7lu+8m+i/meexu+ihqOeOsOivtOaYjum9kOS4gOm4o+W+iOWcqOS5jua0m+Wwj+WGm+acieayoeacieaQreeQhuiHquW3seOAgiIsIm9waW5pb25fYW5zd2VycyI6WyLmtJvlsI/lhpvkuIDlpKnliLDmmZrpgqPlia/ku4DkuYjpg73pmo/kvr/nmoTmoLflrZDvvIznnJ/mg7nliLDku5bkuobkvaDlho3nnIvvvIzlk6rlhL/pmo/kvr/kuobjgIIiLCLmtJvlhazlrZDor53lsJHvvIzkuLvmhI/lj6/kuIDngrnkuI3lsJHjgILkvaDliKvnnIvku5bkuI3niLHmkK3ojKzvvIznnJ/mg7PlubLku4DkuYjvvIzosIHkuZ/mi6bkuI3lpKrkvY/jgIIiXSwicmVsYXRpb25fYW5zd2VycyI6WyLmiJHot5/lsI/lhpvmjLrnhp/jgILku5bopoHmmK/kuIDkuIrljYjkuI3op4HkurrvvIzmiJHpobrot6/pl67kuKTlj6XmgI7kuYjkuobvvJ/kvaDku6zkuIDkuKrkuKrmg7Plvpflj6/nnJ/lpJrjgIIiLCLmtJvlsI/lhpvpgqPkurrkuI3niLHop6Pph4rvvIzmiJHlsLHlpJrpl67kuKTlj6XjgILnnIHlvpflk6rlpKnkurrlj4jot5HmsqHlvbHkuobvvIzlm57mnaXov5jot5/ku4DkuYjpg73msqHlj5HnlJ/kvLznmoTjgIIiXX0seyJpZCI6Imxpbmh1cGluZyIsIm5hbWUiOiLmnpfomY7lubMiLCJhbGlhc2VzIjpbIuael+iZjuW5syIsIuiZjuWtkCJdLCJhZ2UiOjE3LCJzdW1tYXJ5Ijoi5p6X6JmO5bmz77yMMTflsoHvvIzoh6rnp7DmnInnkIbmg7PmnInmirHotJ/vvIzll5Ppl6jmnoHlpKfvvIzniLHorrLigJznvqTkvJfot6/nur/igJ3vvIzkuZ/nibnliKvniLHnu5nlpKfpmaLph4zmm7Tlh7rpo47lpLTnmoTkurrlvZPot5/nj63jgILlj6PooovluLjmnInpu4TmsrnppbzlubLvvIzmk4Xplb/lvZPlkI7li6Tpg6jplb/vvIzlsI/ml7blgJnog5bvvIzplb/lpKflkI7oh6rlsIHigJzlpKfpmaLnrKzkuInluIXigJ3jgIIiLCJmYW1pbHkiOiLniLbkurLluLjooqvnp7DkvZzigJzmnpflkIzlv5figJ3vvJvmr43kurLooqvnp7DkvZzigJzmnY7lkIzlv5figJ3vvIzlkI7mnaXlvZPkuIrpo5/lk4HljoLnmoTpg6jplb/jgILniLbmr43lr7nmnpfomY7lubPnrqHmlZnlvojkuKXjgIIiLCJyZWxhdGlvbiI6Ium9kOS4gOm4o+WSjOael+iZjuW5s+iHs+WwkeWxnuS6jue7j+W4uOa3t+WcqOS4gOi1t+eahOS4gOe+pOS6uu+8jOm9kOS4gOm4o+S8muWQg+WIsOiZjuWtkOW4puadpeeahOiKseeUn+etieWQg+mjn++8jOS9hueOsOaciei1hOaWmeayoeacieabtOaYjuehrueahOeJueauiuWFs+ezu+OAgiIsIm9waW5pb25fYW5zd2VycyI6WyLomY7lrZDmnIDlpKfnmoTpl67popjlsLHmmK/lmLTmr5TohJHlrZDlv6vvvIzll5Ppl6jov5jmr5TlmLTlv6vjgILkvaDpmpTkuKTmoIvmpbzpg73nn6XpgZPku5blj4jooqvosIHmj43kuobjgIIiLCLmnpfomY7lubPmjLrpgILlkIjlvZPlkI7li6TvvIzlhZzph4zmsLjov5zog73mkbjlh7rngrnlkIPnmoTjgILoh7Pkuo7ku5bor7Toh6rlt7HnrKzkuInluIXigKbigKbkvaDlsLHorqnku5bor7TlkKfjgIIiXX0seyJpZCI6ImNvbmdsYW5mZWkiLCJuYW1lIjoi5LuO5YWw6aOeIiwiYWxpYXNlcyI6WyLku47lhbDpo54iLCLlhbDpo54iLCLlsI/po57lk6UiXSwiYWdlIjpudWxsLCJzdW1tYXJ5Ijoi5LuO5YWw6aOe5Ye66Lqr5paH6Im65a625bqt77yM54i25Lqy5LuO566A5piv5oC75pS/5paH5bel5Zui5a+85ryU77yM5q+N5Lqy6KOY5LqR6Iqd5piv5q2M6Iie6Zif6aKG6Iie44CC5LiJ5bKB5a2m6Iie77yM5ZCO6L+b5YWl5YyX6Iie6ZmE5Lit77yM5oiQ5bm05ZCO54m55oub5YWl5LyN6L+b5oC75pS/5q2M6Iie5Zui44CC5Luq5oCB5oy65ouU44CB5oCn5qC85LiN566X6L2v5byx77yM5Lmf5Zug5paH5bel5Zui5YWz57O75omL5LiK5bi45pyJ5Ymn5Zy65L2Z56Wo44CC6L+R5p2l54i25Lqy5LuO566A5Zug4oCc5q+S6I2J4oCd6aOO5rOi6KKr6ZqU56a75a6h5p+l44CCIiwiZmFtaWx5Ijoi54i25Lqy5LuO566A77yM5oC75pS/5paH5bel5Zui5a+85ryU77yb5q+N5Lqy6KOY5LqR6Iqd77yM5q2M6Iie6Zif6aKG6Iie44CCIiwicmVsYXRpb24iOiLnjrDmnInotYTmlpnmsqHmnInmmI7noa7lhpnlh7rpvZDkuIDpuKPlkozku47lhbDpo57nmoTnibnmrorlhbPns7vvvIzlm6DmraTlj6rmjInlpKfpmaLnhp/kurrlpITnkIbjgIIiLCJvcGluaW9uX2Fuc3dlcnMiOlsi5bCP6aOe5ZOl6YKj5Lq656uZ552A6YO95q+U5Yir5Lq655u05LiJ5YiG44CC5pyJ5Lq65ou/6Lez6Iie6K+05LqL5YS/77yM55yf5Yqo6LW35omL5p2l5pyq5b+F5Y2g5b6X5Yiw5L6/5a6c44CCIiwi5LuO5YWw6aOe5omL6YeM5bi45pyJ56Wo77yM5paH5bel5Zui6YeM5Lmf54af44CC5Lul5YmN5Zu0552A5LuW55qE5Lq65Y+v5LiN5bCR77yM5pyA6L+R5Zib4oCm4oCm5aSn5a626YO9546w5a6e5b6X5b6I44CCIl19LHsiaWQiOiJ4aW5nY2hvbmdoYWkiLCJuYW1lIjoi6YKi5bSH5rW3IiwiYWxpYXNlcyI6WyLpgqLltIfmtbciLCLltIfmtbciXSwiYWdlIjpudWxsLCJzdW1tYXJ5Ijoi6YKi5bSH5rW35Ye66Lqr5aSW5Lqk5Y+j5a625bqt77yM5LuO5bCP56S85pWw5ZGo5YWo44CB5Zi055Sc5aSW5ZCR44CB6K6w5b+G5Yqb5p6B5by677yM5b6I5Lya5ZKM5Lq65omT5Lqk6YGT77yM5Lmf5piv5ZCM6L6I6YeM55qE5a2p5a2Q546L44CC5LuW6Iux6K+t5rWB5Yip44CB5pOF6ZW/5qih5Lu/77yM5Zug6Iux6K+t6IO95Yqb6KKr5aSW5Lqk6YOo5YaF6YOo5oub5bmy77yb5L2G54af5oKJ5LuW55qE5Lq65Lmf55+l6YGT77yM5LuW5pyJ5aSW54Ot5YaF5Ya344CB5re35LiN5ZCd55qE5LiA6Z2i44CCIiwiZmFtaWx5Ijoi56WW54i26YKi5Lyv6KGh77yM5riF5pyr55WZ576O5bm856ul44CB5rCR5Zu96ZOB6Lev5bel56iL5biI77yb54i25Lqy6YKi5pWs5bCn77yM5aSW5Lqk6YOo6auY57qn57+76K+R44CB5ZCM5aOw5Lyg6K+R77yb5q+N5Lqy5rKI5a6c56eL77yM5Lit5a2m6Iux6K+t6ICB5biI77yb5aSn5ZOl6YKi5bSH5bGx77yM5pu+5Zyo5Zub5Lit6K+75Lmm77yM5ZCO5Y675YaF6JKZ5Y+k5o+S6Zif5bm26L2s5b6A6buR6b6Z5rGf55Sf5Lqn5bu66K6+5YW15Zui44CCIiwicmVsYXRpb24iOiLnjrDmnInotYTmlpnmsqHmnInmmI7noa7lhpnlh7rpvZDkuIDpuKPlkozpgqLltIfmtbfnmoTnibnmrorlhbPns7vvvIzlm6DmraTlj6rmjInlpKfpmaLnhp/kurrlpITnkIbjgIIiLCJvcGluaW9uX2Fuc3dlcnMiOlsi6YKi5bSH5rW36YKj5byg5Zi05piv55yf5Lya6K+077yM6KeB6LCB6YO96IO95oqK5Zy66Z2i5byE5b6X5oy654Ot5LmO44CC5L2g6KaB55yf5Lul5Li65LuW6Lef6LCB6YO95Lqk5b+D77yM6YKj5Y+v5pyq5b+F44CCIiwi5bSH5rW36IGq5piO77yM6K6w5oCn5aW977yM5Lmf5Lya5p2l5LqL44CC6Lef6L+Z56eN5Lq65omT5Lqk6YGT6IiS5pyN5piv6IiS5pyN77yM5bCx5piv5L2g5b6X55+l6YGT5LuW5b+D6YeM5pyq5b+F6Lef6IS45LiK5LiA5qC354Ot44CCIl19XQ=="), CORE=dec("W3sicXVlc3Rpb24iOiLkvaDlj6vku4DkuYjlkI3lrZfvvJ8iLCJhbGlhc2VzIjpbIuS9oOaYr+iwgSIsIuS9oOWPq+S7gOS5iCIsIuS9oOWQjeWtl+aYr+S7gOS5iCIsIum9kOS4gOm4o+aYr+iwgSJdLCJrZXl3b3JkcyI6WyLlkI3lrZciLCLlp5PlkI0iLCLpvZDkuIDpuKMiLCLosIEiXSwiYW5zd2VycyI6WyLpvZDkuIDpuKPjgILmgI7kuYjvvIzkuYvliY3msqHlkKzov4fmiJHvvJ8iLCLpvZDkuIDpuKPjgILnjrDlnKjmgLvor6XorrDkvY/kuoblkKfjgIIiXX0seyJxdWVzdGlvbiI6IuS4uuS7gOS5iOWkp+WutuS7peWJjeWPq+S9oOWwj+m9kO+8nyIsImFsaWFzZXMiOlsi5Li65LuA5LmI5Y+r5L2g5bCP6b2QIiwi5bCP6b2Q5piv6LCBIiwi5Lul5YmN5aSn5a625oCO5LmI5Y+r5L2gIiwi5Lul5YmN5rKh5Lq65Y+r5L2g6b2Q5LiA6bij5ZCXIl0sImtleXdvcmRzIjpbIuWwj+m9kCIsIuS7peWJjSIsIuWPqyIsIuWQjeWtlyJdLCJhbnN3ZXJzIjpbIuS7peWJjeWRl+OAgumCo+S8muWEv+iwgeecn+aKiuaIkeW9k+WbnuS6i++8jOmhuuWYtOS4gOS4quKAnOWwj+m9kOKAneWwseaJk+WPkeS6huOAgueOsOWcqOi/mOi/meS5iOWPq+eahOS6uuWPr+S4jeWkmuS6huOAgiIsIuWwj+aXtuWAmeWkp+WutumDveWPq+aIkeWwj+m9kOOAguivtOeZveS6hu+8jOWwseaYr+ayoeWHoOS4quS6uui0ueW/g+iusOaIkeWFqOWQjeOAgiJdfSx7InF1ZXN0aW9uIjoi5L2g54i45piv5YGa5LuA5LmI55qE77yfIiwiYWxpYXNlcyI6WyLkvaDniLjlubLlmJvnmoQiLCLkvaDniLjniLjku4DkuYjlt6XkvZwiLCLkvaDniLbkurLmmK/lubLku4DkuYjnmoQiLCLpvZDlvrfpmobmmK/lubLlmJvnmoQiLCLkvaDniLjnjrDlnKjku4DkuYjogYzkvY0iXSwia2V5d29yZHMiOlsi54i454i4Iiwi54i25LqyIiwi6b2Q5b636ZqGIiwi5bel5L2cIiwi6IGM5L2NIiwi5L+d5Y2r5aSEIl0sImFuc3dlcnMiOlsi5oiR54i46b2Q5b636ZqG77yM5pep5YWI5bCx5Zyo5py65YWz5L+d5Y2r5aSE5b2T5bmy5LqL44CC5ZCO5p2l5LqL5oOF5aSa5LqG77yM5LuW5Lmf566X5bmy5Ye654K55ZCN5aCC77yM546w5Zyo5L2N572u6Lef5Lul5YmN5LiN5LiA5qC344CCIiwi5oiR54i45Y6f5YWI5bCx5piv5L+d5Y2r5aSE55qE5pmu6YCa5bmy5LqL44CC5ZCO5p2l5LiA5q2l5q2l5LiK5p2l77yM546w5Zyo5Y+v5LiN5piv5Lul5YmN6YKj5Liq5L2N572u5LqG44CCIl19LHsicXVlc3Rpb24iOiLkvaDlpojmmK/lgZrku4DkuYjnmoTvvJ8iLCJhbGlhc2VzIjpbIuS9oOWmiOWmiOW5suWYm+eahCIsIuiRo+iUt+aYr+iwgSIsIuS9oOavjeS6suS7gOS5iOW3peS9nCIsIuS9oOWmiOWcqOWTquW3peS9nCJdLCJrZXl3b3JkcyI6WyLlpojlpogiLCLmr43kurIiLCLokaPolLciLCLmiqTlo6siLCLljLvpmaIiXSwiYW5zd2VycyI6WyLmiJHlpojokaPolLfvvIzlnKjmnLrlhbPpmYTlsZ7ljLvpmaLlvZPmiqTlo6vjgILlpbnkuI3niLHmjrrlkozpgqPkupvkubHkuIPlhavns5/nmoTkuovjgIIiLCLmiJHlpojmmK/miqTlo6vvvIzlsLHlnKjmnLrlhbPpmYTlsZ7ljLvpmaLjgIIiXX0seyJxdWVzdGlvbiI6IuWkp+WutuS7peWJjeaAjuS5iOWvueS9oOeahO+8nyIsImFsaWFzZXMiOlsi5L2g5bCP5pe25YCZ6KKr5qy66LSf6L+H5ZCXIiwi5Lul5YmN5pyJ5Lq65qy66LSf5L2g5ZCXIiwi5LuW5Lus5Lul5YmN5piv5LiN5piv5L2/5ZSk5L2gIiwi5bCP5pe25YCZ5Yir5Lq65oCO5LmI5a+55L2gIiwi5L2g5Lul5YmN5oC757uZ5Yir5Lq66LeR6IW/5ZCXIl0sImtleXdvcmRzIjpbIuS7peWJjSIsIuWwj+aXtuWAmSIsIuasuui0nyIsIuS9v+WUpCIsIui3keiFvyIsIuWNoOW6pyIsIuS8oOivnSIsIuiHquihjOi9piIsIuaxveawtCIsIuiDjOS5puWMhSIsIuebr+aioiJdLCJhbnN3ZXJzIjpbIuasuui0n+iwiOS4jeS4iuOAguWNoOS4quW6p+OAgeS8oOS4quivneOAgeeci+S4quiHquihjOi9pu+8jOWwj+aXtuWAmeiwgeayoeW4rui/h+WIq+S6uu+8n+WwseaYr+acieS6m+S6uuW9k+aXtuS9v+WUpOW+l+WkqumhuuaJi+S6huOAgiIsIuS7peWJjeS7luS7rOeIseiuqeaIkei3keiFv++8jOS5sOaxveawtOOAgeiDjOS5puWMheOAgeeci+i9puS7gOS5iOeahOOAgumCo+aXtuWAmeaIkeaHkuW+l+i3n+S7luS7rOiuoei+g++8jOS4jeS7o+ihqOaIkeW/mOS6huOAgiJdfSx7InF1ZXN0aW9uIjoi5L2g6K6w5LiN6K6w5LuH77yfIiwiYWxpYXNlcyI6WyLkvaDmmK/kuI3mmK/lvojlsI/lv4PnnLwiLCLkvaDlsI/lv4PnnLzlkJciLCLkvaDkvJrkuI3kvJrorrDku4ciLCLliKvkurrlvpfnvarkvaDkvaDkvJrorrDlpJrkuYUiXSwia2V5d29yZHMiOlsi6K6w5LuHIiwi5bCP5b+D55y8Iiwi5b6X572qIiwi5b+YIl0sImFuc3dlcnMiOlsi5oiR6K6w5oCn5aW96ICM5bey44CC5Yir5Lq65YGa6L+H5LuA5LmI77yM5oiR5oC75LiN6IO96L2s5aS05bCx5b+Y5ZCn77yfIiwi6L+Z5Y+r5bCP5b+D55y877yf6YKj5pyJ5Lqb5Lq65YGa5LqL55qE5pe25YCZ5oCO5LmI5LiN5oOz5oOz5Lul5ZCO5ZGi44CCIl19LHsicXVlc3Rpb24iOiLkvaDmmK/kuI3mmK/lhajpnaDkvaDniLjvvJ8iLCJhbGlhc2VzIjpbIuS9oOWwseaYr+mdoOS9oOeIuOWQpyIsIuayoeacieS9oOeIuOS9oOeul+S7gOS5iCIsIuS9oOeOsOWcqOeahOWcsOS9jemDveaYr+S9oOeIuOe7meeahOWQpyIsIuS9oOaYr+S4jeaYr+S7l+edgOm9kOW+t+mahiJdLCJrZXl3b3JkcyI6WyLpnaDkvaDniLgiLCLku5fnnYAiLCLniLjniLgiLCLlnLDkvY0iLCLmnKzkuosiXSwiYW5zd2VycyI6WyLlsJHmnaXov5nlpZfjgILmiJHniLjmmK/miJHniLjvvIzmiJHmmK/miJHjgILmiZPmnrbjgIHpqpHovabjgIHlip7kuovvvIzlk6rmoLfmmK/ku5bmm7/miJHlubLnmoTvvJ8iLCLkvaDopoHop4nlvpfmiJHlj6rkvJrpnaDmiJHniLjvvIzpgqPlsLHoh6rlt7HmnaXot5/miJHmr5Tmr5TjgILliKvlhYnnq5nml4Hovrnor7TjgIIiXX0seyJxdWVzdGlvbiI6IuS9oOS7peWQjuaDs+W5suS7gOS5iO+8nyIsImFsaWFzZXMiOlsi5L2g5Lul5ZCO5omT566X5bmy5ZibIiwi5L2g5bCG5p2l5oOz5YGa5LuA5LmIIiwi5L2g5oOz5Y+C5Yab5ZCXIiwi5L2g5pyq5p2l5pyJ5LuA5LmI5omT566XIl0sImtleXdvcmRzIjpbIuS7peWQjiIsIuWwhuadpSIsIuWPguWGmyIsIuW3peS9nCIsIuaJk+eulyJdLCJhbnN3ZXJzIjpbIuS4jeefpemBk+WViu+8jOaIkeeIuOaDs+iuqeaIkeW5suWYm+aIkeWwseW5suWYm+WQp+OAguWPguWGm+S7luS5n+ayoeaPkOi/h++8jOS8sOiuoeaYr+ayoeS7gOS5iOmXqOi3r+OAgiIsIuS7peWQju+8n+i/memXrumimOS5n+WkquWkp+S6huOAguaIkeeIuOimgeaYr+acieWuieaOku+8jOaIkeWkmuWNiuWwseeFp+edgOi1sOOAgiJdfSx7InF1ZXN0aW9uIjoi5L2g5Zyo5aSn6Zmi5bCP5LiA6L6I6YeM5o6S56ys5Yeg77yfIiwiYWxpYXNlcyI6WyLkvaDmjpLooYznrKzlh6AiLCLkvaDmmK/ogIHlh6AiLCLkvaDlubTnuqrmjpLnrKzlh6AiLCLkvaDmmK/kuI3mmK/kuozlk6UiXSwia2V5d29yZHMiOlsi5o6S6KGMIiwi56ys5YegIiwi6ICB5YegIiwi5LqM5ZOlIiwi56ys5LqMIl0sImFuc3dlcnMiOlsi5oyJ5bm057qq5o6S56ys5LqM44CC5oCO5LmI5LqG77yfIiwi56ys5LqM44CC6Z2e5b6X5o+Q6L+Z5Liq5piv5ZCn44CCIl19LHsicXVlc3Rpb24iOiLlj6vkvaDkuozlk6XkvaDpq5jlhbTlkJfvvJ8iLCJhbGlhc2VzIjpbIuS9oOWWnOasouWIq+S6uuWPq+S9oOS6jOWTpeWQlyIsIuS9oOS4uuS7gOS5iOS4jeWWnOasouS6jOWTpSIsIuS9oOaYr+S4jeaYr+aDs+W9k+Wkp+WTpSIsIuS6jOWTpeS4jeWlveWQrOWQlyJdLCJrZXl3b3JkcyI6WyLkuozlk6UiLCLlpKflk6UiLCLnrKzkuowiXSwiYW5zd2VycyI6WyLkuozlk6XmnInku4DkuYjlpb3lkKznmoTvvJ/lkIzmoLfpg73mmK/kuKrigJzlk6XigJ3vvIzliY3lpLTlgY/lgY/ov5jlvpflpJrkuKrkuozjgIIiLCLog73lj6vlpKflk6XvvIzosIHkuZDmhI/lj6vkuozlk6XvvJ/ov5nov5jnlKjpl67vvJ8iXX0seyJxdWVzdGlvbiI6IuS9oOinieW+l+iHquW3seaYr+S7gOS5iOagt+eahOS6uu+8nyIsImFsaWFzZXMiOlsi5L2g5LuA5LmI5oCn5qC8Iiwi5L2g6IS+5rCU5oCO5LmI5qC3Iiwi5L2g5piv5Liq5LuA5LmI5qC355qE5Lq6Iiwi5oCO5LmI6K+E5Lu35L2g6Ieq5bexIl0sImtleXdvcmRzIjpbIuaAp+agvCIsIuiEvuawlCIsIuS7gOS5iOagt+eahOS6uiIsIuivhOS7tyJdLCJhbnN3ZXJzIjpbIuaIkei/meS6uuWQp++8jOS4jeeIseWQg+S6j++8jOS5n+S4jeWWnOasouiiq+S6uueci+aJgeOAguacieS6uuinieW+l+i/meWPq+eIsei+g+WKsu+8jOmCo+Wwsemaj+S7luS7rOOAgiIsIuaIkeiusOaAp+WlveOAgeiDhuWtkOS5n+S4jeWwj+OAguacgOeDpuWIq+S6uuaLv+S7peWJjeeahOecvOWFieeci+aIkeOAgiJdfV0=");
+const norm=s=>(s||"").toLowerCase().replace(/[“”"'‘’`~!！?？,，。.\-—_、:：;；()（）\[\]【】{}<>《》\s]/g,"");
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function grams(s,k=2){s=norm(s);if(!s)return[];if(s.length<=k)return[s];let a=[];for(let i=0;i<=s.length-k;i++)a.push(s.slice(i,i+k));return a}
+function jac(a,b){const A=new Set(a),B=new Set(b);if(!A.size&&!B.size)return 1;let i=0;for(const x of A)if(B.has(x))i++;return i/new Set([...A,...B]).size}
+function lev(a,b){a=norm(a);b=norm(b);let p=Array.from({length:b.length+1},(_,i)=>i),c=[];for(let i=1;i<=a.length;i++){c=[i];for(let j=1;j<=b.length;j++)c[j]=Math.min(c[j-1]+1,p[j]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c.slice()}return p[b.length]}
+function esim(a,b){a=norm(a);b=norm(b);let m=Math.max(a.length,b.length);return m?1-lev(a,b)/m:1}
+function coreScore(q,x){
+  const nq=norm(q),ts=[x.question,...(x.aliases||[])];
+  for(const t of ts)if(nq===norm(t))return 1;
+  let b=0;for(const t of ts){let nt=norm(t),inc=(nq.includes(nt)||nt.includes(nq))?.12:0;b=Math.max(b,.54*jac(grams(q),grams(t))+.18*jac(grams(q,1),grams(t,1))+.28*esim(q,t)+inc)}
+  let kw=0;for(const k of x.keywords||[])if(nq.includes(norm(k)))kw+=.12;
+  return Math.min(b+Math.min(kw,.25),.99)
+}
+function findPerson(q){
+  const nq=norm(q);let best=null,bestLen=0;
+  for(const p of PEOPLE)for(const a of p.aliases){let na=norm(a);if(na&&nq.includes(na)&&na.length>bestLen){best=p;bestLen=na.length}}
+  return best;
+}
+const INTENTS={
+  age:["几岁","多大","年龄","多少岁"],
+  family:["家里","家人","父亲","爸爸","爸","母亲","妈妈","妈","哥哥","姐姐","妹妹","爷爷","家庭"],
+  relation:["什么关系","关系怎么样","你和","跟你","熟不熟","熟吗","认识吗","交情"],
+  opinion:["怎么看","觉得","评价","什么样的人","这人怎么样","喜欢他","讨厌他","烦他"],
+  summary:["是谁","介绍","什么人","干嘛的","情况","怎么回事"]
+};
+function detectIntent(q){
+  const nq=norm(q);let best="summary",score=0;
+  for(const [k,arr] of Object.entries(INTENTS)){let s=0;for(const w of arr)if(nq.includes(norm(w)))s+=norm(w).length; if(s>score){best=k;score=s}}
+  return best;
+}
+
+const PRIVACY_PATTERNS=[
+  "昨天见了谁","昨天见谁","昨天去哪","昨天去了哪","昨天干嘛","昨晚见了谁","昨晚去哪","昨晚干嘛",
+  "今天见了谁","今天见谁","刚才见了谁","刚才见谁","写了什么信","写什么信","给谁写信","给谁写了信",
+  "信里写了什么","私下说了什么","偷偷说了什么","跟谁单独","和谁单独","去哪儿了","去了哪里",
+  "你们俩说了什么","你和他聊了什么","你和她聊了什么","你给谁送了什么","你收了谁的东西","你的信"
+];
+const PRIVACY_REPLIES=[
+  "给钱了么你就问？这是齐一鸣同志的个人隐私。",
+  "你问这么细干什么，查户口啊？",
+  "这个不能说。说了我今晚睡不着。",
+  "你怎么什么都想知道？留点悬念不行么。",
+  "这事儿不便透露。本人还想在大院里继续做人。",
+  "你先说你打听这个干嘛，我再考虑要不要编一个给你。",
+  "这个问题有点危险。下一个。",
+  "别问，问就是不知道，知道也不能说。",
+  "你这问题已经越过普通聊天范围了。",
+  "嘘。齐一鸣同志选择性失忆。",
+  "这我能告诉你？那我以后还混不混了。",
+  "你知道得太多对你也没什么好处。主要是对我没好处。"
+];
+const RELATION_GENERIC_REPLIES=[
+  "哦……就是，呃，就是那种呗。就是咱俩那种。",
+  "关系？就……关系呗。非得给你写个证明啊？",
+  "就那样。你自己看不出来么？",
+  "这事怎么说呢……说近也近，说不近也……算了，下一题。",
+  "朋友。大概。差不多。你别逼我下定义。",
+  "认识，熟，挺熟。再往后你自己脑补。",
+  "关系挺正常的。正常到不能再正常。你笑什么？",
+  "就是一种不太方便展开描述的普通关系。",
+  "你这人怎么老爱给别人关系起名字。",
+  "我能怎么说？反正不是不认识。",
+  "你非要问的话……就，嗯。你懂吧？你不懂就算了。",
+  "这问题问得很没有水平。换个有水平的。"
+];
+const UNKNOWN_REPLIES=[
+  "你别问了，我说不出口。",
+  "这个我真接不上。",
+  "你这问题让我怎么回答？",
+  "换一个，齐一鸣同志暂时没有文化回答这个。",
+  "不知道。你当我什么都知道啊？",
+  "你这都哪儿跟哪儿啊。",
+  "这个问题超出齐一鸣同志业务范围。",
+  "我拒绝回答一个我都没听明白的问题。",
+  "啊？你再说一遍。算了，别说了。",
+  "这题不会，下一题。"
+];
+const VAGUE_REPLIES=[
+  "关于这个事，我简单说两句，你明白就行。总而言之这个事呢，现在就是这个情况，具体的呢，大家也都看得到，也得出来说那么几句。可能你听的不是很明白，但是意思就是那么个意思，不知道的你也不用去猜。这种事情见得多了，我只想说懂得都懂，不懂的我也不多解释，毕竟自己知道就好。细细品吧。",
+  "关于这个事吧，我只能说现在就是这么个情况。你要懂就懂，不懂也别硬懂。",
+  "这个事说复杂也复杂，说简单也简单。具体怎么回事呢？就是你现在看到的这么回事。",
+  "有些话说出来就没意思了。你自己细细品，品不出来也别问我。"
+];
+const HUMOR_PATTERNS=[
+  {keys:["吃多少","吃得下","饭量","能吃"],replies:["据野史记载，齐一鸣吃不了这么多。","你们是不是对齐一鸣的胃有什么误解？"]},
+  {keys:["生孩子","孩子是谁的","谁给谁生"],replies:["什么？哪些？夏世洁给你生孩子？我说了不是我说的！","这事儿谁传的？先把造谣的给我叫过来。"]},
+  {keys:["怕你爸","你爸回来","挨打","被你爸打"],replies:["别问，我已经在想我爸回来以后下辈子投胎去谁家了。","这个话题到此为止。齐一鸣同志暂时还想活到明天。"]},
+  {keys:["认字","识字","看得懂信","看信"],replies:["没上过几天课，不太认字。要是看着像情书，我可能就先折起来收好了。","字我当然认识……认识一部分。剩下那部分可以以后再认识。"]},
+  {keys:["吃软饭","软饭"],replies:["世风日下，连师长都得吃软饭。","这年头风气是不太行了。"]},
+  {keys:["齐一鹅","你是鹅"],replies:["严正声明：本人齐一鹅坚决与享乐主义分子齐一鸣划清界限。","本人齐一鸣严正声明：齐一鹅的发言不代表齐一鸣同志本人。"]},
+  {keys:["你和柯一鸿是一个人","你是不是柯一鸿","你俩一个人"],replies:["本人齐一鸣严正声明，我和柯一鸿是两个人。","两个人。活的。分别会喘气。还要我怎么证明？"]},
+  {keys:["柯一鸿清白","一鸿清白","柯一鸿干的"],replies:["你们别这么说一鸿，我相信他是清白的。——招工，五毛一条。","一鸿肯定清白。谁不同意可以排队来领五毛。"]},
+  {keys:["睡醒","昨天怎么了","发生什么了"],replies:["怎么了？昨天怎么了？钱进你把一鸿怎么了？","等会儿，我刚醒。你们先把昨天发生的事从头交代一遍。"]},
+  {keys:["陌生地方","不自在","紧张","尴尬"],replies:["呵呵，在这十分陌生的场所真是一点都不自在。齐一鸣同志正在研究墙皮。","别管我，我数会儿墙砖就好了。"]}
+];
+function privacyHit(q){const nq=norm(q);return PRIVACY_PATTERNS.some(x=>nq.includes(norm(x)));}
+function humorHit(q){const nq=norm(q);for(const item of HUMOR_PATTERNS){if(item.keys.some(k=>nq.includes(norm(k))))return pick(item.replies);}return null;}
+
+const PERSON_MYSTERY = {
+  "梁晃":{
+    relation:[
+      "小晃啊。你要真想问他，最好别挑路灯底下问，脸照得太清楚，有些话就不好说了。",
+      "梁小光这人，往前数三年和往后数三年，不是一个问法。你非要问我，我只能说——有些人落了灰，还是觉得自己是瓷的。"
+    ],
+    opinion:[
+      "他？挺白的。别的我不评价，评价多了显得我惦记。",
+      "你怎么偏偏问他。北京城这么多人，非得挑一个最不该问的。"
+    ],
+    family:[
+      "他家的事你少打听。门一关，谁家没有几本不能翻的旧账。",
+      "以前有人进出都有人开门，现在门还是那扇门，就是声音小了。你自己琢磨。"
+    ],
+    age:["十九不十九的有什么要紧，反正够大了，能把人气死。"],
+    summary:[
+      "梁晃就是梁晃。以前有人追着他跑，现在有人绕着他走。至于我？我站得不远。",
+      "小晃这人不适合介绍，适合碰见。真碰见了你也未必敢多问。"
+    ]
+  },
+  "柯一鸿":{
+    relation:[
+      "我跟柯一鸿？本人齐一鸣严正声明，我们是两个人。别的暂不公开。",
+      "一鸿这人，问他爸是一套，问他本人又是一套。你问我是哪套？给钱了吗你就套话。"
+    ],
+    opinion:[
+      "他骑车快，嘴也不慢。至于脑子跑哪儿去了，我暂时没追上。",
+      "柯一鸿看着没心没肺，其实有些地方比谁都拧。你别当着柯叔叔面问这句。"
+    ],
+    family:[
+      "柯家的门一关，里面热闹得很。至于谁跟谁是一伙的，我劝你别下注。",
+      "他爸你知道，他姐你也知道。剩下那个位置……空着就空着吧，非得问么。"
+    ],
+    age:["十八。刚好是嘴硬不犯法、挨揍也不长记性的年纪。"],
+    summary:[
+      "柯一鸿啊，骑个大杠满北京窜。你要找他，别在家等。",
+      "这人白天像没事人，晚上去哪儿谁知道。反正我不知道，我也没问。"
+    ]
+  },
+  "何肇华":{
+    relation:[
+      "华子？这个不能按‘关系’两个字算。算久了容易把十几年的旧账都翻出来。",
+      "有些人是后来认识的，有些人像从小就在那儿。何肇华属于后者。再往下问就不礼貌了。"
+    ],
+    opinion:[
+      "何肇华那人看着什么都规矩。太规矩了，规矩得你最好别真信。",
+      "他笑的时候你就当他在笑，千万别顺便猜他心里在算什么。累。"
+    ],
+    family:[
+      "于阿姨做饭很好吃。何肇华本人不在本回答的讨论范围内。",
+      "何家的事我熟是熟，但熟人的家务事最不能往外说。"
+    ],
+    age:["年纪？你问这个干什么，准备给他做寿啊。"],
+    summary:[
+      "何肇华是个很适合让别人替他作证的人。至于我为什么知道，你别问。",
+      "华子么，衣服穿得干净，话说得也干净。干净得有时候叫人心里发毛。"
+    ]
+  },
+  "褚霆升":{
+    relation:[
+      "褚哥朋友多。多到你站他面前，都得先确认一下自己是不是今天这一号。",
+      "我和褚霆升？喝酒的时候挺熟，酒醒了还认不认得我就不好说。"
+    ],
+    opinion:[
+      "褚大炮，人不错，就是太爱给别人当大哥。大哥当多了，容易记混小弟。",
+      "他要护谁的时候你拦不住。问题是他想护的人太多了。"
+    ],
+    family:[
+      "褚家的事最近别问。西山风大，话传过去不好听。",
+      "他家门口最近安静，你就当没看见。"
+    ],
+    age:["二十一。理论上该懂事了，实践上另说。"],
+    summary:[
+      "褚霆升，外号褚大炮。名字听着响，真响起来你最好离远点。",
+      "他啊，点着容易，灭起来费劲。"
+    ]
+  },
+  "洛小军":{
+    relation:[
+      "我等没等他、给没给他留西瓜，这都属于齐一鸣同志的个人生活，不便公开。",
+      "洛小军？关系一般。一般到我一上午没见着他就顺便问了八百个人而已。"
+    ],
+    opinion:[
+      "洛公子最会说‘随便’。你真信他随便，那就是你随便了。",
+      "他不说话的时候比说话麻烦。你最好别等他开口才发现出事了。"
+    ],
+    family:[
+      "他家的事不拿来嚼舌根。你真想知道，去问他自己——前提是你敢。",
+      "有些人家里人很多，有些人名字很少。这个就别往细了说。"
+    ],
+    age:["十七。别因为十七就当他好欺负，我先替你省个医药费。"],
+    summary:[
+      "洛小军啊，游泳、抽烟、吹口琴，偶尔顺便把人送医院。挺文静的。",
+      "小军看着像没脾气。这个结论建议你保留在心里，别当面验证。"
+    ]
+  },
+  "林虎平":{
+    relation:[
+      "虎子属于你一回头就发现他跟上来了的那种关系。赶也不一定赶得走。",
+      "关系挺好，主要是他兜里有吃的。本人齐一鸣坚决否认这句话带有功利性质。"
+    ],
+    opinion:[
+      "虎子说自己是大院第三帅。前两名是谁你别问，问了又要出事。",
+      "他嗓门大，心眼倒没嗓门那么多。挺省事。"
+    ],
+    family:[
+      "他爸妈教育孩子的方法比较直接。具体多直接，你听见院里谁哭就知道了。",
+      "林家的家风么，简单概括：能动手的事尽量别开会。"
+    ],
+    age:["十七。正是容易被自己亲妈追着打的好年纪。"],
+    summary:[
+      "林虎平，大院第三帅，自封的。后勤部长，也是自封的。群众基础主要靠饼干。",
+      "虎子这人挺好认，先听见声，再看见人。"
+    ]
+  },
+  "钱进":{
+    relation:[
+      "阿哥跟谁都熟。我跟他熟不熟，不重要，重要的是他来你家吃饭的时候你推不推得出去。",
+      "钱进这人，旧朋友多，新账也不少。关系这种事，不够他拿来下酒。"
+    ],
+    opinion:[
+      "阿哥最大的本事是掉下去还能笑着爬回来。你说是真不在乎还是装的，我不负责判断。",
+      "他笑起来还是一口白牙。别的地方你就别盯着看了。"
+    ],
+    family:[
+      "钱家的事早翻篇了没有，我不知道。北京城翻篇这事，向来是嘴上比纸上快。",
+      "他爹的名字以前响，现在也响。就是响法不一样。"
+    ],
+    age:["二十。按理说该有正经营生了，按他本人说法可能不这么认为。"],
+    summary:[
+      "钱进，阿哥。以前风光，后来消失，再回来时故事比人多。",
+      "你问阿哥去哪儿过？他说缅北。你信不信是你的自由，我保留意见。"
+    ]
+  },
+  "李侠":{
+    relation:[
+      "李侠跟谁关系都不算吵。他那种人，站墙根儿都能自己待半天。",
+      "我跟他没什么可交代的。真要交代，得先找本俄国小说垫着。"
+    ],
+    opinion:[
+      "他人还在北京，心大概已经过了西伯利亚。",
+      "李侠适合当侠客，就是这个年代不太给侠客发编制。"
+    ],
+    family:[
+      "他妈是做通信的。再多的你问他，别问我，我不懂雷达。",
+      "李家的事挺安静，安静得和他本人差不多。"
+    ],
+    age:["二十一。困在院墙里二十一年。"],
+    summary:[
+      "李侠，名字挺像回事，人也确实爱管闲事。只是他的江湖有点小。",
+      "他看书比看人认真。这个习惯不一定坏。"
+    ]
+  },
+  "夏世洁":{
+    relation:[
+      "我跟夏世洁？你先问问他那头发到底怎么回事，再来问我。",
+      "世洁这人不适合讲关系，讲着讲着容易像算命。"
+    ],
+    opinion:[
+      "你问夏世洁是什么人？蓝衣服，红头发，剩下的颜色自己猜。",
+      "他那人看着热，靠近了又未必。反正我不负责给你解谜。"
+    ],
+    family:[
+      "他家信五行。你要再问下去，我怕一会儿还得给你算命。",
+      "家里人觉得他缺水。至于他本人缺什么，我不说。"
+    ],
+    age:["十九。岁数很普通，人不太普通。"],
+    summary:[
+      "夏世洁？一半像火，一半像水，剩下一半不知道从哪儿多出来的。",
+      "这人介绍不清。介绍清了反而不像他。"
+    ]
+  },
+  "从兰飞":{
+    relation:[
+      "小飞哥跟谁都客气。客气这种东西有时候比亲近安全。",
+      "我和从兰飞没什么不能说的，所以也没什么特别好说的。"
+    ],
+    opinion:[
+      "他走路像永远有人在看。其实也确实总有人看。",
+      "小飞哥那腿你别笑，真抡过来你未必笑得出来。"
+    ],
+    family:[
+      "他家以前琴瑟和鸣，现在有些话不适合拿来唱。",
+      "从老师家的事最近少提，风声不好。"
+    ],
+    age:["这个你自己问他，我怕说错了他当场给我劈个叉。"],
+    summary:[
+      "从兰飞，跳舞的。别叫娘，叫小飞哥，前人已经替你试过了。",
+      "他手里常有票。至于现在还有没有，你最好别挑这个时候问。"
+    ]
+  },
+  "邢崇海":{
+    relation:[
+      "邢崇海跟谁都能像很熟。问题是‘像’这个字你得自己掂量。",
+      "我跟他？见面能聊，聊完谁信了谁的话另算。"
+    ],
+    opinion:[
+      "崇海嘴甜、脑子快、记性还好。跟这种人说话，最好别留下把柄。",
+      "他笑得越自然，你越别急着觉得自己跟他是一路人。"
+    ],
+    family:[
+      "他家是外交口的，话都说得漂亮。漂亮话听听就行，别替人家补后半句。",
+      "邢家知道外头的事多。知道得多的人，通常也更知道什么不能说。"
+    ],
+    age:["年龄不是重点，他那张嘴活得比谁都老练。"],
+    summary:[
+      "邢崇海，走哪儿都能呼朋引伴。至于谁真是朋友，那得等人散了再看。",
+      "他会英语。你要问我会不会，我建议你换个话题。"
+    ]
+  }
+};
+
+function personAnswer(p,intent){
+  if(intent==="relation") return pick(RELATION_GENERIC_REPLIES);
+  const bank=PERSON_MYSTERY[p.name]||{};
+  const options=bank[intent]||bank.summary;
+  if(options&&options.length) return pick(options);
+  return pick(UNKNOWN_REPLIES);
+}
+
+function render(){
+
+  const q=document.getElementById("q").value.trim(), out=document.getElementById("out");
+  if(!q){out.innerHTML='<div class="empty">问吧。最好别拐弯抹角。</div>';return}
+
+  if(privacyHit(q)){
+    out.innerHTML=`<div class="label">齐一鸣</div><div class="card top"><div class="answer">${esc(pick(PRIVACY_REPLIES))}</div></div>`;
+    return;
+  }
+
+  const funny=humorHit(q);
+  if(funny){
+    out.innerHTML=`<div class="label">齐一鸣</div><div class="card top"><div class="answer">${esc(funny)}</div></div>`;
+    return;
+  }
+
+  const nq0=norm(q);
+  const vaguePrompt =
+    nq0.includes("关于这个事") ||
+    nq0.includes("这事怎么回事") ||
+    nq0.includes("这个事怎么回事") ||
+    nq0.includes("解释一下") ||
+    nq0.includes("什么意思") ||
+    nq0.includes("说两句") ||
+    nq0.includes("展开说说") ||
+    nq0.includes("细说");
+
+  if(vaguePrompt){
+    out.innerHTML=`<div class="label">齐一鸣</div><div class="card top"><div class="answer">${esc(pick(VAGUE_REPLIES))}</div></div>`;
+    return;
+  }
+
+  const explicitlyUnanswerable =
+    /[0-9一二三四五六七八九十]+号位/.test(q) ||
+    nq0.includes("坐的是谁") ||
+    nq0.includes("谁坐") ||
+    nq0.includes("随便说点什么") ||
+    nq0.includes("随便说点啥") ||
+    nq0.includes("说点什么") ||
+    nq0.includes("讲点什么");
+
+  if(explicitlyUnanswerable){
+    out.innerHTML=`<div class="label">齐一鸣</div><div class="card top"><div class="answer">${esc(pick(UNKNOWN_REPLIES))}</div></div>`;
+    return;
+  }
+
+  const p=findPerson(q);
+  if(p){
+    const intent=detectIntent(q);
+    out.innerHTML=`<div class="label">齐一鸣</div><div class="card top"><div class="answer">${esc(personAnswer(p,intent))}</div></div>`;
+    return;
+  }
+  const ranked=CORE.map(x=>({...x,s:coreScore(q,x)})).sort((a,b)=>b.s-a.s),t=ranked[0];
+  if(!t||t.s<.30){out.innerHTML=`<div class="label">齐一鸣</div><div class="card top"><div class="answer">${esc(pick(UNKNOWN_REPLIES))}</div></div>`;return}
+  if(t.s>=.70){out.innerHTML=`<div class="label">齐一鸣</div><div class="card top"><div class="answer">${esc(pick(t.answers))}</div></div>`;return}
+  const c=ranked.filter(x=>x.s>=.24).slice(0,3);
+  out.innerHTML=`<div class="label">齐一鸣</div><div class="small">你问得有点含糊。我猜你可能是在问这些：</div>`+
+    c.map((x,i)=>`<div class="card ${i===0?"top":""}"><div class="small">${i+1}. ${esc(x.question)}</div><div class="answer" style="margin-top:8px">${esc(pick(x.answers))}</div><div class="meta">可能性 ${Math.round(x.s*100)}%</div></div>`).join("");
+}
+document.getElementById("ask").onclick=render;
+document.getElementById("clear").onclick=()=>{document.getElementById("q").value="";render();document.getElementById("q").focus()};
+document.getElementById("q").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();render()}});
+</script></body></html>
