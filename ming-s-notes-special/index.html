@@ -332,15 +332,31 @@ function samePersonMentioned(q,asker){
 }
 
 function heZhaohuaLoveEgg(asker,q){
-  if(asker!=="何肇华") return null;
   const nq=norm(q);
-  const loveHit=[
+
+  const askHeDirectly = [
     "你喜欢我吗","喜欢我吗","你喜不喜欢我","喜不喜欢我",
-    "你喜欢何肇华吗","喜欢何肇华吗","你喜不喜欢何肇华","喜不喜欢何肇华",
-    "你喜欢他吗","喜欢他吗","你喜不喜欢他","喜不喜欢他"
+    "你喜欢他吗","喜欢他吗","你喜不喜欢他","喜不喜欢他",
+    "你喜欢何肇华吗","喜欢何肇华吗","你喜不喜欢何肇华","喜不喜欢何肇华"
   ].some(k=>nq.includes(norm(k)));
-  if(!loveHit) return null;
-  return Array.from({length:10},()=>({text:"当然",score:1,type:"easter"}));
+
+  const askAboutHe = [
+    "齐一鸣喜欢何肇华吗","齐一鸣喜不喜欢何肇华","你喜欢何肇华吗","你喜不喜欢何肇华",
+    "你喜欢华子吗","你喜不喜欢华子","你喜欢肇华吗","你喜不喜欢肇华",
+    "齐一鸣喜欢华子吗","齐一鸣喜不喜欢华子","齐一鸣喜欢肇华吗","齐一鸣喜不喜欢肇华"
+  ].some(k=>nq.includes(norm(k)));
+
+  const triggered =
+    (asker==="何肇华" && askHeDirectly) ||
+    (asker!=="何肇华" && askAboutHe);
+
+  if(!triggered) return null;
+
+  return Array.from({length:10},()=>({
+    text:"当然",
+    score:1,
+    type:"easter"
+  }));
 }
 
 function applyAskerVoice(base,asker,q){
