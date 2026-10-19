@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#263e37">
+<title>像素小掌机 v03</title>
+<style>
+  :root { --brown:#46392f; --dark:#283b35; --cream:#f0d5a6; --rim:#cfaa7a; --peach:#e0a277; --green:#556c52; }
+  *{box-sizing:border-box}
+  html,body{min-height:100%;margin:0}
+  body{overflow-x:hidden;background:#253e38;display:grid;place-items:center;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  button{font:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
+  button:focus-visible{outline:4px solid #fff4ce;outline-offset:5px}
+  .world{min-height:100svh;width:100%;position:relative;display:grid;place-items:center;overflow:hidden;padding:36px 12px 67px;
+   background:linear-gradient(90deg,#1b322e 0 13px,transparent 13px calc(100% - 13px),#1b322e calc(100% - 13px)),
+   repeating-linear-gradient(0deg,#2c493f 0px 30px,#2b463d 30px 32px,#284339 32px 62px,#2b493f 62px 64px)}
+  .world:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:linear-gradient(90deg,transparent 0 94%,#8ca47f 94% 100%),linear-gradient(transparent 0 94%,#8ca47f 94% 100%);background-size:80px 80px;mask-image:radial-gradient(ellipse 65% 58% at 50% 45%,transparent 12%,black 98%)}
+  .world:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 75% at center,transparent 55%,#172b2694 100%)}
+  .decor{position:absolute;width:130px;height:130px;opacity:.7;pointer-events:none;image-rendering:pixelated}
+  .decor.a{left:7%;top:8%}.decor.b{right:8%;bottom:8%;transform:rotate(180deg)}
+  .decor svg{width:100%;height:100%;shape-rendering:crispEdges}
+  .rig{position:relative;width:min(860px,97vw);z-index:1;filter:drop-shadow(0 22px 0 #14262080) drop-shadow(0 29px 18px #10251b8c);}
+  .hand{position:absolute;z-index:5;pointer-events:none;bottom:-18%;width:36%;height:auto;overflow:visible;shape-rendering:crispEdges;filter:drop-shadow(3px 7px 0 #1b2d2799)}
+  .hand.left{left:-16%}.hand.right{right:-16%;transform:scaleX(-1)}
+  .case{position:relative;z-index:2;width:100%;padding:38px 42px 33px;background:#e8cb96;border:7px solid #765840;
+   clip-path:polygon(20px 0,calc(100% - 20px) 0,calc(100% - 20px) 7px,calc(100% - 7px) 7px,calc(100% - 7px) 20px,100% 20px,100% calc(100% - 20px),calc(100% - 7px) calc(100% - 20px),calc(100% - 7px) calc(100% - 7px),calc(100% - 20px) calc(100% - 7px),calc(100% - 20px) 100%,20px 100%,20px calc(100% - 7px),7px calc(100% - 7px),7px calc(100% - 20px),0 calc(100% - 20px),0 20px,7px 20px,7px 7px,20px 7px);
+   box-shadow:inset 0 9px 0 #fbe1ab,inset 7px 0 0 #f8d9a6,inset -9px -9px 0 #c79b69;
+  }
+  .case:before{content:"";position:absolute;inset:15px;border:3px solid #a77e55;opacity:.32;pointer-events:none;clip-path:polygon(11px 0,calc(100% - 11px) 0,calc(100% - 11px) 11px,100% 11px,100% calc(100% - 11px),calc(100% - 11px) calc(100% - 11px),calc(100% - 11px) 100%,11px 100%,11px calc(100% - 11px),0 calc(100% - 11px),0 11px,11px 11px)}
+  .screw{position:absolute;width:9px;height:9px;background:#aa845a;box-shadow:2px 2px 0 #fae0ae,inset 3px 3px 0 #77533c;z-index:2}
+  .screw.tl{left:22px;top:21px}.screw.tr{right:22px;top:21px}.screw.bl{left:25px;bottom:22px}.screw.br{right:25px;bottom:22px}
+  .display-rim{position:relative;margin:auto;width:93%;padding:16px 18px 18px;background:#3a4d44;border:6px solid #23342f;box-shadow:inset 0 5px 0 #6e8070,0 8px 0 #a78259,0 11px 0 #8c6948;
+    clip-path:polygon(10px 0,calc(100% - 10px) 0,calc(100% - 10px) 5px,100% 5px,100% calc(100% - 10px),calc(100% - 10px) calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,10px calc(100% - 10px),0 calc(100% - 10px),0 5px,10px 5px)}
+  .glass{position:relative;overflow:hidden;background:#f2d8ac;border:5px solid #172823;box-shadow:0 4px 0 #75816a, inset 0 0 0 3px #fff6cb;aspect-ratio:320/208}
+  .glass canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+  .glass:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(155deg,#ffffff29 0%,transparent 28%,transparent 100%)}
+  .glass.blink{animation:sceneFlash .22s steps(3,end)}@keyframes sceneFlash{50%{filter:brightness(1.28)}}
+  .status-lights{position:absolute;left:4%;top:42%;display:flex;gap:5px;flex-direction:column}
+  .status-lights i{display:block;width:6px;height:6px;background:#8c9c6d;box-shadow:2px 2px 0 #1d2d27}.status-lights i:first-child{background:#e7ae78;box-shadow:0 0 7px #efc38366}
+  .lower{position:relative;height:176px;margin-top:9px}
+  .dpad{position:absolute;left:7%;top:18px;width:138px;height:138px;filter:drop-shadow(0 5px 0 #9b7e61)}
+  .dpad:before,.dpad:after{content:"";position:absolute;display:block;background:#334c43;box-shadow:inset 5px 5px 0 #66806e,inset -5px -5px 0 #1d302a;pointer-events:none}
+  .dpad:before{width:48px;height:128px;left:40px;top:0}.dpad:after{height:48px;width:128px;left:0;top:40px}
+  .dpad button{position:absolute;z-index:2;width:42px;height:42px;border:0;background:transparent;display:grid;place-items:center}
+  .dpad button:active,.dpad button.down{background:#182d2660}
+  .up{left:43px;top:3px}.down-key{left:43px;bottom:3px}.left-key{left:3px;top:43px}.right-key{right:3px;top:43px}
+  .arrow{display:block;width:0;height:0;border:8px solid transparent;opacity:.68;filter:drop-shadow(1px 1px 0 #141f1d)}
+  .up .arrow{border-bottom-color:#a3b99a;transform:translateY(-4px)}.down-key .arrow{border-top-color:#a3b99a;transform:translateY(4px)}
+  .left-key .arrow{border-right-color:#a3b99a;transform:translateX(-4px)}.right-key .arrow{border-left-color:#a3b99a;transform:translateX(4px)}
+  .middle{position:absolute;left:50%;top:118px;transform:translateX(-50%);display:flex;gap:20px}
+  .middle button{width:34px;height:16px;transform:rotate(-17deg);border:3px solid #594835;background:#a68e70;box-shadow:inset 3px 3px 0 #cfb99a,0 4px 0 #775b43;display:grid;place-items:center}
+  .middle button:active,.middle button.down{transform:rotate(-17deg) translateY(3px);box-shadow:inset 3px 3px 0 #cfb99a,0 1px 0 #775b43}
+  .middle .small-symbol{height:3px;width:13px;background:#6b5a47;display:block}
+  .middle .small-symbol.tri{height:0;width:0;background:transparent;border-left:10px solid #6b5a47;border-bottom:5px solid transparent;border-top:5px solid transparent}
+  .ab{position:absolute;right:7%;top:30px;width:170px;height:118px}
+  .ab button{width:67px;height:67px;position:absolute;border:6px solid #6a483d;border-radius:50%;background:#c66f59;box-shadow:inset 7px 7px 0 #e8a084,inset -6px -6px 0 #9d5347,0 7px 0 #b18b62}
+  .ab button:nth-child(1){left:2px;bottom:0}.ab button:nth-child(2){right:2px;top:0;background:#dda865;border-color:#78563a;box-shadow:inset 7px 7px 0 #f3c887,inset -6px -6px 0 #bd844e,0 7px 0 #b18b62}
+  .ab button:active,.ab button.down{transform:translateY(5px);box-shadow:inset 5px 5px 0 #e8a084,inset -4px -4px 0 #9d5347,0 2px 0 #b18b62}
+  .ab button:nth-child(2):active,.ab button:nth-child(2).down{box-shadow:inset 5px 5px 0 #f3c887,inset -4px -4px 0 #bd844e,0 2px 0 #b18b62}
+  .ab .shine{position:absolute;pointer-events:none;width:15px;height:9px;top:12px;left:15px;background:#ffdcc6a8;clip-path:polygon(20% 0,100% 0,100% 40%,40% 40%,40% 100%,0 100%,0 20%,20% 20%)}
+  .speaker{position:absolute;right:0;bottom:4px;display:flex;gap:8px;transform:rotate(-16deg)}
+  .speaker i{display:block;width:6px;height:26px;background:#ac865d;box-shadow:inset 3px 0 0 #7b593e}
+  .pixel-spark{position:absolute;width:7px;height:7px;background:#e3b57c;pointer-events:none;opacity:.6;box-shadow:7px -7px 0 #e3b57c,-7px 7px 0 #e3b57c}
+  .pixel-spark.s1{left:6%;top:17%}.pixel-spark.s2{right:4%;bottom:24%;transform:scale(.7)}
+  @media(max-width:640px){
+    .world{padding:12px 7px 48px}.decor{opacity:.4;width:65px;height:65px}.rig{width:min(100%,610px)}
+    .case{padding:24px 18px 18px;border-width:5px}
+    .display-rim{width:96%;padding:10px;border-width:4px;box-shadow:inset 0 3px 0 #6e8070,0 5px 0 #a78259}
+    .glass{border-width:3px}.lower{height:118px;margin-top:8px}
+    .dpad{transform:scale(.75);transform-origin:top left;left:4%;top:8px}
+    .ab{transform:scale(.77);transform-origin:top right;right:4%;top:10px}
+    .middle{transform:translateX(-50%) scale(.82);top:82px;gap:15px}
+    .speaker{right:2%;bottom:2%;transform:rotate(-16deg) scale(.7);transform-origin:bottom right}
+    .hand{width:35%;bottom:-19%}.hand.left{left:-13%}.hand.right{right:-13%}
+    .screw{width:5px;height:5px}.screw.tl{left:12px;top:12px}.screw.tr{right:12px;top:12px}.screw.bl{left:12px;bottom:12px}.screw.br{right:12px;bottom:12px}
+  }
+  @media(max-width:365px){.dpad{transform:scale(.59)}.ab{transform:scale(.63)}.lower{height:98px}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="world" aria-label="复古像素掌机互动游戏">
+  <div class="decor a" aria-hidden="true"><svg viewBox="0 0 80 80"><path fill="#89a181" d="M4 51h8v-8h8v-8h8v-8h8v-8h8v8h8v8h8v8h8v8h8v8H4z"/><path fill="#d9be87" d="M25 8h8v8h-8zm16 0h8v8h-8zM33 0h8v8h-8zM16 24h8v8h-8zm48 0h8v8h-8z"/><path fill="#567e65" d="M16 51h9v10h-9zm32 0h8v15h-8zm16 0h8v10h-8z"/></svg></div>
+  <div class="decor b" aria-hidden="true"><svg viewBox="0 0 80 80"><path fill="#89a181" d="M4 51h8v-8h8v-8h8v-8h8v-8h8v8h8v8h8v8h8v8h8v8H4z"/><path fill="#d9be87" d="M25 8h8v8h-8zm16 0h8v8h-8zM33 0h8v8h-8zM16 24h8v8h-8zm48 0h8v8h-8z"/><path fill="#567e65" d="M16 51h9v10h-9zm32 0h8v15h-8zm16 0h8v10h-8z"/></svg></div>
+  <div class="rig">
+    <div class="case">
+      <i class="screw tl" aria-hidden="true"></i><i class="screw tr" aria-hidden="true"></i>
+      <i class="screw bl" aria-hidden="true"></i><i class="screw br" aria-hidden="true"></i>
+      <div class="pixel-spark s1" aria-hidden="true"></div><div class="pixel-spark s2" aria-hidden="true"></div>
+      <div class="display-rim">
+        <div class="status-lights" aria-hidden="true"><i></i><i></i></div>
+        <div class="glass" id="glass"><canvas id="game" width="320" height="208" aria-label="两个人物的像素互动动画"></canvas></div>
+      </div>
+      <div class="lower">
+        <div class="dpad" role="group" aria-label="方向按钮">
+          <button class="up" data-scene="kiss" aria-label="亲脸"><span class="arrow"></span></button>
+          <button class="down-key" data-scene="bath" aria-label="浴室出来"><span class="arrow"></span></button>
+          <button class="left-key" data-scene="cards" aria-label="牌桌秋波"><span class="arrow"></span></button>
+          <button class="right-key" data-scene="glasscall" aria-label="隔着玻璃打电话"><span class="arrow"></span></button>
+        </div>
+        <div class="middle" role="group" aria-label="播放选项">
+          <button data-action="shuffle" aria-label="切换下个互动"><span class="small-symbol"></span></button>
+          <button data-action="autoplay" aria-label="播放或暂停自动循环" aria-pressed="false"><span class="small-symbol tri"></span></button>
+        </div>
+        <div class="ab" role="group" aria-label="游戏按钮">
+          <button data-scene="letters" aria-label="写信"><span class="shine"></span></button>
+          <button data-scene="lamp" aria-label="路灯牵手"><span class="shine"></span></button>
+        </div>
+        <div class="speaker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+    <!-- 两只手作为像素风装饰独立于按键，保证按钮不被遮挡 -->
+    <svg class="hand left" viewBox="0 0 270 330" aria-hidden="true">
+      <g shape-rendering="crispEdges">
+        <path d="M0 330H113V300H127V274H137V250H144V215H157V202H175V190H193V176H207V163H226V159H241V165H248V176H242V186H230V197H215V209H198V223H181V238H167V252H161V286H149V302H137V330H0Z" fill="#d9a185" stroke="#815c49" stroke-width="6" stroke-linejoin="miter"/>
+        <path d="M214 160H233V166H241V175H231V181H218V191H202V204H184V218H170V233H160V247H151V274H136V300H124V330H113V301H125V272H135V246H145V229H158V214H174V200H191V186H206V173H214Z" fill="#f2c29e"/>
+        <path d="M181 185H195V190H181ZM166 199H181V204H167ZM152 214H166V219H153ZM140 230H152V235H141ZM132 248H141V253H132Z" fill="#c8876d"/>
+        <path d="M0 330H118V305H130V290H143V330H0Z" fill="#6e8378" stroke="#476257" stroke-width="6" stroke-linejoin="miter"/>
+        <path d="M1 330H109V314H121V305H130V330Z" fill="#8ea798"/>
+        <path d="M199 176H213V181H199ZM214 164H227V169H214ZM175 191H189V196H175Z" fill="#f8d8ba"/>
+        <path d="M143 251H151V262H143ZM135 271H143V281H135Z" fill="#b1715c"/>
+      </g>
+    </svg>
+    <svg class="hand right" viewBox="0 0 270 330" aria-hidden="true">
+      <g shape-rendering="crispEdges">
+        <path d="M0 330H113V300H127V274H137V250H144V215H157V202H175V190H193V176H207V163H226V159H241V165H248V176H242V186H230V197H215V209H198V223H181V238H167V252H161V286H149V302H137V330H0Z" fill="#d9a185" stroke="#815c49" stroke-width="6" stroke-linejoin="miter"/>
+        <path d="M214 160H233V166H241V175H231V181H218V191H202V204H184V218H170V233H160V247H151V274H136V300H124V330H113V301H125V272H135V246H145V229H158V214H174V200H191V186H206V173H214Z" fill="#f2c29e"/>
+        <path d="M181 185H195V190H181ZM166 199H181V204H167ZM152 214H166V219H153ZM140 230H152V235H141ZM132 248H141V253H132Z" fill="#c8876d"/>
+        <path d="M0 330H118V305H130V290H143V330H0Z" fill="#6e8378" stroke="#476257" stroke-width="6" stroke-linejoin="miter"/>
+        <path d="M1 330H109V314H121V305H130V330Z" fill="#8ea798"/>
+        <path d="M199 176H213V181H199ZM214 164H227V169H214ZM175 191H189V196H175Z" fill="#f8d8ba"/>
+        <path d="M143 251H151V262H143ZM135 271H143V281H135Z" fill="#b1715c"/>
+      </g>
+    </svg>
+  </div>
+</main>
+<script>
+'use strict';
+/*
+ * 无可见文字；全部 UI 通过图像与按键表达。
+ * 角色与美术 Batch 生产的稳定接口：
+ * Batch 00: 固定两个角色的基础形象、比例、衣服及 8 色调色板。
+ * Batch 01: 绘制 6 组无背景双人像素立绘，每组保持同一画布尺寸及锚点。
+ * Batch 02: 每组补 3-6 帧动作，推荐 PNG 像素图序列/横排 spritesheet。
+ * Batch 03: 独立道具与特效图层，画面里不写任何字。
+ * Batch 04: 用以下 ART_FILES 替换内建像素演示，并加入音效等。
+ * 将例如 pat: 'assets/pat.png' 填入，即会用素材替换内建场景角色。
+ * 正式素材建议透明 PNG, 320x208 或 160x104 的整数倍，不做平滑缩放。
+ */
+const ART_FILES = {kiss:'',bath:'',cards:'',glasscall:'',letters:'',lamp:''};
+const SCENES = [
+  {id:'kiss', sky:'#e8d9c9', tint:'#d7c4b7', ground:'#c2b394', accents:'#cb7d73'},
+  {id:'bath', sky:'#ddd9cf', tint:'#cfd9c8', ground:'#bcb08c', accents:'#d58a7d'},
+  {id:'cards', sky:'#d9d5c5', tint:'#a9b89a', ground:'#9cae89', accents:'#d6a36e'},
+  {id:'glasscall', sky:'#c9d6d9', tint:'#b9c9c9', ground:'#a3b3b3', accents:'#cc8470'},
+  {id:'letters', sky:'#e7d9bf', tint:'#cabda5', ground:'#bca883', accents:'#cf8d76'},
+  {id:'lamp', sky:'#1a2541', tint:'#2a3350', ground:'#42534c', accents:'#f4d792'}
+];
+const $ = (query)=>document.querySelector(query);
+const canvas=$('#game'), ctx=canvas.getContext('2d',{alpha:false}); ctx.imageSmoothingEnabled=false;
+const glass=$('#glass');
+const preloaded={}; Object.entries(ART_FILES).forEach(([id,src])=>{if(src){const img=new Image();img.src=src;preloaded[id]=img;}});
+let scene=0, started=performance.now(), lastSwitch=performance.now(), auto=false, holdTimer=0;
+const INK='#453b37', SHADOW='#735e50', WHITE='#fff0cb', SKIN='#efbc92', SKIN_DARK='#d59b75', HAIR='#3e3432', LIGHT_HAIR='#5b4740', RED='#b96758', RED_LIGHT='#da8774', OLIVE='#647759', BLUE='#647e86';
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+function pbox(x,y,w,h,r,c){rect(x+r,y,w-2*r,h,c);rect(x,y+r,w,h-2*r,c);}
+function outlined(x,y,w,h,r,c){pbox(x-2,y-2,w+4,h+4,r+1,INK);pbox(x,y,w,h,r,c);}
+function ellipse(cx,cy,rx,ry,c){for(let dy=-ry;dy<=ry;dy++){const ratio=Math.sqrt(Math.max(0,1-(dy*dy)/(ry*ry)));const dx=Math.floor(rx*ratio);rect(cx-dx,cy+dy,dx*2+1,1,c);}}
+function dither(x,y,w,h,color,step=13){for(let yy=y;yy<y+h;yy+=step)for(let xx=x+((yy-y)/step%2)*5;xx<x+w;xx+=step)rect(xx,yy,2,2,color)}
+function pixelStar(x,y,c,s=2){rect(x-1*s,y-4*s,2*s,8*s,c);rect(x-4*s,y-1*s,8*s,2*s,c);rect(x-2*s,y-2*s,4*s,4*s,WHITE)}
+function heart(x,y,c,s=2){const rows=['0110110','1111111','1111111','0111110','0011100','0001000'];rows.forEach((row,i)=>{for(let j=0;j<row.length;j++)if(row[j]==='1')rect(x+j*s,y+i*s,s,s,c);});}
+function cloud(x,y,tone){rect(x+8,y,24,5,tone);rect(x+3,y+5,44,6,tone);rect(x,y+11,53,6,tone);rect(x+7,y+17,38,4,tone)}
+function grass(x,y){rect(x,y-3,2,7,'#607f64');rect(x+3,y-7,2,11,'#819e73');rect(x+7,y-3,2,7,'#607f64');}
+function flower(x,y,c){grass(x-2,y+3);rect(x,y-5,4,4,c);rect(x-3,y-2,10,4,c);rect(x,y+1,4,4,c);rect(x+1,y-1,2,2,'#f8d793')}
+function backdrop(s,t){rect(0,0,320,208,s.sky);rect(0,0,320,25,'#ffffff1a');rect(0,83,320,46,s.tint);
+  cloud(34+Math.sin(t*.25)*3,25,'#fff5d8'); cloud(240-Math.sin(t*.18)*2,41,'#ffefd7');
+  rect(0,123,320,85,s.ground);rect(0,123,320,4,'#ced2ae');
+  rect(0,147,320,7,'#bac8aa');rect(0,179,320,29,'#b2b594');
+  // 极简像素院墙、树冠和小草，人物始终是焦点
+  rect(0,107,74,22,'#c2b9a0');rect(0,107,74,5,'#a8ad8c');rect(246,111,74,18,'#c2b9a0');rect(246,111,74,5,'#a8ad8c');
+  for(let i=0;i<10;i++){rect(i*35+((i%2)*6),121,12,2,'#a9a38a');}
+  const leaves=['#6c906d','#799873','#92a77c'];
+  for(const [x,y] of [[-8,28],[2,48],[24,36],[296,25],[311,52],[286,43]]){
+    rect(x+8,y+19,7,48,'#897457');pbox(x,y,36,31,5,leaves[(Math.abs(x)>>1)%3]);rect(x+7,y+6,10,6,'#b2b68a');
+  }
+  for(const [x,y] of [[18,182],[49,169],[271,176],[291,190],[73,190],[234,195]]) grass(x,y);
+  flower(45,189,s.accents);flower(285,182,'#f4d7a9');
+  // 地面像素斑点
+  for(let i=0;i<18;i++){const x=12+(i*73)%299;const y=156+(i*31)%47;rect(x,y,3,2,'#9da98b')}
+}
+function drawBackArm(x,y,side,color,pose){
+  if(pose==='wave' && side===-1){outlined(x-22,y-38,8,21,2,color);outlined(x-29,y-52,9,19,2,SKIN);return;}
+  outlined(x+(side===-1?-20:12),y-35,9,25,2,color);
+  rect(x+(side===-1?-20:12),y-17,9,7,SKIN_DARK);
+}
+// 基础 Q 版像素人物，本体 48x72 左右；所有场景复用同一套角色像素规则。
+function character(x,foot,s,kind,pose,t,params={}){
+  ctx.save();ctx.translate(Math.round(x),Math.round(foot));ctx.scale(s,s);
+  const loose=kind===0, coat=loose?RED:OLIVE, edge=loose?RED_LIGHT:'#80946a', pant=loose?'#72765b':BLUE;
+  const bob=params.bob??Math.round(Math.sin(t*2+(loose?0:1.4))*0.6);
+  ctx.translate(0,bob);
+  if(pose==='run')ctx.rotate((loose?1:-1)*.045*Math.sin(t*7));
+  // arms behind the jacket
+  drawBackArm(0,0,-1,coat,pose==='silly'&&loose?'wave':'normal');
+  drawBackArm(0,0,1,coat,pose==='silly'&&loose?'wave':'normal');
+  // short chibi trousers and canvas sneakers
+  outlined(-14,-20,12,20,2,pant);outlined(2,-20,12,20,2,pant);
+  rect(-12,-5,8,4,loose?'#596152':'#647079'); rect(3,-5,9,4,loose?'#596152':'#647079');
+  outlined(-18,-6,16,7,2,loose?'#4b4944':'#e6ddc7');outlined(2,-6,16,7,2,loose?'#4b4944':'#e6ddc7');
+  rect(-17,-2,15,2,'#fff6d9');rect(3,-2,15,2,'#fff6d9');
+  // jacket + stripes (left character) / clean white shirt (right character)
+  outlined(-17,-42,34,28,6,coat);pbox(-10,-42,20,27,3,loose?'#e9d6bc':'#efe2cd');
+  if(loose){for(let yy=-36;yy<=-22;yy+=6)rect(-9,yy,18,3,'#617e8b');}
+  rect(-15,-36,6,18,edge);rect(9,-36,6,18,edge);
+  rect(-12,-42,9,7,coat);rect(3,-42,9,7,coat);rect(-4,-42,8,5,SKIN_DARK);
+  // neck + ears + head
+  rect(-5,-47,10,9,SKIN_DARK);
+  outlined(-21,-63,42,27,8,SKIN);rect(-25,-54,7,10,SKIN_DARK);rect(18,-54,7,10,SKIN_DARK);
+  rect(-23,-55,4,7,SKIN);rect(19,-55,4,7,SKIN);
+  // shaggy hair on the left, gentle round hair on the right
+  pbox(-23,-76,46,27,7,HAIR);
+  if(loose){rect(-26,-66,8,9,HAIR);rect(-16,-80,11,8,HAIR);rect(-4,-82,9,8,HAIR);rect(10,-78,8,9,HAIR);rect(20,-69,8,8,HAIR);
+    rect(-15,-58,7,8,HAIR);rect(-1,-61,8,9,HAIR);rect(11,-58,8,7,HAIR);
+    rect(-18,-72,8,4,LIGHT_HAIR);rect(4,-75,9,4,LIGHT_HAIR);
+  }else{
+    rect(-20,-76,12,6,HAIR);rect(7,-76,10,6,HAIR);rect(-14,-60,7,7,HAIR);rect(4,-59,7,8,HAIR);
+    rect(-13,-74,20,4,LIGHT_HAIR);
+  }
+  // expressive pixel face
+  if(loose){rect(-14,-54,9,3,INK);rect(7,-56,3,6,INK);rect(5,-58,7,2,INK);rect(-14,-45,6,2,'#e09283');rect(10,-45,6,2,'#e09283');
+    rect(-5,-46,13,4,'#783c3b');rect(-3,-42,9,3,'#bd6b64');rect(-1,-46,7,2,'#fff0d0');
+  }else{rect(-12,-53,4,5,INK);rect(8,-53,4,5,INK);rect(-13,-45,6,2,'#e29a8d');rect(10,-45,6,2,'#e29a8d');
+    rect(-4,-44,8,2,'#9c5e50');rect(-2,-42,6,2,'#b57569');rect(-15,-59,9,2,'#705646');}
+  // sleeve cuffs and wrist details for retro civilian outfits
+  if(pose==='silly'&&loose){rect(-29,-54,8,7,SKIN);rect(-27,-59,4,7,SKIN);}
+  ctx.restore();
+}
+function handLine(x1,y1,x2,y2,c=SKIN,w=5){const steps=Math.ceil(Math.max(Math.abs(x2-x1),Math.abs(y2-y1))/2);for(let i=0;i<=steps;i++){const q=i/steps;rect(x1+(x2-x1)*q,y1+(y2-y1)*q,w,w,c);}}
+function airplane(x,y){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.fillStyle=INK;ctx.beginPath();ctx.moveTo(-17,0);ctx.lineTo(16,-10);ctx.lineTo(1,11);ctx.lineTo(-2,3);ctx.closePath();ctx.fill();ctx.fillStyle=WHITE;ctx.beginPath();ctx.moveTo(-14,0);ctx.lineTo(13,-8);ctx.lineTo(0,8);ctx.lineTo(-1,1);ctx.closePath();ctx.fill();rect(-1,1,2,6,'#c8bda9');ctx.restore();}
+function bounceTrail(x,y,t){for(let i=0;i<3;i++){const dx=Math.sin(t*1.2+i)*2;rect(x+i*13+dx,y+(-i*7),7,4,'#fff2cc');}}
+
+function laneLine(x,y,w){for(let i=0;i<w;i+=12)rect(x+i,y,7,2,'#c8bf91');}
+function streetLamp(x){rect(x-3,70,6,95,'#4f4237');rect(x-10,68,20,6,'#4f4237');rect(x-14,64,28,5,'#7b6c5c');ellipse(x,61,21,16,'#f9e6a4');ellipse(x,61,13,9,'#fff3c8');rect(x-8,54,16,12,'#f3d77a');}
+function tableScene(){ellipse(160,176,120,20,'#00000022');outlined(75,118,170,46,9,'#5f7b56');rect(84,127,152,28,'#739169');rect(154,132,13,10,'#eadfbc');rect(174,135,12,8,'#eadfbc');}
+function silhouetteBack(x,y,s=1){ctx.save();ctx.translate(x,y);ctx.scale(s,s);pbox(-18,-58,36,18,5,HAIR);outlined(-16,-42,32,24,6,'#7c736a');outlined(-14,-18,12,18,2,'#5d5a58');outlined(2,-18,12,18,2,'#5d5a58');ctx.restore();}
+function bathCurtain(x,y,w,h){rect(x,y,w,h,'#ddd7c4');for(let i=0;i<w;i+=16)rect(x+i,y,8,h,'#c7cfbf');rect(x,y,w,5,'#a56d59');}
+function steam(x,y){rect(x,y,8,4,'#ffffff88');rect(x+4,y-6,8,4,'#ffffff77');rect(x-3,y-12,8,4,'#ffffff66');}
+function splitGlass(){rect(157,42,6,122,'#d7e4ea');rect(159,42,2,122,'#ffffff88');rect(0,42,320,2,'#f1f7fb66');rect(0,164,320,2,'#8fa3a866');}
+function receiver(x,y,side=1){outlined(x,y,10,28,2,'#3c4448');outlined(x+side*10,y+3,7,9,2,'#3c4448');outlined(x+side*10,y+16,7,9,2,'#3c4448');}
+function cuff(x,y){ellipse(x,y,7,6,'#aeb8bd');ellipse(x,y,4,3,'#5f686d');rect(x+6,y-1,8,3,'#aeb8bd');ellipse(x+16,y,7,6,'#aeb8bd');ellipse(x+16,y,4,3,'#5f686d');}
+function desk(x,y,w){outlined(x,y,w,12,2,'#86634c');rect(x+4,y+4,w-8,5,'#b78f70');}
+function envelope(x,y){rect(x,y,14,10,'#efe6d5');rect(x+1,y+1,12,8,'#fff7ea');rect(x+2,y+2,10,1,'#c8bcaa');rect(x+3,y+5,8,1,'#d2c7b6');}
+
+function sceneActors(t){
+  const id=SCENES[scene].id;
+  const img=preloaded[id];
+  if(img && img.complete && img.naturalWidth){
+    const fit=Math.min(250/img.naturalWidth,165/img.naturalHeight);
+    const w=Math.floor(img.naturalWidth*fit),h=Math.floor(img.naturalHeight*fit);
+    ctx.drawImage(img,Math.floor((320-w)/2),185-h,w,h);return;
+  }
+  if(id==='lamp'){
+    rect(0,0,320,208,'#16203a');rect(0,96,320,38,'#22304f');rect(0,134,320,74,'#49564f');
+    dither(0,0,320,110,'#ffffff08',18); streetLamp(70); streetLamp(251); laneLine(95,176,132);
+    ellipse(160,185,74,7,'#111c1970');
+    const lx=134+Math.sin(t*2)*2, rx=183+Math.sin(t*2)*2, foot=186;
+    character(lx,foot- Math.max(0,Math.sin(t*8))*2,1.28,0,'run',t);
+    character(rx,foot- Math.max(0,Math.sin(t*8+Math.PI))*2,1.28,1,'run',t);
+    handLine(151,152,166,154,SKIN,5);handLine(167,154,179,149,SKIN,5);
+    pixelStar(36,31,'#f4d792',1);pixelStar(288,20,'#f4d792',1);return;
+  }
+  backdrop(SCENES[scene],t);
+  if(id==='kiss'){
+    ellipse(160,190,68,6,'#728d726e');
+    character(145,188,1.38,0,'normal',t,{bob:0});
+    character(182,189,1.36,1,'normal',t,{bob:0});
+    handLine(151,144,168,132,RED,9); handLine(169,132,184,127,SKIN,6); rect(182,124,12,5,SKIN);
+    handLine(185,144,174,139,OLIVE,8); rect(164,126,10,4,SKIN);
+    heart(208,102,'#d98382',2); pixelStar(220,90,'#f0cf88',1); rect(204,114,3,10,'#77624f'); rect(200,118,11,3,'#77624f');
+    return;
+  }
+  if(id==='cards'){
+    rect(0,0,320,208,'#d9d0bf'); rect(0,0,320,60,'#e7decd'); tableScene();
+    silhouetteBack(80,171,1.15); silhouetteBack(241,171,1.15); silhouetteBack(160,103,1.0);
+    character(130,168,1.2,0,'normal',t,{bob:0}); character(193,168,1.2,1,'normal',t,{bob:0});
+    rect(121,132,9,7,'#efe2bf'); rect(190,132,9,7,'#efe2bf');
+    heart(157,96,'#c97e73',2); rect(149,89,5,2,INK); rect(166,89,5,2,INK); return;
+  }
+  if(id==='bath'){
+    rect(0,0,320,208,'#d7d1c5'); bathCurtain(36,61,248,58); rect(0,126,320,82,'#b8ab89');
+    ellipse(160,188,72,6,'#6e7f7070'); steam(66,56); steam(248,50); steam(204,70);
+    character(136,186,1.28,0,'normal',t,{bob:0}); character(185,186,1.28,1,'normal',t,{bob:0});
+    rect(117,145,38,18,'#f1efe6'); rect(166,146,38,18,'#f1efe6'); rect(122,140,28,8,'#f7f4ee'); rect(171,141,28,8,'#f7f4ee');
+    rect(123,119,5,4,'#e28f87'); rect(194,119,5,4,'#e28f87'); heart(216,106,'#d98a84',2); return;
+  }
+  if(id==='glasscall'){
+    rect(0,0,320,208,'#ccd6d8'); rect(0,125,320,83,'#adb7b8'); splitGlass();
+    rect(8,56,141,96,'#d9d3c2'); rect(171,56,141,96,'#c7d8de');
+    ellipse(92,188,48,5,'#73808155'); ellipse(228,188,48,5,'#73808155');
+    character(103,186,1.27,0,'normal',t,{bob:0}); character(219,186,1.27,1,'normal',t,{bob:0});
+    receiver(129,115,-1); handLine(133,142,128,129,SKIN,5); receiver(189,115,1); handLine(203,141,191,129,SKIN,5);
+    cuff(86,146); rect(157,43,6,120,'#dbe9ef88'); heart(151,98,'#d68a82',1); heart(163,108,'#d68a82',1); return;
+  }
+  if(id==='letters'){
+    rect(0,0,320,208,'#eadcc0'); rect(156,42,8,126,'#9f8665'); rect(0,168,320,40,'#baa37c');
+    rect(0,44,156,124,'#d8c3a2'); rect(164,44,156,124,'#cec3ad');
+    desk(26,148,108); desk(189,148,108); ellipse(82,189,46,5,'#6a634f33'); ellipse(243,189,46,5,'#6a634f33');
+    character(83,187,1.18,0,'normal',t,{bob:0}); character(243,187,1.18,1,'normal',t,{bob:0});
+    envelope(53,130); envelope(238,130); handLine(86,145,94,132,SKIN,4); handLine(246,145,238,132,SKIN,4);
+    rect(94,132,2,8,INK); rect(237,132,2,8,INK); heart(152,92,'#d98b80',2); heart(164,102,'#d98b80',2); return;
+  }
+}
+function render(now){
+ const t=(now-started)/1000, s=SCENES[scene];ctx.imageSmoothingEnabled=false;backdrop(s,t);sceneActors(t);
+ if(auto && now-lastSwitch>3500){nextScene();lastSwitch=now;}
+ requestAnimationFrame(render);
+}
+function setScene(id){const target=SCENES.findIndex(s=>s.id===id);if(target<0)return;scene=target;lastSwitch=performance.now();glass.classList.remove('blink');void glass.offsetWidth;glass.classList.add('blink');}
+function nextScene(){setScene(SCENES[(scene+1)%SCENES.length].id)}
+function feedback(button){button.classList.add('down');clearTimeout(button._release);button._release=setTimeout(()=>button.classList.remove('down'),130)}
+function activate(button){if(!button)return;feedback(button);if(button.dataset.scene){setScene(button.dataset.scene);return;}
+ if(button.dataset.action==='shuffle'){nextScene();return;}
+ if(button.dataset.action==='autoplay'){auto=!auto;button.setAttribute('aria-pressed',String(auto));lastSwitch=performance.now();}}
+document.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>activate(button)));
+window.addEventListener('keydown',event=>{
+ if(event.repeat)return;
+ const actions={'ArrowUp':'kiss','ArrowDown':'bath','ArrowLeft':'cards','ArrowRight':'glasscall','z':'letters','Z':'letters','x':'lamp','X':'lamp'};
+ if(actions[event.key]){event.preventDefault();const button=document.querySelector(`[data-scene="${actions[event.key]}"]`);activate(button)}
+ else if(event.key===' '){event.preventDefault();activate(document.querySelector('[data-action="autoplay"]'))}
+ else if(event.key==='Enter'){activate(document.querySelector('[data-action="shuffle"]'))}
+});
+requestAnimationFrame(render);
+</script>
+</body>
+</html>
